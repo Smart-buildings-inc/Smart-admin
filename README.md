@@ -83,6 +83,21 @@ src/
     db/{schema,index,seed,seed-data}.ts
 ```
 
+## Deploy
+
+The app runs the full Next.js server (API routes + optional Postgres), and is
+deployable to any Node host. A [Render](https://render.com) Blueprint is included:
+
+1. Push the repo to GitHub (done).
+2. Render dashboard → **New → Blueprint** → connect this repo.
+3. Render reads [`render.yaml`](./render.yaml) and provisions a free web service
+   running `npm install && npm run build` then `npm run start`.
+4. No env vars needed — it runs on seed data. Add `DATABASE_URL` (a Neon string)
+   in the Render dashboard later to enable persistence.
+
+> Also works one-click on Vercel/Netlify/Cloudflare Pages — it's a standard
+> Next.js 14 app. `next start` honors the host's injected `$PORT`.
+
 ## Program documents
 
 Beyond the software, the venture is documented in [`docs/`](./docs/README.md):
