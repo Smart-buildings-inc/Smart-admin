@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  /* Apple system type ramp — renders as SF Pro on Apple devices, with a clean
+     fallback elsewhere. The whole console leans on this for an iOS-grade feel. */
+  --font-sf:
+    "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont,
+    "Helvetica Neue", "Inter", system-ui, sans-serif;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sf);
+  letter-spacing: -0.01em;
+  @apply bg-ink-950 text-slate-200 antialiased;
+  background-image:
+    radial-gradient(900px 600px at 80% -10%, rgba(78, 168, 255, 0.08), transparent),
+    radial-gradient(700px 500px at -10% 110%, rgba(93, 220, 122, 0.06), transparent);
+}
+
+/* Bold SF Pro italic for the things that matter — Apple-style emphasis. */
+.important {
+  font-family: var(--font-sf);
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  background: linear-gradient(95deg, #ffffff 0%, #aecbff 60%, #7fe7e0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Large futuristic display heading. */
+.display {
+  font-family: var(--font-sf);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+/* Bespoke ops-console primitives ----------------------------------------- */
+
+.panel {
+  @apply rounded-xl border border-ink-600/60 bg-ink-900/70 backdrop-blur;
+}
+
+.panel-pad {
+  @apply p-4;
+}
+
+.kpi-label {
+  @apply text-[10px] font-medium uppercase tracking-[0.14em] text-slate-400;
+}
+
+.kpi-value {
+  @apply font-mono text-2xl font-semibold tabular-nums text-white;
+}
+
+/* Pulse for floors / chips with an active incident. */
+@keyframes atlas-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+.pulse {
+  animation: atlas-pulse 1.4s ease-in-out infinite;
+}
+
+/* Futuristic annotation chips used in the 3D walk-through (arrows + quotes). */
+.annotation {
+  font-family: var(--font-sf);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(11, 18, 26, 0.72);
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(127, 231, 224, 0.12) inset;
+}
+.annotation-quote {
+  font-style: italic;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* Soft float for AR/walkthrough callouts. */
+@keyframes atlas-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+.float {
+  animation: atlas-float 3s ease-in-out infinite;
+}
+
+/* WebXR "Enter AR" button (created by three's ARButton) — restyled iOS-bold. */
+.atlas-ar-button {
+  position: static !important;
+  font-family: var(--font-sf) !important;
+  font-weight: 800 !important;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  border-radius: 9999px !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  background: rgba(11, 18, 26, 0.85) !important;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Thin scrollbars for the feeds. */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+}
+.scroll-thin::-webkit-scrollbar {
+  width: 8px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-slate-500/30;
+}
