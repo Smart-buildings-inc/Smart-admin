@@ -83,6 +83,15 @@ src/
     db/{schema,index,seed,seed-data}.ts
 ```
 
+## Program documents
+
+Beyond the software, the venture is documented in [`docs/`](./docs/README.md):
+
+- [Business Plan](./docs/BUSINESS_PLAN.md)
+- [Budget & Fundraising](./docs/BUDGET_AND_FUNDRAISING.md)
+- [Investor & Donor Pitch Deck](./docs/PITCH_DECK.md)
+- [Legal & Compliance Framework](./docs/LEGAL_COMPLIANCE.md)
+
 ## Safety model
 
 ATLAS OS **advises and optimizes; it never holds a life-safety function.** Deterministic,
