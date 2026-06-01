@@ -96,7 +96,8 @@ deployable to any Node host. A [Render](https://render.com) Blueprint is include
    in the Render dashboard later to enable persistence.
 
 > Also works one-click on Vercel/Netlify/Cloudflare Pages — it's a standard
-> Next.js 14 app. `next start` honors the host's injected `$PORT`.
+> Next.js 14 app. `next start` honors the host's injected `$PORT`. A
+> [`netlify.toml`](./netlify.toml) is included for Netlify's Next.js runtime.
 
 ## Program documents
 
