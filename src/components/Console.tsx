@@ -96,6 +96,12 @@ export default function Console({
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <a
+            href="/fleet"
+            className="inline-flex items-center gap-1.5 rounded-full border border-ink-600/70 bg-ink-900/60 px-3 py-1 text-xs font-semibold text-slate-200 transition-colors hover:bg-ink-800 hover:text-white"
+          >
+            Fleet view →
+          </a>
           <span
             className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs ${
               dbConnected

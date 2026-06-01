@@ -2,7 +2,13 @@
 // incident feed and broadcast. This module has NO database dependency so it can
 // be imported by both the API layer (seed fallback) and the seed script.
 
-import type { Broadcast, Floor, Incident, SensorPoint } from "@/lib/types";
+import type {
+  Broadcast,
+  Building,
+  Floor,
+  Incident,
+  SensorPoint,
+} from "@/lib/types";
 
 /** ATLAS-01 floor stack, ordered bottom → top by physical level. */
 export const seedFloors: Floor[] = [
@@ -329,5 +335,75 @@ export const seedSensorPoints: SensorPoint[] = [
     value: 24,
     unitOfMeasure: "°C",
     ts: sensorTs(6),
+  },
+];
+
+// --- F7: fleet ---
+
+/**
+ * The ATLAS fleet — buildings deployed across Canada and the US. ATLAS-01 is
+ * the flagship (online); the rest vary in status to exercise the fleet map.
+ * Coordinates are real city lat/lng so the normalized plot reads correctly.
+ */
+export const seedBuildings: Building[] = [
+  {
+    id: "atlas-01",
+    name: "ATLAS-01 · Toronto",
+    location: { label: "Toronto, ON", lat: 43.6532, lng: -79.3832 },
+    status: "online",
+    unitCount: 12,
+    autonomyPct: 96,
+    residents: 128,
+    openIncidents: 1,
+  },
+  {
+    id: "atlas-02",
+    name: "ATLAS-02 · Montréal",
+    location: { label: "Montréal, QC", lat: 45.5019, lng: -73.5674 },
+    status: "online",
+    unitCount: 10,
+    autonomyPct: 91,
+    residents: 104,
+    openIncidents: 0,
+  },
+  {
+    id: "atlas-03",
+    name: "ATLAS-03 · Vancouver",
+    location: { label: "Vancouver, BC", lat: 49.2827, lng: -123.1207 },
+    status: "degraded",
+    unitCount: 11,
+    autonomyPct: 74,
+    residents: 116,
+    openIncidents: 3,
+  },
+  {
+    id: "atlas-04",
+    name: "ATLAS-04 · Calgary",
+    location: { label: "Calgary, AB", lat: 51.0447, lng: -114.0719 },
+    status: "online",
+    unitCount: 9,
+    autonomyPct: 88,
+    residents: 92,
+    openIncidents: 1,
+  },
+  {
+    id: "atlas-05",
+    name: "ATLAS-05 · Detroit",
+    location: { label: "Detroit, MI", lat: 42.3314, lng: -83.0458 },
+    status: "degraded",
+    unitCount: 8,
+    autonomyPct: 69,
+    residents: 78,
+    openIncidents: 2,
+  },
+  {
+    id: "atlas-06",
+    name: "ATLAS-06 · Buffalo",
+    location: { label: "Buffalo, NY", lat: 42.8864, lng: -78.8784 },
+    status: "offline",
+    unitCount: 7,
+    autonomyPct: 0,
+    residents: 64,
+    openIncidents: 5,
   },
 ];

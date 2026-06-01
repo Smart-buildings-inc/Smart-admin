@@ -77,3 +77,21 @@ export const sensorPoints = pgTable("sensor_points", {
 });
 
 export type SensorPointRow = typeof sensorPoints.$inferSelect;
+
+// --- F7: fleet ---
+
+export const buildings = pgTable("buildings", {
+  id: serial("id").primaryKey(),
+  key: text("key").notNull().unique(),
+  name: text("name").notNull(),
+  locationLabel: text("location_label").notNull(),
+  lat: doublePrecision("lat").notNull(),
+  lng: doublePrecision("lng").notNull(),
+  status: text("status").notNull().default("online"),
+  unitCount: integer("unit_count").notNull().default(0),
+  autonomyPct: integer("autonomy_pct").notNull().default(0),
+  residents: integer("residents").notNull().default(0),
+  openIncidents: integer("open_incidents").notNull().default(0),
+});
+
+export type BuildingRow = typeof buildings.$inferSelect;
