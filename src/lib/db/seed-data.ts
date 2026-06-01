@@ -2,7 +2,13 @@
 // incident feed and broadcast. This module has NO database dependency so it can
 // be imported by both the API layer (seed fallback) and the seed script.
 
-import type { Broadcast, Floor, Incident } from "@/lib/types";
+import type {
+  Broadcast,
+  Building,
+  Floor,
+  Incident,
+  SensorPoint,
+} from "@/lib/types";
 
 /** ATLAS-01 floor stack, ordered bottom → top by physical level. */
 export const seedFloors: Floor[] = [
@@ -163,5 +169,241 @@ export const seedBroadcasts: Broadcast[] = [
     audience: "all",
     recipients: 106,
     createdAt: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
+  },
+];
+
+// --- F11: sensor ingestion ---
+//
+// Starter telemetry points across the ATLAS-01 floor stack. Each carries a
+// Brick-style dotted `tag` and an equivalent flat Haystack-style `markers`
+// list. `ts` is staggered over the last few minutes to look like live ingest.
+const sensorTs = (minutesAgo: number) =>
+  new Date(Date.now() - 1000 * 60 * minutesAgo).toISOString();
+
+export const seedSensorPoints: SensorPoint[] = [
+  // Reclamation Core (water & waste)
+  {
+    id: "sp-reclamation-core-flow",
+    tag: "sensor.water.flow",
+    markers: ["sensor", "water", "flow"],
+    floorKey: "reclamation-core",
+    unit: "main-loop",
+    kind: "flow",
+    value: 1840,
+    unitOfMeasure: "L/h",
+    ts: sensorTs(1),
+  },
+  {
+    id: "sp-reclamation-core-reuse",
+    tag: "sensor.water.reuse",
+    markers: ["sensor", "water", "reuse", "efficiency"],
+    floorKey: "reclamation-core",
+    kind: "ratio",
+    value: 92,
+    unitOfMeasure: "%",
+    ts: sensorTs(1),
+  },
+  // Power & Ops Core (energy)
+  {
+    id: "sp-power-ops-core-power",
+    tag: "sensor.electric.power",
+    markers: ["sensor", "electric", "power", "gen"],
+    floorKey: "power-ops-core",
+    unit: "pv-array",
+    kind: "power",
+    value: 148,
+    unitOfMeasure: "kW",
+    ts: sensorTs(2),
+  },
+  {
+    id: "sp-power-ops-core-load",
+    tag: "sensor.electric.power",
+    markers: ["sensor", "electric", "power", "load"],
+    floorKey: "power-ops-core",
+    unit: "main-bus",
+    kind: "power",
+    value: 96,
+    unitOfMeasure: "kW",
+    ts: sensorTs(2),
+  },
+  {
+    id: "sp-power-ops-core-soc",
+    tag: "sensor.electric.battery.soc",
+    markers: ["sensor", "electric", "battery", "soc"],
+    floorKey: "power-ops-core",
+    unit: "battery-wall",
+    kind: "ratio",
+    value: 78,
+    unitOfMeasure: "%",
+    ts: sensorTs(2),
+  },
+  // Aquaponics Bay (food)
+  {
+    id: "sp-aquaponics-bay-temp",
+    tag: "sensor.water.temp",
+    markers: ["sensor", "water", "temp"],
+    floorKey: "aquaponics-bay",
+    unit: "fish-tank-1",
+    kind: "temp",
+    value: 23,
+    unitOfMeasure: "°C",
+    ts: sensorTs(3),
+  },
+  {
+    id: "sp-aquaponics-bay-flow",
+    tag: "sensor.water.flow",
+    markers: ["sensor", "water", "flow"],
+    floorKey: "aquaponics-bay",
+    unit: "grow-bed-loop",
+    kind: "flow",
+    value: 320,
+    unitOfMeasure: "L/h",
+    ts: sensorTs(3),
+  },
+  // Vertical Farm (food)
+  {
+    id: "sp-vertical-farm-power",
+    tag: "sensor.electric.power",
+    markers: ["sensor", "electric", "power", "load", "lighting"],
+    floorKey: "vertical-farm",
+    unit: "grow-light-bank-3",
+    kind: "power",
+    value: 54,
+    unitOfMeasure: "kW",
+    ts: sensorTs(4),
+  },
+  {
+    id: "sp-vertical-farm-humidity",
+    tag: "sensor.air.humidity",
+    markers: ["sensor", "air", "humidity"],
+    floorKey: "vertical-farm",
+    kind: "humidity",
+    value: 65,
+    unitOfMeasure: "%",
+    ts: sensorTs(4),
+  },
+  // Residences A (shelter)
+  {
+    id: "sp-residences-a-temp",
+    tag: "sensor.air.temp",
+    markers: ["sensor", "air", "temp", "zone"],
+    floorKey: "residences-a",
+    kind: "temp",
+    value: 21,
+    unitOfMeasure: "°C",
+    ts: sensorTs(5),
+  },
+  {
+    id: "sp-residences-a-occupancy",
+    tag: "sensor.occupancy.count",
+    markers: ["sensor", "occupancy", "count"],
+    floorKey: "residences-a",
+    kind: "occupancy",
+    value: 24,
+    unitOfMeasure: "people",
+    ts: sensorTs(5),
+  },
+  // The Lung (air & restoration)
+  {
+    id: "sp-the-lung-co2",
+    tag: "sensor.air.co2",
+    markers: ["sensor", "air", "co2"],
+    floorKey: "the-lung",
+    kind: "co2",
+    value: 410,
+    unitOfMeasure: "ppm",
+    ts: sensorTs(2),
+  },
+  {
+    id: "sp-the-lung-pm25",
+    tag: "sensor.air.pm25",
+    markers: ["sensor", "air", "pm25", "particulate"],
+    floorKey: "the-lung",
+    kind: "pm25",
+    value: 4,
+    unitOfMeasure: "µg/m³",
+    ts: sensorTs(2),
+  },
+  // Skydeck & Reservoir (restoration)
+  {
+    id: "sp-skydeck-reservoir-temp",
+    tag: "sensor.water.temp",
+    markers: ["sensor", "water", "temp", "reservoir"],
+    floorKey: "skydeck-reservoir",
+    unit: "rooftop-pool",
+    kind: "temp",
+    value: 24,
+    unitOfMeasure: "°C",
+    ts: sensorTs(6),
+  },
+];
+
+// --- F7: fleet ---
+
+/**
+ * The ATLAS fleet — buildings deployed across Canada and the US. ATLAS-01 is
+ * the flagship (online); the rest vary in status to exercise the fleet map.
+ * Coordinates are real city lat/lng so the normalized plot reads correctly.
+ */
+export const seedBuildings: Building[] = [
+  {
+    id: "atlas-01",
+    name: "ATLAS-01 · Toronto",
+    location: { label: "Toronto, ON", lat: 43.6532, lng: -79.3832 },
+    status: "online",
+    unitCount: 12,
+    autonomyPct: 96,
+    residents: 128,
+    openIncidents: 1,
+  },
+  {
+    id: "atlas-02",
+    name: "ATLAS-02 · Montréal",
+    location: { label: "Montréal, QC", lat: 45.5019, lng: -73.5674 },
+    status: "online",
+    unitCount: 10,
+    autonomyPct: 91,
+    residents: 104,
+    openIncidents: 0,
+  },
+  {
+    id: "atlas-03",
+    name: "ATLAS-03 · Vancouver",
+    location: { label: "Vancouver, BC", lat: 49.2827, lng: -123.1207 },
+    status: "degraded",
+    unitCount: 11,
+    autonomyPct: 74,
+    residents: 116,
+    openIncidents: 3,
+  },
+  {
+    id: "atlas-04",
+    name: "ATLAS-04 · Calgary",
+    location: { label: "Calgary, AB", lat: 51.0447, lng: -114.0719 },
+    status: "online",
+    unitCount: 9,
+    autonomyPct: 88,
+    residents: 92,
+    openIncidents: 1,
+  },
+  {
+    id: "atlas-05",
+    name: "ATLAS-05 · Detroit",
+    location: { label: "Detroit, MI", lat: 42.3314, lng: -83.0458 },
+    status: "degraded",
+    unitCount: 8,
+    autonomyPct: 69,
+    residents: 78,
+    openIncidents: 2,
+  },
+  {
+    id: "atlas-06",
+    name: "ATLAS-06 · Buffalo",
+    location: { label: "Buffalo, NY", lat: 42.8864, lng: -78.8784 },
+    status: "offline",
+    unitCount: 7,
+    autonomyPct: 0,
+    residents: 64,
+    openIncidents: 5,
   },
 ];

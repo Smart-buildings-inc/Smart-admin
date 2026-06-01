@@ -1,0 +1,24 @@
+# Render Blueprint for ATLAS OS — the Habitat Twin.
+#
+# One-click deploy: in the Render dashboard → New → Blueprint → connect this
+# repo. Render reads this file and provisions the service automatically.
+#
+# The app runs fully on seed data with no database. To enable persistence,
+# add a DATABASE_URL env var (a Neon connection string) in the Render dashboard
+# — it's intentionally left unset here so the free deploy "just works".
+services:
+  - type: web
+    name: atlas-os
+    runtime: node
+    plan: free
+    # next start honors Render's injected $PORT automatically.
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      # Uncomment and set in the Render dashboard to enable Postgres persistence:
+      # - key: DATABASE_URL
+      #   sync: false

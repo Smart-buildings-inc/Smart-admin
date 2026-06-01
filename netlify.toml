@@ -1,0 +1,20 @@
+# Netlify config for ATLAS OS — the Habitat Twin.
+#
+# Netlify's official Next.js runtime (@netlify/plugin-nextjs) is auto-installed
+# when it detects Next.js, and serves the App Router, server components, and the
+# API routes (/api/*) as serverless functions — so the full app works, not just
+# static files.
+#
+# Deploy: Netlify dashboard → Add new site → Import from GitHub → pick this repo.
+# No environment variables are required (the app runs on seed data). Add
+# DATABASE_URL in the Netlify dashboard later to enable Postgres persistence.
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

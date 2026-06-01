@@ -82,3 +82,74 @@ export interface BuildingKpis {
   residents: number;
   openIncidents: number;
 }
+
+// --- F11: sensor ingestion ---
+//
+// A tagged-point model in the spirit of Brick Schema / Project Haystack.
+// Every physical telemetry reading from the building maps to a `SensorPoint`:
+// a single timestamped value carried alongside the semantic tags that say
+// *what* it measures and *where*. This lets downstream consumers query by
+// meaning ("all electric power points on the energy floor") rather than by
+// brittle, vendor-specific point names.
+
+/**
+ * A single timestamped sensor reading with semantic tags.
+ *
+ * Tagging follows two complementary conventions, both optional-friendly:
+ *  - `tag`     — a dotted Brick-style class path, e.g. "sensor.electric.power"
+ *                or "sensor.air.co2". This is the primary semantic identifier.
+ *  - `markers` — a flat list of Haystack-style marker tags, e.g.
+ *                ["sensor", "electric", "power"] or ["sensor", "temp", "air"].
+ *                Useful for set-based filtering ("everything tagged `power`").
+ */
+export interface SensorPoint {
+  /** Stable point id, e.g. "sp-power-ops-core-power". */
+  id: string;
+  /** Brick-style dotted semantic class, e.g. "sensor.electric.power". */
+  tag: string;
+  /** Haystack-style flat marker tags, e.g. ["sensor","electric","power"]. */
+  markers: string[];
+  /** Floor this point lives on — matches a `Floor.key`. */
+  floorKey: string;
+  /** Optional sub-location / equipment ref within the floor, e.g. "inverter-1". */
+  unit?: string;
+  /** Coarse point kind/quantity, e.g. "power", "temp", "co2", "flow". */
+  kind: string;
+  /** Latest numeric reading. */
+  value: number;
+  /** Engineering unit of `value`, e.g. "kW", "°C", "ppm", "L/h". */
+  unitOfMeasure: string;
+  /** ISO-8601 timestamp of the reading. */
+  ts: string;
+}
+
+// --- F7: fleet ---
+
+/** Operational status of an ATLAS building in the fleet view (F7). */
+export type BuildingStatus = "online" | "degraded" | "offline";
+
+/**
+ * A single ATLAS building, plotted on the fleet map (PRD §10). Carries a few
+ * rollup metrics so the fleet view can render at-a-glance health without
+ * loading each building's full floor stack.
+ */
+export interface Building {
+  /** stable key, e.g. "atlas-01" */
+  id: string;
+  name: string;
+  location: {
+    /** human-readable place, e.g. "Toronto, ON" */
+    label: string;
+    lat: number;
+    lng: number;
+  };
+  status: BuildingStatus;
+  /** number of floors/units in the stack */
+  unitCount: number;
+  /** rollup: % of demand met by on-site generation */
+  autonomyPct: number;
+  /** rollup: total residents housed */
+  residents: number;
+  /** rollup: count of open (crit/warn) incidents */
+  openIncidents: number;
+}

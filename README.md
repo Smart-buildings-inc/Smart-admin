@@ -83,6 +83,31 @@ src/
     db/{schema,index,seed,seed-data}.ts
 ```
 
+## Deploy
+
+The app runs the full Next.js server (API routes + optional Postgres), and is
+deployable to any Node host. A [Render](https://render.com) Blueprint is included:
+
+1. Push the repo to GitHub (done).
+2. Render dashboard → **New → Blueprint** → connect this repo.
+3. Render reads [`render.yaml`](./render.yaml) and provisions a free web service
+   running `npm install && npm run build` then `npm run start`.
+4. No env vars needed — it runs on seed data. Add `DATABASE_URL` (a Neon string)
+   in the Render dashboard later to enable persistence.
+
+> Also works one-click on Vercel/Netlify/Cloudflare Pages — it's a standard
+> Next.js 14 app. `next start` honors the host's injected `$PORT`. A
+> [`netlify.toml`](./netlify.toml) is included for Netlify's Next.js runtime.
+
+## Program documents
+
+Beyond the software, the venture is documented in [`docs/`](./docs/README.md):
+
+- [Business Plan](./docs/BUSINESS_PLAN.md)
+- [Budget & Fundraising](./docs/BUDGET_AND_FUNDRAISING.md)
+- [Investor & Donor Pitch Deck](./docs/PITCH_DECK.md)
+- [Legal & Compliance Framework](./docs/LEGAL_COMPLIANCE.md)
+
 ## Safety model
 
 ATLAS OS **advises and optimizes; it never holds a life-safety function.** Deterministic,
