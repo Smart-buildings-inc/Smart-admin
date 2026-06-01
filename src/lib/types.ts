@@ -82,3 +82,34 @@ export interface BuildingKpis {
   residents: number;
   openIncidents: number;
 }
+
+// --- F7: fleet ---
+
+/** Operational status of an ATLAS building in the fleet view (F7). */
+export type BuildingStatus = "online" | "degraded" | "offline";
+
+/**
+ * A single ATLAS building, plotted on the fleet map (PRD §10). Carries a few
+ * rollup metrics so the fleet view can render at-a-glance health without
+ * loading each building's full floor stack.
+ */
+export interface Building {
+  /** stable key, e.g. "atlas-01" */
+  id: string;
+  name: string;
+  location: {
+    /** human-readable place, e.g. "Toronto, ON" */
+    label: string;
+    lat: number;
+    lng: number;
+  };
+  status: BuildingStatus;
+  /** number of floors/units in the stack */
+  unitCount: number;
+  /** rollup: % of demand met by on-site generation */
+  autonomyPct: number;
+  /** rollup: total residents housed */
+  residents: number;
+  /** rollup: count of open (crit/warn) incidents */
+  openIncidents: number;
+}
