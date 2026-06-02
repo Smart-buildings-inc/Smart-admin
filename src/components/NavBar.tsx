@@ -115,6 +115,13 @@ export default function NavBar() {
         </button>
       </div>
 
+      {/* Gradient fade: extends the bar's background downward into a soft fade so
+          scrolling content blends with the page bg instead of a hard edge. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-full h-6 bg-gradient-to-b from-ink-950/80 to-transparent"
+      />
+
       {/* Mobile drawer + overlay */}
       <div
         className={`fixed inset-0 z-30 md:hidden ${open ? "" : "pointer-events-none"}`}
