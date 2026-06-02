@@ -1,19 +1,24 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import BrandMark from "@/components/BrandMark";
+import ProgressiveBlur from "@/components/ProgressiveBlur";
 
-// Shared top navigation across the console + fleet views. Desktop shows inline
-// links; mobile collapses them behind a hamburger that opens an accessible
-// slide-down drawer. Active route is highlighted via the current pathname.
+// Shared top navigation across the console + simulator + fleet views. Desktop
+// shows inline links; mobile collapses them behind a hamburger drawer (the
+// fixed bottom tab bar in MobileTabBar complements this on phones). Active
+// route is highlighted via the current pathname.
 
 type NavItem = { href: string; label: string };
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Console" },
+  { href: "/simulator", label: "Simulator" },
   { href: "/fleet", label: "Fleet" },
+  { href: "/landing", label: "Overview" },
+  { href: "/brand", label: "Brand" },
   { href: "/sitemap", label: "Site Map" },
 ];
 
@@ -47,7 +52,7 @@ export default function NavBar() {
   }, [open]);
 
   return (
-    <nav className="sticky top-0 z-40 border-b border-ink-600/50 bg-ink-950/80 backdrop-blur supports-[backdrop-filter]:bg-ink-950/60">
+    <nav className="sticky top-0 z-40 border-b border-ink-600/50 bg-gradient-to-b from-ink-950 to-ink-950/60 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-[1500px] items-center justify-between gap-3 px-4 lg:h-16 lg:px-6">
         {/* Brand */}
         <Link
@@ -55,17 +60,8 @@ export default function NavBar() {
           className="flex items-center gap-2.5 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-signal-info"
           aria-label="ATLAS OS home"
         >
-          <Image
-            src="/icon.svg"
-            alt=""
-            width={36}
-            height={36}
-            priority
-            unoptimized
-            aria-hidden
-            className="h-8 w-8 lg:h-9 lg:w-9"
-          />
-          <span className="display text-base font-extrabold tracking-tight text-white lg:text-lg">
+          <BrandMark className="h-8 w-8 lg:h-9 lg:w-9" />
+          <span className="gradient-text display text-base font-extrabold tracking-tight lg:text-lg">
             ATLAS&nbsp;OS
           </span>
         </Link>
@@ -121,8 +117,10 @@ export default function NavBar() {
         </button>
       </div>
 
-      {/* Gradient fade: extends the bar's background downward into a soft fade so
+      {/* Progressive blur + gradient fade beneath the bar: the frosted blur
+          ramps down to zero and the bar's background bleeds into a soft fade so
           scrolling content blends with the page bg instead of a hard edge. */}
+      <ProgressiveBlur side="top" className="top-full h-10" />
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-full h-6 bg-gradient-to-b from-ink-950/80 to-transparent"

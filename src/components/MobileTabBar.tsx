@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import ProgressiveBlur from "@/components/ProgressiveBlur";
 
 // Mobile-only fixed bottom tab bar (iOS-style). Complements the top NavBar's
 // hamburger drawer — both stay available on phones. Hidden at md+ where the
@@ -28,6 +29,26 @@ const TABS: Tab[] = [
         />
         <path
           d="M4 7.5 12 12m0 0 8-4.5M12 12v9"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    href: "/simulator",
+    label: "Simulator",
+    icon: () => (
+      <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden>
+        <path
+          d="M5 21V4.5h14V21"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M5 9.5h14M5 14.5h14M10.5 21v-3h3v3"
           stroke="currentColor"
           strokeWidth="1.6"
           strokeLinejoin="round"
@@ -63,10 +84,12 @@ export default function MobileTabBar() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-ink-600/50 bg-ink-950/85 backdrop-blur supports-[backdrop-filter]:bg-ink-950/70 md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-ink-600/50 bg-gradient-to-t from-ink-950 to-ink-950/60 backdrop-blur md:hidden"
     >
-      {/* Gradient fade: extends the bar's background upward into a soft fade so
+      {/* Progressive blur + gradient fade above the bar: the frosted blur ramps
+          down to zero and the bar's background bleeds into a soft fade so
           scrolling content blends with the page bg instead of a hard edge. */}
+      <ProgressiveBlur side="bottom" className="bottom-full h-10" />
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 bottom-full h-6 bg-gradient-to-t from-ink-950/85 to-transparent"
