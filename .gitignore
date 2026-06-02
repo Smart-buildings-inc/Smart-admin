@@ -1,5 +1,8 @@
-# claude code (agent worktrees, local session state)
-/.claude/
+# claude code — share the SessionStart hook + project settings, ignore local state
+/.claude/*
+!/.claude/settings.json
+!/.claude/hooks/
+/.claude/settings.local.json
 
 # dependencies
 /node_modules
