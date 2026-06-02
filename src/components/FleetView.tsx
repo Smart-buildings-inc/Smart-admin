@@ -1,11 +1,22 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import type { Building, BuildingStatus } from "@/lib/types";
 
-// F7 — Fleet view. A zoomed-out, stylized map of every ATLAS building across
-// the network (Canada → US). No real map library: we normalize lat/lng into the
-// SVG viewbox and plot status-colored markers, pulsing when not fully online.
+// F7 — Fleet view. A real Leaflet map of every ATLAS building across the
+// network (Canada → US), plotting status-colored markers that pulse when not
+// fully online. The map itself lives in <FleetMap> (Leaflet needs `window`, so
+// it is loaded client-only), with our own attribution in place of Leaflet's.
+
+const FleetMap = dynamic(() => import("@/components/FleetMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full items-center justify-center text-sm text-slate-500">
+      Loading fleet map…
+    </div>
+  ),
+});
 
 const STATUS_COLOR: Record<BuildingStatus, string> = {
   online: "#3ddc97", // signal.ok
@@ -18,28 +29,6 @@ const STATUS_LABEL: Record<BuildingStatus, string> = {
   degraded: "Degraded",
   offline: "Offline",
 };
-
-// Viewbox for the stylized plot.
-const VW = 1000;
-const VH = 640;
-const PAD = 60;
-
-// Geographic bounds covering the seeded Canadian + US cities, with a little
-// margin so markers never sit on the very edge.
-const LAT_MIN = 40;
-const LAT_MAX = 53;
-const LNG_MIN = -126;
-const LNG_MAX = -71;
-
-function project(lat: number, lng: number): { x: number; y: number } {
-  const tx = (lng - LNG_MIN) / (LNG_MAX - LNG_MIN);
-  const ty = (lat - LAT_MIN) / (LAT_MAX - LAT_MIN);
-  return {
-    x: PAD + tx * (VW - PAD * 2),
-    // Latitude grows north (up), so invert for screen-space y.
-    y: PAD + (1 - ty) * (VH - PAD * 2),
-  };
-}
 
 function statusToneClass(status: BuildingStatus): string {
   return status === "online"
@@ -176,107 +165,15 @@ export default function FleetView({
       {/* Map + detail */}
       <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-[1.7fr_1fr]">
         {/* Map panel */}
-        <div className="panel relative h-[360px] overflow-hidden sm:h-[480px] lg:h-auto">
-          <svg
-            viewBox={`0 0 ${VW} ${VH}`}
-            className="h-full w-full"
-            role="img"
-            aria-label="ATLAS fleet map"
-            preserveAspectRatio="xMidYMid meet"
-          >
-            <defs>
-              <pattern
-                id="fleet-grid"
-                width="50"
-                height="50"
-                patternUnits="userSpaceOnUse"
-              >
-                <path
-                  d="M 50 0 L 0 0 0 50"
-                  fill="none"
-                  stroke="rgba(120,160,200,0.08)"
-                  strokeWidth="1"
-                />
-              </pattern>
-              <radialGradient id="fleet-glow" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="rgba(78,168,255,0.10)" />
-                <stop offset="100%" stopColor="rgba(78,168,255,0)" />
-              </radialGradient>
-            </defs>
-
-            <rect width={VW} height={VH} fill="url(#fleet-glow)" />
-            <rect width={VW} height={VH} fill="url(#fleet-grid)" />
-
-            {/* Connecting lines from each building back to ATLAS-01 (network). */}
-            {(() => {
-              const hub = buildings.find((b) => b.id === "atlas-01");
-              if (!hub) return null;
-              const h = project(hub.location.lat, hub.location.lng);
-              return buildings
-                .filter((b) => b.id !== hub.id)
-                .map((b) => {
-                  const p = project(b.location.lat, b.location.lng);
-                  return (
-                    <line
-                      key={`link-${b.id}`}
-                      x1={h.x}
-                      y1={h.y}
-                      x2={p.x}
-                      y2={p.y}
-                      stroke="rgba(120,160,200,0.16)"
-                      strokeWidth="1"
-                      strokeDasharray="4 5"
-                    />
-                  );
-                });
-            })()}
-
-            {/* Building markers */}
-            {buildings.map((b) => {
-              const { x, y } = project(b.location.lat, b.location.lng);
-              const color = STATUS_COLOR[b.status];
-              const active = b.id === selectedId;
-              const pulsing = b.status !== "online";
-              return (
-                <g
-                  key={b.id}
-                  transform={`translate(${x} ${y})`}
-                  onClick={() => setSelectedId(b.id)}
-                  className="cursor-pointer"
-                  role="button"
-                  aria-label={`${b.name} — ${STATUS_LABEL[b.status]}`}
-                >
-                  {/* Halo */}
-                  <circle
-                    r={active ? 22 : 16}
-                    fill={color}
-                    opacity={active ? 0.22 : 0.14}
-                    className={pulsing ? "pulse" : undefined}
-                  />
-                  {/* Core dot */}
-                  <circle
-                    r={active ? 8 : 6}
-                    fill={color}
-                    stroke="#070b10"
-                    strokeWidth="1.5"
-                  />
-                  <text
-                    x={0}
-                    y={-24}
-                    textAnchor="middle"
-                    fill={active ? "#ffffff" : "#cbd5e1"}
-                    fontSize="13"
-                    fontWeight={active ? 700 : 500}
-                  >
-                    {b.location.label}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
+        <div className="panel relative z-0 h-[360px] overflow-hidden sm:h-[480px] lg:h-auto">
+          <FleetMap
+            buildings={buildings}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+          />
 
           {/* Legend */}
-          <div className="absolute left-4 top-4 flex flex-col gap-1.5 rounded-lg border border-ink-600/60 bg-ink-900/80 px-3 py-2 text-xs backdrop-blur">
+          <div className="pointer-events-none absolute left-4 top-4 z-[500] flex flex-col gap-1.5 rounded-lg border border-ink-600/60 bg-ink-900/80 px-3 py-2 text-xs backdrop-blur">
             {(["online", "degraded", "offline"] as BuildingStatus[]).map((s) => (
               <div key={s} className="flex items-center gap-2 text-slate-300">
                 <span
