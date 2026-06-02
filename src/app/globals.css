@@ -75,6 +75,32 @@ body {
   }
 }
 
+/* Lighter, subtler variant of .gradient-text for the NavBar brand — anchored
+   in white with only gentle need-color tints so it reads as a soft sheen
+   rather than a bold rainbow. Matched to BrandMark's lightened cube gradient. */
+.gradient-text-soft {
+  background-image: linear-gradient(
+    100deg,
+    #ffffff 0%,
+    #c4ddff 28%,
+    #bff0ea 50%,
+    #e0d4ff 72%,
+    #ffd1e1 88%,
+    #ffffff 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: atlas-flow 6s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gradient-text-soft {
+    animation: none;
+  }
+}
+
 /* Slow conic aurora used behind the landing hero. */
 @keyframes atlas-spin {
   to {

@@ -61,7 +61,7 @@ export default function NavBar() {
           aria-label="ATLAS OS home"
         >
           <BrandMark className="h-8 w-8 lg:h-9 lg:w-9" />
-          <span className="gradient-text display text-base font-extrabold tracking-tight lg:text-lg">
+          <span className="gradient-text-soft display text-base font-extrabold tracking-tight lg:text-lg">
             ATLAS&nbsp;OS
           </span>
         </Link>

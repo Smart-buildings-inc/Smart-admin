@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 
 // Animated brand cube for the NavBar. This is an inline, living variant of the
 // static /icon.svg favicon: the same isometric ATLAS cube, but its three faces
-// share one continuous need-palette gradient that flows horizontally — visually
-// matched to the .gradient-text wordmark beside it. The dark rounded-rect base,
+// share one continuous gradient that flows horizontally — a lightened, pastel
+// tint of the need palette, visually matched to the .gradient-text-soft wordmark
+// beside it so both read as a subtle sheen. The dark rounded-rect base,
 // face shading (per-face opacity), and the raised A/O/S letters are preserved so
 // the mark stays legible. The static SVG is kept untouched for favicons/OG.
 //
@@ -43,17 +44,17 @@ export default function BrandMark({ className }: { className?: string }) {
           x2="128"
           y2="0"
         >
-          <stop offset="0" stopColor="#4ea8ff" />
-          <stop offset="0.11" stopColor="#7fe7e0" />
-          <stop offset="0.22" stopColor="#5ddc7a" />
-          <stop offset="0.33" stopColor="#c0a4ff" />
-          <stop offset="0.41" stopColor="#ff8fb1" />
-          <stop offset="0.5" stopColor="#4ea8ff" />
-          <stop offset="0.61" stopColor="#7fe7e0" />
-          <stop offset="0.72" stopColor="#5ddc7a" />
-          <stop offset="0.83" stopColor="#c0a4ff" />
-          <stop offset="0.91" stopColor="#ff8fb1" />
-          <stop offset="1" stopColor="#4ea8ff" />
+          <stop offset="0" stopColor="#bcdcff" />
+          <stop offset="0.11" stopColor="#c8f2ed" />
+          <stop offset="0.22" stopColor="#c2f1d0" />
+          <stop offset="0.33" stopColor="#e4d8ff" />
+          <stop offset="0.41" stopColor="#ffd2e0" />
+          <stop offset="0.5" stopColor="#bcdcff" />
+          <stop offset="0.61" stopColor="#c8f2ed" />
+          <stop offset="0.72" stopColor="#c2f1d0" />
+          <stop offset="0.83" stopColor="#e4d8ff" />
+          <stop offset="0.91" stopColor="#ffd2e0" />
+          <stop offset="1" stopColor="#bcdcff" />
           {animate && (
             <animateTransform
               attributeName="gradientTransform"
