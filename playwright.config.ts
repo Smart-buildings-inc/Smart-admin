@@ -28,6 +28,10 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
     {
+      name: "Tablet Chrome",
+      use: { ...devices["Galaxy Tab S9"] },
+    },
+    {
       name: "Mobile Chrome",
       use: { ...devices["Pixel 5"] },
     },
