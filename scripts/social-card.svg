@@ -1,0 +1,78 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0c0f13"/>
+      <stop offset="100%" stop-color="#050709"/>
+    </linearGradient>
+    <linearGradient id="fTop" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0%" stop-color="#f3f6f9"/><stop offset="100%" stop-color="#d2d8de"/>
+    </linearGradient>
+    <linearGradient id="fLeft" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c4cbd2"/><stop offset="100%" stop-color="#9aa2ab"/>
+    </linearGradient>
+    <linearGradient id="fRight" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#b4bcc4"/><stop offset="100%" stop-color="#8b939d"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Left column -->
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="70" y="96" fill="#c4cad1" font-size="19" font-weight="700" letter-spacing="7">DESIGN  •  BUILD  •  DELIVER</text>
+    <text x="66" y="225" fill="#ffffff" font-size="138" font-weight="800" letter-spacing="2">AOS</text>
+    <text x="70" y="296" fill="#ffffff" font-size="33" font-weight="700" letter-spacing="1">BUILDING THE FUTURE.</text>
+    <text x="70" y="338" fill="#9aa1a9" font-size="33" font-weight="700" letter-spacing="1">CREATING LASTING SPACES.</text>
+    <line x1="71" y1="372" x2="131" y2="372" stroke="#5b636c" stroke-width="2"/>
+    <text x="70" y="416" fill="#aeb4bb" font-size="21" font-weight="400">
+      <tspan x="70" dy="0">AOS is a modern construction and architecture firm</tspan>
+      <tspan x="70" dy="30">dedicated to delivering innovative, functional, and</tspan>
+      <tspan x="70" dy="30">sustainable buildings that stand the test of time.</tspan>
+    </text>
+    <!-- contact pill -->
+    <rect x="70" y="520" width="470" height="60" rx="30" fill="#101318" stroke="#262b31" stroke-width="1.5"/>
+    <text x="100" y="549" fill="#c4cad1" font-size="15" font-weight="700" letter-spacing="1">BUILDING BETTER SPACES.</text>
+    <text x="100" y="568" fill="#7f868d" font-size="14" font-weight="600" letter-spacing="1">ENRICHING COMMUNITIES.</text>
+    <text x="410" y="557" fill="#e8edf1" font-size="18" font-weight="700">aos.build</text>
+  </g>
+
+  <!-- AOS cube (reused emblem), placed on the right -->
+  <g transform="translate(648,86) scale(0.9)">
+    <ellipse cx="256" cy="470" rx="150" ry="24" fill="#000000" opacity="0.5"/>
+    <polygon points="256,48 436.1,152 256,256 75.9,152" fill="url(#fTop)" stroke="#5b636c" stroke-width="2" stroke-linejoin="round"/>
+    <polygon points="75.9,152 256,256 256,464 75.9,360" fill="url(#fLeft)" stroke="#5b636c" stroke-width="2" stroke-linejoin="round"/>
+    <polygon points="256,256 436.1,152 436.1,360 256,464" fill="url(#fRight)" stroke="#5b636c" stroke-width="2" stroke-linejoin="round"/>
+    <g transform="matrix(1.8013,1.04,-1.8013,1.04,256,48)" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <path d="M30 82 L50 20 L70 82 M38 60 L62 60" transform="translate(1.5,3)" stroke="#000000" stroke-opacity="0.28" stroke-width="14"/>
+      <path d="M30 82 L50 20 L70 82 M38 60 L62 60" stroke="#f7f9fb" stroke-width="14"/>
+    </g>
+    <g transform="matrix(1.8013,1.04,0,2.08,75.9,152)" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <rect x="26" y="24" width="48" height="56" rx="15" transform="translate(1.5,3)" stroke="#000000" stroke-opacity="0.28" stroke-width="14"/>
+      <rect x="26" y="24" width="48" height="56" rx="15" stroke="#e8edf1" stroke-width="14"/>
+    </g>
+    <g transform="matrix(1.8013,-1.04,0,2.08,256,256)" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <path d="M68 34 C68 22 32 22 32 40 C32 54 68 52 68 68 C68 86 32 86 32 72" transform="translate(1.5,3)" stroke="#000000" stroke-opacity="0.28" stroke-width="14"/>
+      <path d="M68 34 C68 22 32 22 32 40 C32 54 68 52 68 68 C68 86 32 86 32 72" stroke="#dde3e8" stroke-width="14"/>
+    </g>
+  </g>
+
+  <!-- Stats strip -->
+  <g font-family="Arial, Helvetica, sans-serif" text-anchor="middle">
+    <g transform="translate(760,0)">
+      <text x="0" y="560" fill="#ffffff" font-size="38" font-weight="800">150+</text>
+      <text x="0" y="588" fill="#8b929a" font-size="13" font-weight="600" letter-spacing="1">PROJECTS</text>
+    </g>
+    <g transform="translate(900,0)">
+      <text x="0" y="560" fill="#ffffff" font-size="38" font-weight="800">10+</text>
+      <text x="0" y="588" fill="#8b929a" font-size="13" font-weight="600" letter-spacing="1">YEARS</text>
+    </g>
+    <g transform="translate(1015,0)">
+      <text x="0" y="560" fill="#ffffff" font-size="38" font-weight="800">100+</text>
+      <text x="0" y="588" fill="#8b929a" font-size="13" font-weight="600" letter-spacing="1">EXPERTS</text>
+    </g>
+    <g transform="translate(1130,0)">
+      <text x="0" y="560" fill="#ffffff" font-size="38" font-weight="800">100%</text>
+      <text x="0" y="588" fill="#8b929a" font-size="13" font-weight="600" letter-spacing="1">QUALITY</text>
+    </g>
+  </g>
+</svg>

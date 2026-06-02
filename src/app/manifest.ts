@@ -29,6 +29,7 @@ export default function manifest(): MetadataRoute.Manifest {
     screenshots: [
       {
         src: "/social.png",
+        sizes: "1200x630",
         type: "image/png",
         form_factor: "wide",
         label: "AOS — Building the future. Creating lasting spaces.",

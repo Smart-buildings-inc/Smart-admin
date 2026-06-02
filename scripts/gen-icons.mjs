@@ -48,7 +48,18 @@ async function main() {
     .png()
     .toFile(resolve(root, "public/og.png"));
 
-  console.log("Generated: favicon.ico, apple-icon.png, icon-192/512.png, favicon-32.png, og.png");
+  // Branded AOS social card (1200×630) baked from its vector source. Used as
+  // the primary OG/Twitter image and the wide PWA install screenshot.
+  await sharp(readFileSync(resolve(root, "scripts/social-card.svg")), {
+    density: 160,
+  })
+    .resize(1200, 630)
+    .png()
+    .toFile(resolve(root, "public/social.png"));
+
+  console.log(
+    "Generated: favicon.ico, apple-icon.png, icon-192/512.png, favicon-32.png, og.png, social.png",
+  );
 }
 
 main().catch((e) => {

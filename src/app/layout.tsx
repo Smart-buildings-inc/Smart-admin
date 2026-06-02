@@ -29,11 +29,15 @@ export const metadata: Metadata = {
     title: "ATLAS OS — Habitat Twin",
     description: DESCRIPTION,
     siteName: "ATLAS OS",
-    // Primary social card is the AOS brand image (public/social.png); the
-    // generated cube card stays listed as a fallback so there's always a
-    // valid image even before social.png is committed.
+    // Primary social card is the AOS brand image; the generated cube card
+    // stays listed as a fallback.
     images: [
-      { url: "/social.png", alt: "AOS — Building the future. Creating lasting spaces." },
+      {
+        url: "/social.png",
+        width: 1200,
+        height: 630,
+        alt: "AOS — Building the future. Creating lasting spaces.",
+      },
       { url: "/og.png", width: 1200, height: 630, alt: "ATLAS OS" },
     ],
   },
