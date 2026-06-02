@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   Broadcast,
   BuildingKpis,
@@ -82,6 +82,49 @@ export default function Console({
     setMode("walkthrough");
   }, []);
 
+  // --- Fullscreen for the twin/walk-through ---
+  // Native Fullscreen API on desktop; a CSS full-viewport overlay as a fallback
+  // for iOS Safari (which doesn't allow element fullscreen). Esc exits both.
+  const twinWrapRef = useRef<HTMLDivElement>(null);
+  const [expanded, setExpanded] = useState(false);
+
+  const toggleExpand = useCallback(() => {
+    const el = twinWrapRef.current;
+    if (!el) return;
+    const willExpand = !expanded;
+    setExpanded(willExpand);
+    try {
+      if (willExpand) {
+        if (el.requestFullscreen && !document.fullscreenElement) {
+          void el.requestFullscreen().catch(() => {});
+        }
+      } else if (document.fullscreenElement) {
+        void document.exitFullscreen().catch(() => {});
+      }
+    } catch {
+      /* CSS overlay still covers the viewport if native FS is unavailable */
+    }
+  }, [expanded]);
+
+  // Sync state when the user leaves native fullscreen (e.g. Esc / OS gesture).
+  useEffect(() => {
+    const onFsChange = () => {
+      if (!document.fullscreenElement) setExpanded(false);
+    };
+    document.addEventListener("fullscreenchange", onFsChange);
+    return () => document.removeEventListener("fullscreenchange", onFsChange);
+  }, []);
+
+  // Esc exits the CSS-only overlay path (iOS), where no native FS session runs.
+  useEffect(() => {
+    if (!expanded) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setExpanded(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [expanded]);
+
   return (
     <main className="mx-auto flex min-h-screen max-w-[1500px] flex-col gap-4 p-4 lg:p-6">
       {/* Header */}
@@ -125,7 +168,14 @@ export default function Console({
       {/* Main grid: twin (F1) + floor panel (F2) | feed (F3) + broadcast (F4) */}
       <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-[1.6fr_1fr]">
         <section className="flex flex-col gap-4">
-          <div className="panel relative h-[460px] overflow-hidden lg:h-[560px]">
+          <div
+            ref={twinWrapRef}
+            className={`panel relative overflow-hidden bg-ink-950 ${
+              expanded
+                ? "fixed inset-0 z-[60] h-[100dvh] w-screen rounded-none border-0"
+                : "h-[460px] lg:h-[560px]"
+            }`}
+          >
             <HabitatTwin
               floors={floors}
               incidents={incidents}
@@ -135,29 +185,48 @@ export default function Console({
               onWalkthroughEnd={() => setMode("orbit")}
             />
 
-            {/* Mode controls — iOS-style segmented buttons */}
-            <div className="absolute right-4 top-4 z-10 flex gap-1 rounded-full border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur">
+            {/* Controls — iOS-style segmented mode buttons + fullscreen toggle */}
+            <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
+              <div className="flex gap-1 rounded-full border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur">
+                <button
+                  type="button"
+                  onClick={() => setMode("orbit")}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                    mode === "orbit"
+                      ? "bg-white text-ink-950"
+                      : "text-slate-300 hover:text-white"
+                  }`}
+                >
+                  Orbit
+                </button>
+                <button
+                  type="button"
+                  onClick={startWalkthrough}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                    mode === "walkthrough"
+                      ? "bg-white text-ink-950"
+                      : "text-slate-300 hover:text-white"
+                  }`}
+                >
+                  Walk-through
+                </button>
+              </div>
               <button
                 type="button"
-                onClick={() => setMode("orbit")}
-                className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-                  mode === "orbit"
-                    ? "bg-white text-ink-950"
-                    : "text-slate-300 hover:text-white"
-                }`}
+                onClick={toggleExpand}
+                aria-label={expanded ? "Exit fullscreen" : "Enter fullscreen"}
+                title={expanded ? "Exit fullscreen (Esc)" : "Fullscreen"}
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-ink-600/70 bg-ink-900/80 text-slate-200 backdrop-blur transition-colors hover:bg-ink-800 hover:text-white"
               >
-                Orbit
-              </button>
-              <button
-                type="button"
-                onClick={startWalkthrough}
-                className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-                  mode === "walkthrough"
-                    ? "bg-white text-ink-950"
-                    : "text-slate-300 hover:text-white"
-                }`}
-              >
-                Walk-through
+                {expanded ? (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 9H4M9 9V4M9 9 4 4M15 9h5M15 9V4m0 5 5-5M9 15H4m5 0v5m0-5-5 5m11-5h5m-5 0v5m0-5 5 5" />
+                  </svg>
+                ) : (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M8 4H4v4M16 4h4v4M16 20h4v-4M8 20H4v-4" />
+                  </svg>
+                )}
               </button>
             </div>
           </div>
