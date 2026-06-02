@@ -10,6 +10,8 @@ import { useCallback, useMemo, useState } from "react";
 import type { Floor, FloorMetrics, Incident } from "@/lib/types";
 import type { SimOptions } from "@/components/BuildingSimulator";
 import { needColor } from "@/lib/ui";
+import FullscreenButton from "@/components/FullscreenButton";
+import { useFullscreen, FULLSCREEN_STAGE_CLASS } from "@/lib/useFullscreen";
 
 const BuildingSimulator = dynamic(() => import("@/components/BuildingSimulator"), {
   ssr: false,
@@ -88,6 +90,13 @@ export default function SimulatorView({
   });
   const [pixel, setPixel] = useState(true);
 
+  // Fullscreen for the simulator stage (native FS + CSS overlay fallback).
+  const {
+    ref: stageRef,
+    isFullscreen,
+    toggle: toggleFullscreen,
+  } = useFullscreen<HTMLDivElement>();
+
   const set = useCallback(
     (patch: Partial<SimOptions>) => setOptions((o) => ({ ...o, ...patch })),
     [],
@@ -127,7 +136,15 @@ export default function SimulatorView({
       <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-[1.7fr_1fr]">
         {/* Stage */}
         <section className="flex flex-col gap-4">
-          <div className="panel relative h-[520px] overflow-hidden lg:h-[660px]">
+          <div
+            ref={stageRef}
+            data-testid="sim-stage"
+            className={`relative overflow-hidden bg-ink-950 ${
+              isFullscreen
+                ? FULLSCREEN_STAGE_CLASS
+                : "panel h-[520px] lg:h-[660px]"
+            }`}
+          >
             <BuildingSimulator
               floors={floors}
               incidents={incidents}
@@ -145,12 +162,15 @@ export default function SimulatorView({
             </div>
 
             {/* Controls */}
-            <div className="absolute right-3 top-3 z-10 flex flex-wrap justify-end gap-1 rounded-2xl border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur">
-              <Toggle label={options.night ? "Night" : "Day"} active={options.night} onClick={() => set({ night: !options.night })} />
-              <Toggle label="Cut-away" active={options.cutaway} onClick={() => set({ cutaway: !options.cutaway })} />
-              <Toggle label="Pixel" active={pixel} onClick={() => setPixel((p) => !p)} />
-              <Toggle label="Orbit" active={options.autoRotate} onClick={() => set({ autoRotate: !options.autoRotate })} />
-              <Toggle label="Elevator" active={options.elevatorRunning} onClick={() => set({ elevatorRunning: !options.elevatorRunning })} />
+            <div className="absolute right-3 top-3 z-10 flex items-start justify-end gap-2">
+              <div className="flex flex-wrap justify-end gap-1 rounded-2xl border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur">
+                <Toggle label={options.night ? "Night" : "Day"} active={options.night} onClick={() => set({ night: !options.night })} />
+                <Toggle label="Cut-away" active={options.cutaway} onClick={() => set({ cutaway: !options.cutaway })} />
+                <Toggle label="Pixel" active={pixel} onClick={() => setPixel((p) => !p)} />
+                <Toggle label="Orbit" active={options.autoRotate} onClick={() => set({ autoRotate: !options.autoRotate })} />
+                <Toggle label="Elevator" active={options.elevatorRunning} onClick={() => set({ elevatorRunning: !options.elevatorRunning })} />
+              </div>
+              <FullscreenButton isFullscreen={isFullscreen} onToggle={toggleFullscreen} />
             </div>
 
             {/* Live elevator indicator */}
