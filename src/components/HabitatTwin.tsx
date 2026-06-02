@@ -7,6 +7,10 @@ import * as THREE from "three";
 import type { Floor, Incident } from "@/lib/types";
 import { needColor } from "@/lib/ui";
 import { annotationByFloor } from "@/lib/annotations";
+import { GltfProp, preloadModel } from "@/components/three/gltf";
+
+// Warm the optional crown asset (no-op while the slot is disabled).
+preloadModel("twinCrown");
 
 export type TwinMode = "orbit" | "walkthrough";
 
@@ -274,6 +278,11 @@ function Tower({
           onSelect={onSelect}
         />
       ))}
+      {/* optional detailed crown atop the tower (additive; off until set) */}
+      <GltfProp
+        slot="twinCrown"
+        position={[0, (floors.length - 1) * STEP + FLOOR_HEIGHT / 2 + 0.2, 0]}
+      />
     </group>
   );
 }

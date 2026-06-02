@@ -13,12 +13,23 @@
 // This file is the WebGL layer only; SimulatorView.tsx owns the DOM chrome
 // (header, controls, legend, telemetry) and feeds options/selection in.
 
-import { useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
-import { OrbitControls, Html } from "@react-three/drei";
+import { OrbitControls, Html, useGLTF, useAnimations } from "@react-three/drei";
 import * as THREE from "three";
 import type { Floor, Incident, Need } from "@/lib/types";
 import { needColor } from "@/lib/ui";
+import { getModel } from "@/lib/models";
+import {
+  GltfProp,
+  ModelErrorBoundary,
+  preloadModel,
+  useNormalizedClone,
+} from "@/components/three/gltf";
+
+const RESIDENT = getModel("resident");
+// Warm the resident asset so detailed residents stream in without pop-in.
+preloadModel("resident");
 
 type Vec3 = [number, number, number];
 
@@ -38,6 +49,8 @@ export interface SimOptions {
   cutaway: boolean;
   autoRotate: boolean;
   elevatorRunning: boolean;
+  /** Use detailed glTF residents (else the flat-shaded voxel figures). */
+  detailedModels: boolean;
 }
 
 // --------------------------------------------------------------------------
@@ -173,6 +186,76 @@ function VoxPerson({
   );
 }
 
+// A detailed, rigged glTF resident (RobotExpressive, CC0). Each instance gets
+// its own skeleton clone + animation mixer so they move independently. Paces
+// along the floor like VoxPerson and plays a walk/idle clip.
+function RobotResident({
+  position,
+  pace = 0,
+}: {
+  position: Vec3;
+  pace?: number;
+}) {
+  const { scene, animations } = useGLTF(RESIDENT.path);
+  const obj = useNormalizedClone(scene, RESIDENT.targetHeight);
+  const group = useRef<THREE.Group>(null);
+  const { actions } = useAnimations(animations, group);
+  const phase = useMemo(() => position[0] + position[2], [position]);
+
+  useEffect(() => {
+    const name = pace > 0 ? RESIDENT.clip ?? "Walking" : "Idle";
+    const action =
+      actions[name] ?? actions["Idle"] ?? Object.values(actions)[0];
+    action?.reset().fadeIn(0.25).play();
+    return () => {
+      action?.fadeOut(0.25);
+    };
+  }, [actions, pace]);
+
+  useFrame((s) => {
+    if (!group.current) return;
+    const t = s.clock.elapsedTime;
+    if (pace > 0) {
+      group.current.position.x = position[0] + Math.sin(t * 0.6 + phase) * pace;
+      // Face the direction of travel.
+      group.current.rotation.y =
+        Math.cos(t * 0.6 + phase) > 0 ? Math.PI * 0.5 : -Math.PI * 0.5;
+    }
+  });
+
+  return (
+    <group ref={group} position={position}>
+      <primitive object={obj} />
+    </group>
+  );
+}
+
+// Chooses a detailed resident when enabled, otherwise the voxel figure. The
+// voxel figure is also the Suspense/error fallback, so residents always render.
+function SimPerson({
+  position,
+  color,
+  pace = 0,
+  detailed,
+}: {
+  position: Vec3;
+  color: string;
+  pace?: number;
+  detailed: boolean;
+}) {
+  if (!detailed || !RESIDENT.enabled) {
+    return <VoxPerson position={position} color={color} pace={pace} />;
+  }
+  const fallback = <VoxPerson position={position} color={color} pace={pace} />;
+  return (
+    <ModelErrorBoundary fallback={fallback}>
+      <Suspense fallback={fallback}>
+        <RobotResident position={position} pace={pace} />
+      </Suspense>
+    </ModelErrorBoundary>
+  );
+}
+
 // --------------------------------------------------------------------------
 // Per-need interior recipes. Each renders furniture/equipment for one floor,
 // authored relative to the floor's slab top (y = 0) within the living zone
@@ -182,10 +265,12 @@ function FloorInterior({
   floor,
   accent,
   night,
+  detailed,
 }: {
   floor: Floor;
   accent: string;
   night: boolean;
+  detailed: boolean;
 }) {
   switch (floor.need) {
     case "water":
@@ -370,8 +455,8 @@ function FloorInterior({
             </group>
           ))}
           {/* a couple of residents at home */}
-          <VoxPerson position={[-1.0, 0, -1.2]} color={accent} pace={0.25} />
-          <VoxPerson position={[0.4, 0, 1.4]} color="#7fe7e0" pace={0.2} />
+          <SimPerson position={[-1.0, 0, -1.2]} color={accent} pace={0.25} detailed={detailed} />
+          <SimPerson position={[0.4, 0, 1.4]} color="#7fe7e0" pace={0.2} detailed={detailed} />
         </group>
       );
     }
@@ -394,8 +479,8 @@ function FloorInterior({
           <PulseVox position={[0, 1.0, -2.55]} size={[0.16, 0.5, 0.05]} color="#ff5d5d" base={0.6} amp={0.3} speed={1} />
           {/* reception desk */}
           <Vox position={[0.6, 0.4, 1.4]} size={[2.0, 0.1, 0.7]} color="#26323d" />
-          <VoxPerson position={[-0.6, 0, 1.0]} color={accent} pace={0.2} />
-          <VoxPerson position={[1.2, 0, 0.6]} color="#c0a4ff" pace={0.3} />
+          <SimPerson position={[-0.6, 0, 1.0]} color={accent} pace={0.2} detailed={detailed} />
+          <SimPerson position={[1.2, 0, 0.6]} color="#c0a4ff" pace={0.3} detailed={detailed} />
         </group>
       );
     case "restoration":
@@ -413,7 +498,7 @@ function FloorInterior({
           {[-2.0, 2.0].map((x) => (
             <Vox key={x} position={[x, 0.3, -2.2]} size={[0.5, 0.5, 0.5]} color="#3aa56a" />
           ))}
-          <VoxPerson position={[-1.9, 0.3, -0.7]} color="#ffd9a0" />
+          <SimPerson position={[-1.9, 0.3, -0.7]} color="#ffd9a0" detailed={detailed} />
         </group>
       );
     default:
@@ -491,6 +576,7 @@ function FloorBlock({
   hasIncident,
   night,
   cutaway,
+  detailed,
   onSelect,
 }: {
   floor: Floor;
@@ -499,6 +585,7 @@ function FloorBlock({
   hasIncident: boolean;
   night: boolean;
   cutaway: boolean;
+  detailed: boolean;
   onSelect: (key: string) => void;
 }) {
   const baseY = index * STEP;
@@ -571,7 +658,7 @@ function FloorBlock({
       )}
 
       {/* interior */}
-      <FloorInterior floor={floor} accent={accent} night={night} />
+      <FloorInterior floor={floor} accent={accent} night={night} detailed={detailed} />
 
       {/* invisible (opacity-0) selector spanning the floor volume */}
       <Vox
@@ -613,10 +700,12 @@ function FloorBlock({
 function Elevator({
   stops,
   running,
+  detailed,
   onArrive,
 }: {
   stops: number[];
   running: boolean;
+  detailed: boolean;
   onArrive: (floorIndex: number) => void;
 }) {
   const car = useRef<THREE.Group>(null);
@@ -672,7 +761,7 @@ function Elevator({
         {/* doors */}
         <Vox position={[-0.3, 0, 0.58]} size={[0.55, CAR_H * 0.92, 0.06]} color="#4ea8ff" opacity={0.85} />
         <Vox position={[0.3, 0, 0.58]} size={[0.55, CAR_H * 0.92, 0.06]} color="#4ea8ff" opacity={0.85} />
-        <VoxPerson position={[0, -CAR_H / 2 + 0.02, -0.1]} color="#c0a4ff" />
+        <SimPerson position={[0, -CAR_H / 2 + 0.02, -0.1]} color="#c0a4ff" detailed={detailed} />
       </group>
     </group>
   );
@@ -742,6 +831,8 @@ function Rooftop({ y, night }: { y: number; night: boolean }) {
       {/* comms mast */}
       <Vox position={[2.4, 1.4, 1.6]} size={[0.1, 2.0, 0.1]} color="#2c3a47" />
       <PulseVox position={[2.4, 2.45, 1.6]} size={[0.18, 0.18, 0.18]} color="#ff5d5d" base={0.5} amp={0.5} speed={3} />
+      {/* optional detailed rooftop prop (additive; off until an asset is set) */}
+      <GltfProp slot="rooftopProp" position={[-1.6, 0.16, 0]} />
     </group>
   );
 }
@@ -789,12 +880,18 @@ function Tower({
           hasIncident={incidentFloorKeys.has(floor.key)}
           night={options.night}
           cutaway={options.cutaway}
+          detailed={options.detailedModels}
           onSelect={onSelect}
         />
       ))}
 
       <Staircase floorCount={floors.length} />
-      <Elevator stops={stops} running={options.elevatorRunning} onArrive={onElevatorArrive} />
+      <Elevator
+        stops={stops}
+        running={options.elevatorRunning}
+        detailed={options.detailedModels}
+        onArrive={onElevatorArrive}
+      />
       <Rooftop y={totalHeight} night={options.night} />
     </group>
   );

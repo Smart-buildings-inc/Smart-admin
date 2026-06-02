@@ -87,6 +87,7 @@ export default function SimulatorView({
     cutaway: true,
     autoRotate: true,
     elevatorRunning: true,
+    detailedModels: true,
   });
   const [pixel, setPixel] = useState(true);
 
@@ -166,6 +167,7 @@ export default function SimulatorView({
               <div className="flex flex-wrap justify-end gap-1 rounded-2xl border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur">
                 <Toggle label={options.night ? "Night" : "Day"} active={options.night} onClick={() => set({ night: !options.night })} />
                 <Toggle label="Cut-away" active={options.cutaway} onClick={() => set({ cutaway: !options.cutaway })} />
+                <Toggle label="Detail" active={options.detailedModels} onClick={() => set({ detailedModels: !options.detailedModels })} />
                 <Toggle label="Pixel" active={pixel} onClick={() => setPixel((p) => !p)} />
                 <Toggle label="Orbit" active={options.autoRotate} onClick={() => set({ autoRotate: !options.autoRotate })} />
                 <Toggle label="Elevator" active={options.elevatorRunning} onClick={() => set({ elevatorRunning: !options.elevatorRunning })} />
