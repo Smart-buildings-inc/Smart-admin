@@ -86,11 +86,12 @@ export default function SimulatorView({
     cutaway: true,
     autoRotate: true,
     elevatorRunning: true,
-    detailedModels: false,
+    detailedModels: true,
   });
   // Single render-mode switch: "Pixel" mode = procedural voxel figures +
   // pixelation; off = crisp detailed glTF models. The two move together.
-  const [pixel, setPixel] = useState(true);
+  // Defaults to realistic so the detailed models are visible on load.
+  const [pixel, setPixel] = useState(false);
   const togglePixel = useCallback(() => {
     setPixel((on) => {
       const next = !on;

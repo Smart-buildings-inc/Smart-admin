@@ -24,22 +24,22 @@ test.describe("ATLAS OS building simulator", () => {
     await expect(page.getByText("Floor telemetry", { exact: true })).toBeVisible();
   });
 
-  test("turning Pixel mode off loads the detailed glTF residents", async ({ page }) => {
-    // Realistic mode (Pixel off) streams the bundled GLB; Pixel mode stays
-    // fully procedural so no model request is made.
+  test("realistic mode (default) loads the detailed glTF residents", async ({ page }) => {
+    // The simulator defaults to realistic mode, which streams the bundled GLB;
+    // toggling Pixel on switches to the fully procedural voxel look.
     const glb = page.waitForResponse(
       (r) => r.url().includes("/models/robot.glb") && r.status() === 200,
       { timeout: 20000 },
     );
     await page.goto("/simulator");
 
-    const pixel = page.getByRole("button", { name: "Pixel", exact: true });
-    await expect(pixel).toHaveAttribute("aria-pressed", "true");
-    await pixel.click(); // → realistic mode
-    await expect(pixel).toHaveAttribute("aria-pressed", "false");
-
-    const res = await glb;
+    const res = await glb; // model loads on first paint (realistic default)
     expect(res.status()).toBe(200);
+
+    const pixel = page.getByRole("button", { name: "Pixel", exact: true });
+    await expect(pixel).toHaveAttribute("aria-pressed", "false");
+    await pixel.click(); // → retro pixel/voxel mode
+    await expect(pixel).toHaveAttribute("aria-pressed", "true");
   });
 
   test("fullscreen control opens the full-viewport viewer and exits back", async ({

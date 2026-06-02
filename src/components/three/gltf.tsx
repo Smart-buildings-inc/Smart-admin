@@ -8,7 +8,6 @@
 import { Suspense, Component, useMemo, type ReactNode } from "react";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
-import { clone as skeletonClone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { getModel, type ModelSlot } from "@/lib/models";
 
 type Vec3 = [number, number, number];
@@ -35,23 +34,38 @@ export class ModelErrorBoundary extends Component<
 }
 
 /**
- * Clones a loaded scene (skeleton-aware, so multiple animated instances are
- * independent), normalizes it to `targetHeight` world units, and re-seats it
- * so its feet sit at y=0 and it is centered on x/z. Returns a ready-to-mount
- * Object3D. Robust to whatever native units the source asset uses.
+ * Deep-clones a loaded scene, normalizes it to `targetHeight` world units, and
+ * re-seats it so its feet sit at y=0 and it is centered on x/z. Returns a
+ * ready-to-mount Object3D, robust to whatever native units the source asset
+ * uses. Uses a plain `Object3D.clone(true)` (not SkeletonUtils) — the latter
+ * produced invisible skinned meshes in this build; clones share the source
+ * skeleton, which is fine for the static placements we use here.
  */
 export function useNormalizedClone(
   scene: THREE.Object3D,
   targetHeight: number,
 ): THREE.Object3D {
   return useMemo(() => {
-    const obj = skeletonClone(scene);
+    const obj = scene.clone(true);
+    // Skinned meshes get culled when their bind-pose bounding sphere falls out
+    // of view (a common three.js gotcha that makes rigged models vanish).
+    obj.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (m.isMesh) m.frustumCulled = false;
+    });
+    obj.updateWorldMatrix(true, true);
+
     const size = new THREE.Box3().setFromObject(obj).getSize(new THREE.Vector3());
-    if (size.y > 0) obj.scale.setScalar(targetHeight / size.y);
+    if (Number.isFinite(size.y) && size.y > 1e-3) {
+      obj.scale.setScalar(targetHeight / size.y);
+      obj.updateWorldMatrix(true, true);
+    }
     const box = new THREE.Box3().setFromObject(obj);
-    obj.position.x -= (box.min.x + box.max.x) / 2;
-    obj.position.z -= (box.min.z + box.max.z) / 2;
-    obj.position.y -= box.min.y;
+    if (Number.isFinite(box.min.y)) {
+      obj.position.x -= (box.min.x + box.max.x) / 2;
+      obj.position.z -= (box.min.z + box.max.z) / 2;
+      obj.position.y -= box.min.y;
+    }
     return obj;
   }, [scene, targetHeight]);
 }

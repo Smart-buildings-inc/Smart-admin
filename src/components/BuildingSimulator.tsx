@@ -13,9 +13,9 @@
 // This file is the WebGL layer only; SimulatorView.tsx owns the DOM chrome
 // (header, controls, legend, telemetry) and feeds options/selection in.
 
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
-import { OrbitControls, Html, useGLTF, useAnimations } from "@react-three/drei";
+import { OrbitControls, Html, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import type { Floor, Incident, Need } from "@/lib/types";
 import { needColor } from "@/lib/ui";
@@ -192,39 +192,34 @@ function VoxPerson({
 function RobotResident({
   position,
   pace = 0,
+  height = RESIDENT.targetHeight,
+  rotationY = 0,
 }: {
   position: Vec3;
   pace?: number;
+  height?: number;
+  rotationY?: number;
 }) {
-  const { scene, animations } = useGLTF(RESIDENT.path);
-  const obj = useNormalizedClone(scene, RESIDENT.targetHeight);
+  const { scene } = useGLTF(RESIDENT.path);
+  const obj = useNormalizedClone(scene, height);
   const group = useRef<THREE.Group>(null);
-  const { actions } = useAnimations(animations, group);
   const phase = useMemo(() => position[0] + position[2], [position]);
 
-  useEffect(() => {
-    const name = pace > 0 ? RESIDENT.clip ?? "Walking" : "Idle";
-    const action =
-      actions[name] ?? actions["Idle"] ?? Object.values(actions)[0];
-    action?.reset().fadeIn(0.25).play();
-    return () => {
-      action?.fadeOut(0.25);
-    };
-  }, [actions, pace]);
-
+  // Cheap, reliable life: a gentle bob, plus pacing along the floor. (We render
+  // the bind pose rather than skeletal animation — see useNormalizedClone.)
   useFrame((s) => {
     if (!group.current) return;
     const t = s.clock.elapsedTime;
+    group.current.position.y = position[1] + Math.abs(Math.sin(t * 2 + phase)) * 0.04;
     if (pace > 0) {
       group.current.position.x = position[0] + Math.sin(t * 0.6 + phase) * pace;
-      // Face the direction of travel.
       group.current.rotation.y =
-        Math.cos(t * 0.6 + phase) > 0 ? Math.PI * 0.5 : -Math.PI * 0.5;
+        (Math.cos(t * 0.6 + phase) > 0 ? Math.PI * 0.5 : -Math.PI * 0.5) + rotationY;
     }
   });
 
   return (
-    <group ref={group} position={position}>
+    <group ref={group} position={position} rotation={[0, rotationY, 0]}>
       <primitive object={obj} />
     </group>
   );
@@ -232,25 +227,38 @@ function RobotResident({
 
 // Chooses a detailed resident when enabled, otherwise the voxel figure. The
 // voxel figure is also the Suspense/error fallback, so residents always render.
+// `height` lets a placement (e.g. the plaza greeter) render a larger figure.
 function SimPerson({
   position,
   color,
   pace = 0,
   detailed,
+  height = RESIDENT.targetHeight,
+  rotationY,
 }: {
   position: Vec3;
   color: string;
   pace?: number;
   detailed: boolean;
+  height?: number;
+  rotationY?: number;
 }) {
-  if (!detailed || !RESIDENT.enabled) {
-    return <VoxPerson position={position} color={color} pace={pace} />;
-  }
-  const fallback = <VoxPerson position={position} color={color} pace={pace} />;
+  const voxScale = height / 0.6; // voxel figure is ~0.6 units tall
+  const fallback = (
+    <group position={position} scale={voxScale}>
+      <VoxPerson position={[0, 0, 0]} color={color} pace={pace / voxScale} />
+    </group>
+  );
+  if (!detailed || !RESIDENT.enabled) return fallback;
   return (
     <ModelErrorBoundary fallback={fallback}>
       <Suspense fallback={fallback}>
-        <RobotResident position={position} pace={pace} />
+        <RobotResident
+          position={position}
+          pace={pace}
+          height={height}
+          rotationY={rotationY}
+        />
       </Suspense>
     </ModelErrorBoundary>
   );
@@ -884,6 +892,24 @@ function Tower({
           onSelect={onSelect}
         />
       ))}
+
+      {/* A detailed "greeter" robot on the plaza out front — large and
+          unobstructed so the real 3D model reads at a glance (detailed mode). */}
+      {options.detailedModels && (
+        <group>
+          {/* dedicated key light so the greeter reads against the dark plaza */}
+          <pointLight position={[5, 5, 9]} intensity={2.2} distance={22} decay={2} color="#fff3da" />
+          {/* a detailed "greeter" robot on the plaza out front — large and
+              unobstructed so the real 3D model reads at a glance */}
+          <SimPerson
+            position={[3.4, -SLAB_T, 7.5]}
+            color="#7fe7e0"
+            detailed
+            height={3.2}
+            rotationY={-0.5}
+          />
+        </group>
+      )}
 
       <Staircase floorCount={floors.length} />
       <Elevator

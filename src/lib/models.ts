@@ -44,7 +44,7 @@ export const MODELS: Record<ModelSlot, ModelAsset> = {
   resident: {
     path: "/models/robot.glb",
     enabled: true,
-    targetHeight: 0.72,
+    targetHeight: 1.0,
     clip: "Walking",
     license: "CC0 1.0",
     author: "Tomás Laulhé (Quaternius); modifications by Don McCurdy",
