@@ -142,7 +142,7 @@ export default function SimulatorView({
             className={`relative overflow-hidden bg-ink-950 ${
               isFullscreen
                 ? FULLSCREEN_STAGE_CLASS
-                : "panel h-[520px] lg:h-[660px]"
+                : "panel h-[1040px] lg:h-[660px]"
             }`}
           >
             <BuildingSimulator

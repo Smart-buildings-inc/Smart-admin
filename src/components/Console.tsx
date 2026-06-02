@@ -130,7 +130,7 @@ export default function Console({
             ref={twinWrapRef}
             data-testid="twin-stage"
             className={`relative overflow-hidden bg-ink-950 ${
-              expanded ? FULLSCREEN_STAGE_CLASS : "panel h-[460px] lg:h-[560px]"
+              expanded ? FULLSCREEN_STAGE_CLASS : "panel h-[920px] lg:h-[560px]"
             }`}
           >
             <HabitatTwin
