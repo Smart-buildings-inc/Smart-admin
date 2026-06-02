@@ -413,6 +413,28 @@ body {
     0 0 0 1px rgba(127, 231, 224, 0.06) inset;
 }
 
+/* Accent underline that sweeps in beneath the audience-page headline word. */
+@keyframes atlas-beam {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+.beam {
+  transform-origin: left center;
+  animation: atlas-beam 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .beam {
+    animation: none;
+    transform: none;
+  }
+}
+
 /* Slow drift for ambient particles/orbs in the hero. */
 @keyframes atlas-drift {
   0%,
