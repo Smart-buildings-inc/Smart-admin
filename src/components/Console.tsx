@@ -83,7 +83,7 @@ export default function Console({
   }, []);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-[1500px] flex-col gap-4 p-4 lg:p-6">
+    <main className="mx-auto flex min-h-screen max-w-[1500px] flex-col gap-4 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:p-6">
       {/* Header */}
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
@@ -95,28 +95,20 @@ export default function Console({
             <span className="important">This is the future of housing.</span>
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <a
-            href="/fleet"
-            className="inline-flex items-center gap-1.5 rounded-full border border-ink-600/70 bg-ink-900/60 px-3 py-1 text-xs font-semibold text-slate-200 transition-colors hover:bg-ink-800 hover:text-white"
-          >
-            Fleet view →
-          </a>
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs ${
+            dbConnected
+              ? "bg-signal-ok/15 text-signal-ok"
+              : "bg-ink-700 text-slate-400"
+          }`}
+        >
           <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs ${
-              dbConnected
-                ? "bg-signal-ok/15 text-signal-ok"
-                : "bg-ink-700 text-slate-400"
+            className={`h-1.5 w-1.5 rounded-full ${
+              dbConnected ? "bg-signal-ok" : "bg-slate-500"
             }`}
-          >
-            <span
-              className={`h-1.5 w-1.5 rounded-full ${
-                dbConnected ? "bg-signal-ok" : "bg-slate-500"
-              }`}
-            />
-            {dbConnected ? "Database connected" : "Seed data (local-first)"}
-          </span>
-        </div>
+          />
+          {dbConnected ? "Database connected" : "Seed data (local-first)"}
+        </span>
       </header>
 
       {/* KPI strip (F5) */}

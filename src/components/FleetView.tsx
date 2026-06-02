@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { Building, BuildingStatus } from "@/lib/types";
 
@@ -115,21 +114,13 @@ export default function FleetView({
   }, [buildings]);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-[1500px] flex-col gap-4 p-4 lg:p-6">
+    <main className="mx-auto flex min-h-screen max-w-[1500px] flex-col gap-4 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:p-6">
       {/* Header */}
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="rounded-full border border-ink-600/70 bg-ink-900/70 px-3 py-1 text-xs font-semibold text-slate-300 transition-colors hover:text-white"
-            >
-              ← Console
-            </Link>
-            <h1 className="display text-2xl text-white lg:text-3xl">
-              ATLAS&nbsp;Fleet
-            </h1>
-          </div>
+          <h1 className="display text-2xl text-white lg:text-3xl">
+            ATLAS&nbsp;Fleet
+          </h1>
           <p className="mt-1 max-w-2xl text-sm text-slate-400">
             Every ATLAS building, one map.{" "}
             <span className="important">Housing as a network.</span>
@@ -185,7 +176,7 @@ export default function FleetView({
       {/* Map + detail */}
       <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-[1.7fr_1fr]">
         {/* Map panel */}
-        <div className="panel relative overflow-hidden">
+        <div className="panel relative h-[360px] overflow-hidden sm:h-[480px] lg:h-auto">
           <svg
             viewBox={`0 0 ${VW} ${VH}`}
             className="h-full w-full"
