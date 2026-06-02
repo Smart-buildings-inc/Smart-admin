@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 };
 
 const STATS: { value: string; label: string }[] = [
-  { value: "7", label: "Human needs, one per floor" },
+  { value: "8", label: "Human needs, one per floor" },
   { value: "99.98%", label: "Habitat uptime, twin-monitored" },
   { value: "<15s", label: "Incident-to-feed latency" },
   { value: "1→∞", label: "From one tower to a fleet" },
@@ -144,6 +144,7 @@ const FEATURES: Feature[] = [
 // Building floors, ordered top → base (rooftop restoration down to water utilities).
 const TOWER: { name: string; metric: string; color: string; fill: number }[] = [
   { name: "Restoration", metric: "Open · calm", color: "#ffd9a0", fill: 70 },
+  { name: "Knowledge", metric: "Forum live", color: "#8aa0ff", fill: 84 },
   { name: "Health", metric: "24/7 staffed", color: "#ff8fb1", fill: 88 },
   { name: "Air", metric: "99.4% AQI", color: "#7fe7e0", fill: 99 },
   { name: "Shelter", metric: "312 residents", color: "#c0a4ff", fill: 78 },
@@ -353,8 +354,8 @@ export default function LandingPage() {
           <div>
             <p className="kpi-label text-signal-info">The model</p>
             <h2 className="display mt-3 text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
-              Seven floors.{" "}
-              <span className="gradient-text">Seven systems of life.</span>
+              Eight floors.{" "}
+              <span className="gradient-text">Eight systems of life.</span>
             </h2>
             <p className="mt-4 text-pretty text-sm leading-relaxed text-slate-300">
               Each floor is one human need, color-coded across the twin, the KPI
@@ -533,7 +534,7 @@ function ConsoleMockup() {
                 </div>
               ))}
               <div className="mt-1 text-center font-mono text-[10px] text-slate-500">
-                ATLAS-01 · 7 floors
+                ATLAS-01 · 8 floors
               </div>
             </div>
           </div>

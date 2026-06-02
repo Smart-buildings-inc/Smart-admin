@@ -1,7 +1,7 @@
 # ATLAS OS — Habitat Twin
 
 Building-operations platform for self-sufficient "ATLAS" habitats: a single building modeled as one
-floor per human need (water, energy, food, shelter, air, health, restoration), rendered as an
+floor per human need (water, energy, food, shelter, air, health, knowledge, restoration), rendered as an
 interactive 3D digital twin with live per-floor telemetry, incident triage, and resident broadcast.
 
 **Local-first:** the app renders fully on in-memory seed data with **no database connected**. Set
