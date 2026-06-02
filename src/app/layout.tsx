@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import NavBar from "@/components/NavBar";
+import MobileTabBar from "@/components/MobileTabBar";
 
 export const metadata: Metadata = {
   title: "ATLAS OS — Habitat Twin",
@@ -24,9 +25,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen">
+      {/* Bottom padding on mobile clears the fixed MobileTabBar (incl. safe area). */}
+      <body className="min-h-screen pb-[calc(4.25rem+env(safe-area-inset-bottom))] md:pb-0">
         <NavBar />
         {children}
+        <MobileTabBar />
       </body>
     </html>
   );

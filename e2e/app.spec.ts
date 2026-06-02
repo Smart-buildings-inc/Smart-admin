@@ -46,4 +46,19 @@ test.describe("ATLAS OS console", () => {
       page.getByRole("heading", { name: "Incident feed" }),
     ).toBeVisible();
   });
+
+  // Bottom tab bar is mobile-only (md:hidden): visible on Pixel 5, hidden on
+  // Desktop Chrome. Assert per viewport so both projects stay green.
+  test("mobile bottom tab bar visibility tracks viewport", async ({ page }) => {
+    await page.goto("/");
+    const tabBar = page.getByRole("navigation", { name: "Primary" });
+    const width = page.viewportSize()?.width ?? 0;
+    if (width < 768) {
+      await expect(tabBar).toBeVisible();
+      await expect(tabBar.getByRole("link", { name: "Console" })).toBeVisible();
+      await expect(tabBar.getByRole("link", { name: "Fleet" })).toBeVisible();
+    } else {
+      await expect(tabBar).toBeHidden();
+    }
+  });
 });
