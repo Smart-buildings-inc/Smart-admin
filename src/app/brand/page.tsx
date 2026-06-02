@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 export default function BrandPage() {
   return (
-    <main className="mx-auto max-w-[1100px] px-4 py-8 lg:px-6 lg:py-12">
+    <main className="mx-auto max-w-[1100px] px-4 pt-8 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-8 lg:px-6 lg:py-12">
       <BrandView />
     </main>
   );
