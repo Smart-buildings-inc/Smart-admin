@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import MarketingParallax from "@/components/MarketingParallax";
 import { AUDIENCES } from "@/lib/audiences";
 
-// Solutions index — the hub for the five audience marketing pages. Reuses the
+// Solutions index — the hub for the seven audience marketing pages. Reuses the
 // landing primitives; each card owns its audience accent and rises in.
 
 export const metadata: Metadata = {
@@ -32,6 +33,13 @@ export default function SolutionsIndex() {
             you stand. Pick your seat.
           </p>
         </div>
+
+        <MarketingParallax
+          accent="#4ea8ff"
+          compact
+          className="mt-10"
+          label="ATLAS OS solution layers across habitat, twin, and infrastructure"
+        />
 
         <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {AUDIENCES.map((a, i) => (
