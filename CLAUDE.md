@@ -49,6 +49,15 @@ falls back to seed data whenever `DATABASE_URL` is unset (`isDbConfigured` / `ge
   - `src/lib/types.ts` — shared domain types (`Floor`, `Incident`, `Broadcast`, `BuildingKpis`,
     `SensorPoint`, `Building`). `src/lib/ui.ts` maps enums → colors/labels (keep in sync with
     `tailwind.config.ts` `need.*` / `signal.*`).
+    - `Floor` now carries occupancy classification (`OccupancyGroup` A–F, `UseScope`
+      residential/amenity/business/mechanical/industrial), per-floor `dwellings`, `beds`,
+      and `regulatoryNotes[]` — see `docs/ATLAS-data-model.md` §2.
+    - `Building` now carries `dwellings`, `beds`, `gridTied`, and `islandCapable` — the
+      energy strategy is explicitly grid-tied + islanding, not off-grid (§3).
+    - `BuildingKpis` now carries a `resilience` object with sub-scores (`energyPct`,
+      `waterPct`, `foodPct`, `overall`); `autonomyPct` is kept as a back-compat alias for
+      `energyPct`; `foodPct` uses `FOOD_TARGET_KG_PER_RESIDENT = 0.5 kg/day/resident` (§4).
+    - Full model reference: `docs/ATLAS-data-model.md`.
 - **API routes** (`src/app/api/*`, all `force-dynamic`): `floors`, `incidents`, `broadcasts`,
   `sensors`. They delegate to the lib data layer and validate POST bodies, returning JSON
   (`201` on create, `400` on bad input).

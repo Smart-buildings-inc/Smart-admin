@@ -12,8 +12,9 @@ test.describe("ATLAS OS console", () => {
       page.getByRole("heading", { level: 1, name: /ATLAS\s*OS/ }),
     ).toBeVisible();
 
-    // KPI strip labels (F5).
+    // KPI strip labels (F5) — "Resilience" is the new leading tile.
     for (const label of [
+      "Resilience",
       "Energy autonomy",
       "Battery",
       "Solar",

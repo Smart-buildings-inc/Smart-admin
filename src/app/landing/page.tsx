@@ -146,9 +146,9 @@ const TOWER: { name: string; metric: string; color: string; fill: number }[] = [
   { name: "Health", metric: "24/7 staffed", color: "#ff8fb1", fill: 88 },
   { name: "Air", metric: "99.4% AQI", color: "#7fe7e0", fill: 99 },
   { name: "Shelter", metric: "312 residents", color: "#c0a4ff", fill: 78 },
-  { name: "Food", metric: "1.2 t / week", color: "#5ddc7a", fill: 82 },
-  { name: "Energy", metric: "99% autonomy", color: "#ffcf4d", fill: 99 },
-  { name: "Water", metric: "96% reuse", color: "#3aa0ff", fill: 96 },
+  { name: "Food", metric: "amenity · 1.2 t/wk", color: "#5ddc7a", fill: 82 },
+  { name: "Energy", metric: "99% energy auto.", color: "#ffcf4d", fill: 99 },
+  { name: "Water", metric: "96% non-potable", color: "#3aa0ff", fill: 96 },
 ];
 
 export default function LandingPage() {
@@ -438,9 +438,9 @@ export default function LandingPage() {
 // Decorative; hidden from assistive tech via aria-hidden.
 function ConsoleMockup() {
   const kpis: { label: string; value: string; color: string }[] = [
+    { label: "Resilience Index", value: "98", color: "#5ddc7a" },
     { label: "Energy autonomy", value: "99%", color: "#ffcf4d" },
     { label: "Non-potable reuse", value: "96%", color: "#3aa0ff" },
-    { label: "Air AQI", value: "99.4", color: "#7fe7e0" },
     { label: "Residents", value: "312", color: "#c0a4ff" },
   ];
   const feed: { sev: string; color: string; text: string }[] = [

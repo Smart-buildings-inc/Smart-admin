@@ -5,6 +5,7 @@
 // connects a real database via `npm run db:push`.
 
 import {
+  boolean,
   doublePrecision,
   integer,
   jsonb,
@@ -24,6 +25,17 @@ export const floors = pgTable("floors", {
   level: integer("level").notNull(),
   residents: integer("residents").notNull().default(0),
   metrics: jsonb("metrics").$type<FloorMetrics>().notNull().default({}),
+  // --- Regulatory / permitting fields (OBC/NBC occupancy matrix) ---
+  // occupancy_group: OBC/NBC letter classification (A–F).
+  occupancyGroup: text("occupancy_group"),
+  // use_scope: high-level operational scope for zoning/financing.
+  useScope: text("use_scope"),
+  // dwellings: self-contained homes on this floor (residential floors only).
+  dwellings: integer("dwellings"),
+  // beds: sleeping capacity (residential floors only).
+  beds: integer("beds"),
+  // regulatory_notes: permit/code notes stored as a JSON string array.
+  regulatoryNotes: jsonb("regulatory_notes").$type<string[]>(),
 });
 
 export const incidents = pgTable("incidents", {
@@ -94,6 +106,11 @@ export const buildings = pgTable("buildings", {
   autonomyPct: integer("autonomy_pct").notNull().default(0),
   residents: integer("residents").notNull().default(0),
   openIncidents: integer("open_incidents").notNull().default(0),
+  // --- Grid / islanding capability ---
+  // grid_tied: whether the building is connected to the utility grid.
+  gridTied: boolean("grid_tied"),
+  // island_capable: whether the ESS + transfer-switch can island on outage.
+  islandCapable: boolean("island_capable"),
 });
 
 export type BuildingRow = typeof buildings.$inferSelect;

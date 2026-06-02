@@ -26,6 +26,8 @@ export async function getBuildings(): Promise<Building[]> {
     autonomyPct: r.autonomyPct,
     residents: r.residents,
     openIncidents: r.openIncidents,
+    gridTied: r.gridTied ?? undefined,
+    islandCapable: r.islandCapable ?? undefined,
   }));
 }
 

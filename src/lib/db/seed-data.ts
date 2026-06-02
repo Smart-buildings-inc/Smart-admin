@@ -20,6 +20,13 @@ export const seedFloors: Floor[] = [
     level: -1,
     residents: 0,
     metrics: { waterLph: 1840, waterReusePct: 92, energyKw: 12, tempC: 18 },
+    occupancyGroup: "F",
+    useScope: "mechanical",
+    regulatoryNotes: [
+      "Non-potable reuse only (CSA B128)",
+      "MECP ECA required",
+      "Bulk reservoir relocated here",
+    ],
   },
   {
     key: "commons-clinic",
@@ -29,6 +36,11 @@ export const seedFloors: Floor[] = [
     level: 1,
     residents: 0,
     metrics: { occupancy: 34, tempC: 21.5, humidityPct: 44, co2Ppm: 620 },
+    occupancyGroup: "D",
+    useScope: "business",
+    regulatoryNotes: [
+      "Telehealth + first-aid (avoids Group B care occupancy)",
+    ],
   },
   {
     key: "power-ops-core",
@@ -38,6 +50,12 @@ export const seedFloors: Floor[] = [
     level: 2,
     residents: 0,
     metrics: { energyKw: 148, loadKw: 96, batteryPct: 78 },
+    occupancyGroup: "F",
+    useScope: "mechanical",
+    regulatoryNotes: [
+      "Grid-tied + islanding",
+      "ESS to energy-storage fire code",
+    ],
   },
   {
     key: "aquaponics-bay",
@@ -47,6 +65,12 @@ export const seedFloors: Floor[] = [
     level: 3,
     residents: 0,
     metrics: { foodKgDay: 41, waterLph: 320, tempC: 23, energyKw: 18 },
+    occupancyGroup: "F",
+    useScope: "amenity",
+    regulatoryNotes: [
+      "Closed-loop amenity food — no external sale",
+      "Wet-location electrical",
+    ],
   },
   {
     key: "vertical-farm",
@@ -56,6 +80,12 @@ export const seedFloors: Floor[] = [
     level: 4,
     residents: 0,
     metrics: { foodKgDay: 86, energyKw: 54, humidityPct: 65, tempC: 22 },
+    occupancyGroup: "F",
+    useScope: "amenity",
+    regulatoryNotes: [
+      "Amenity produce — no commercial sale",
+      "Humidity-separated from residences",
+    ],
   },
   {
     key: "residences-a",
@@ -65,6 +95,11 @@ export const seedFloors: Floor[] = [
     level: 5,
     residents: 28,
     metrics: { occupancy: 24, loadKw: 22, tempC: 21, humidityPct: 41 },
+    occupancyGroup: "C",
+    useScope: "residential",
+    dwellings: 14,
+    beds: 30,
+    regulatoryNotes: ["Market multi-unit dwellings"],
   },
   {
     key: "residences-b",
@@ -74,6 +109,11 @@ export const seedFloors: Floor[] = [
     level: 6,
     residents: 28,
     metrics: { occupancy: 21, loadKw: 19, tempC: 21.2, humidityPct: 42 },
+    occupancyGroup: "C",
+    useScope: "residential",
+    dwellings: 14,
+    beds: 30,
+    regulatoryNotes: ["Market multi-unit dwellings"],
   },
   {
     key: "residences-c",
@@ -83,6 +123,11 @@ export const seedFloors: Floor[] = [
     level: 7,
     residents: 26,
     metrics: { occupancy: 23, loadKw: 20, tempC: 20.8, humidityPct: 40 },
+    occupancyGroup: "C",
+    useScope: "residential",
+    dwellings: 12,
+    beds: 28,
+    regulatoryNotes: ["Market multi-unit dwellings"],
   },
   {
     key: "residences-d",
@@ -92,6 +137,11 @@ export const seedFloors: Floor[] = [
     level: 8,
     residents: 24,
     metrics: { occupancy: 18, loadKw: 17, tempC: 21.1, humidityPct: 43 },
+    occupancyGroup: "C",
+    useScope: "residential",
+    dwellings: 12,
+    beds: 28,
+    regulatoryNotes: ["Market multi-unit dwellings"],
   },
   {
     key: "the-lung",
@@ -101,6 +151,9 @@ export const seedFloors: Floor[] = [
     level: 9,
     residents: 0,
     metrics: { co2Ppm: 410, pm25: 4, humidityPct: 55, occupancy: 9, tempC: 22 },
+    occupancyGroup: "F",
+    useScope: "mechanical",
+    regulatoryNotes: ["Air handling; airtight separation under residences"],
   },
   {
     key: "penthouses",
@@ -111,6 +164,11 @@ export const seedFloors: Floor[] = [
     level: 10,
     residents: 22,
     metrics: { occupancy: 16, loadKw: 24, tempC: 21.4, humidityPct: 42 },
+    occupancyGroup: "C",
+    useScope: "residential",
+    dwellings: 12,
+    beds: 24,
+    regulatoryNotes: ["Market premium dwellings; Skydeck pool above"],
   },
   {
     key: "skydeck-reservoir",
@@ -120,6 +178,11 @@ export const seedFloors: Floor[] = [
     level: 11,
     residents: 0,
     metrics: { waterLph: 0, waterReusePct: 100, occupancy: 12, tempC: 24 },
+    occupancyGroup: "C",
+    useScope: "amenity",
+    regulatoryNotes: [
+      "Pool only on roof; reservoir relocated to Reclamation Core",
+    ],
   },
 ];
 
@@ -360,6 +423,8 @@ export const seedBuildings: Building[] = [
     autonomyPct: 96,
     residents: 128,
     openIncidents: 1,
+    gridTied: true,
+    islandCapable: true,
   },
   {
     id: "atlas-02",
@@ -372,6 +437,8 @@ export const seedBuildings: Building[] = [
     autonomyPct: 91,
     residents: 104,
     openIncidents: 0,
+    gridTied: true,
+    islandCapable: true,
   },
   {
     id: "atlas-03",
@@ -384,6 +451,8 @@ export const seedBuildings: Building[] = [
     autonomyPct: 74,
     residents: 116,
     openIncidents: 3,
+    gridTied: true,
+    islandCapable: true,
   },
   {
     id: "atlas-04",
@@ -396,6 +465,8 @@ export const seedBuildings: Building[] = [
     autonomyPct: 88,
     residents: 92,
     openIncidents: 1,
+    gridTied: true,
+    islandCapable: true,
   },
   {
     id: "atlas-05",
@@ -408,6 +479,8 @@ export const seedBuildings: Building[] = [
     autonomyPct: 69,
     residents: 78,
     openIncidents: 2,
+    gridTied: true,
+    islandCapable: true,
   },
   {
     id: "atlas-06",
@@ -420,5 +493,7 @@ export const seedBuildings: Building[] = [
     autonomyPct: 0,
     residents: 64,
     openIncidents: 5,
+    gridTied: true,
+    islandCapable: false,
   },
 ];

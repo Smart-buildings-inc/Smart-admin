@@ -20,6 +20,41 @@ test.describe("ATLAS OS API", () => {
     expect(levels).toEqual(sorted);
   });
 
+  test("GET /api/floors exposes extended building-review model fields", async ({
+    request,
+  }) => {
+    const res = await request.get("/api/floors");
+    expect(res.status()).toBe(200);
+
+    const { floors } = (await res.json()) as {
+      floors: Array<{
+        key: string;
+        occupancyGroup?: string;
+        useScope?: string;
+        dwellings?: number;
+        beds?: number;
+        regulatoryNotes?: string[];
+      }>;
+    };
+    expect(Array.isArray(floors)).toBe(true);
+
+    // reclamation-core: mechanical/utility floor with regulatory notes.
+    const reclamation = floors.find((f) => f.key === "reclamation-core");
+    expect(reclamation).toBeDefined();
+    expect(reclamation!.occupancyGroup).toBe("F");
+    expect(reclamation!.useScope).toBe("mechanical");
+    expect(Array.isArray(reclamation!.regulatoryNotes)).toBe(true);
+    expect(reclamation!.regulatoryNotes!.length).toBeGreaterThan(0);
+
+    // residences-a: residential floor with dwelling + bed counts.
+    const residences = floors.find((f) => f.key === "residences-a");
+    expect(residences).toBeDefined();
+    expect(residences!.occupancyGroup).toBe("C");
+    expect(residences!.useScope).toBe("residential");
+    expect(residences!.dwellings).toBe(14);
+    expect(residences!.beds).toBe(30);
+  });
+
   test("POST /api/broadcasts returns 201 with a recipient count and mirrors into incidents", async ({
     request,
   }) => {

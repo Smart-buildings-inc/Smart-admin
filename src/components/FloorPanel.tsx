@@ -1,5 +1,12 @@
 import type { Floor, FloorMetrics, Incident } from "@/lib/types";
-import { needColor, severityColor, severityLabel, timeAgo } from "@/lib/ui";
+import {
+  needColor,
+  occupancyGroupLabel,
+  severityColor,
+  severityLabel,
+  timeAgo,
+  useScopeLabel,
+} from "@/lib/ui";
 
 // Maps each metric key to a human label + formatter. Only present keys render.
 const METRIC_META: Record<
@@ -60,6 +67,21 @@ export default function FloorPanel({
           <div className="mt-0.5 text-xs text-slate-400">
             {floor.category} · Level {floor.level}
           </div>
+          {/* Classification chips: occupancy group + use scope (optional) */}
+          {(floor.occupancyGroup ?? floor.useScope) ? (
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {floor.occupancyGroup ? (
+                <span className="inline-block rounded border border-ink-600/60 bg-ink-700/60 px-1.5 py-0.5 text-xs uppercase tracking-wide text-slate-300">
+                  {occupancyGroupLabel[floor.occupancyGroup]}
+                </span>
+              ) : null}
+              {floor.useScope ? (
+                <span className="inline-block rounded border border-ink-600/60 bg-ink-700/60 px-1.5 py-0.5 text-xs uppercase tracking-wide text-slate-300">
+                  {useScopeLabel[floor.useScope]}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
         </div>
         {floor.residents > 0 && (
           <div className="text-right">
@@ -93,6 +115,38 @@ export default function FloorPanel({
           </p>
         )}
       </div>
+
+      {/* Dwellings / beds summary for residential floors (optional) */}
+      {(floor.dwellings != null || floor.beds != null) ? (
+        <div className="mt-3 text-xs text-slate-400">
+          {[
+            floor.dwellings != null ? `${floor.dwellings} dwellings` : null,
+            floor.beds != null ? `${floor.beds} beds` : null,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </div>
+      ) : null}
+
+      {/* Regulatory / compliance notes (optional) */}
+      {floor.regulatoryNotes && floor.regulatoryNotes.length > 0 ? (
+        <div className="mt-3">
+          <div className="annotation mb-1 text-xs uppercase tracking-wide text-slate-500">
+            Compliance
+          </div>
+          <ul className="space-y-0.5">
+            {floor.regulatoryNotes.map((note, i) => (
+              <li
+                key={i}
+                className="flex items-start gap-1.5 text-xs text-slate-400"
+              >
+                <span className="mt-1 inline-block h-1 w-1 shrink-0 rounded-full bg-slate-600" />
+                {note}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       {floorIncidents.length > 0 && (
         <div className="mt-4">

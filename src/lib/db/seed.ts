@@ -3,7 +3,12 @@
 // message) when DATABASE_URL is unset, since the app runs on seed data anyway.
 
 import { getDb, isDbConfigured, schema } from "./index";
-import { seedBroadcasts, seedFloors, seedIncidents } from "./seed-data";
+import {
+  seedBroadcasts,
+  seedBuildings,
+  seedFloors,
+  seedIncidents,
+} from "./seed-data";
 
 async function main() {
   if (!isDbConfigured) {
@@ -19,6 +24,7 @@ async function main() {
   await db.delete(schema.incidents);
   await db.delete(schema.broadcasts);
   await db.delete(schema.floors);
+  await db.delete(schema.buildings);
 
   console.log(`Inserting ${seedFloors.length} floors…`);
   await db.insert(schema.floors).values(
@@ -30,6 +36,12 @@ async function main() {
       level: f.level,
       residents: f.residents,
       metrics: f.metrics,
+      // Regulatory / permitting fields (OBC/NBC occupancy matrix)
+      occupancyGroup: f.occupancyGroup ?? null,
+      useScope: f.useScope ?? null,
+      dwellings: f.dwellings ?? null,
+      beds: f.beds ?? null,
+      regulatoryNotes: f.regulatoryNotes ?? null,
     })),
   );
 
@@ -51,6 +63,26 @@ async function main() {
       audience: b.audience,
       recipients: b.recipients,
       createdAt: new Date(b.createdAt),
+    })),
+  );
+
+  console.log(`Inserting ${seedBuildings.length} buildings…`);
+  await db.insert(schema.buildings).values(
+    seedBuildings.map((b) => ({
+      key: b.id,
+      name: b.name,
+      locationLabel: b.location.label,
+      lat: b.location.lat,
+      lng: b.location.lng,
+      status: b.status,
+      unitCount: b.unitCount,
+      dwellings: b.dwellings ?? null,
+      beds: b.beds ?? null,
+      autonomyPct: b.autonomyPct,
+      residents: b.residents,
+      openIncidents: b.openIncidents,
+      gridTied: b.gridTied ?? null,
+      islandCapable: b.islandCapable ?? null,
     })),
   );
 

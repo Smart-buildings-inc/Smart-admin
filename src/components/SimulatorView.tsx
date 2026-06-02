@@ -9,7 +9,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useMemo, useState } from "react";
 import type { Floor, FloorMetrics, Incident } from "@/lib/types";
 import type { SimOptions } from "@/components/BuildingSimulator";
-import { needColor } from "@/lib/ui";
+import { needColor, occupancyGroupLabel, useScopeLabel } from "@/lib/ui";
 import FullscreenButton from "@/components/FullscreenButton";
 import { useFullscreen, FULLSCREEN_STAGE_CLASS } from "@/lib/useFullscreen";
 
@@ -212,6 +212,28 @@ export default function SimulatorView({
                     <div className="mt-0.5 text-xs text-slate-400">
                       {selectedFloor.category} · Level {selectedFloor.level}
                     </div>
+                    {(selectedFloor.occupancyGroup !== undefined || selectedFloor.useScope !== undefined) && (
+                      <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                        {selectedFloor.occupancyGroup !== undefined && (
+                          <span className="text-xs uppercase tracking-wide text-slate-500">
+                            {occupancyGroupLabel[selectedFloor.occupancyGroup]}
+                          </span>
+                        )}
+                        {selectedFloor.occupancyGroup !== undefined && selectedFloor.useScope !== undefined && (
+                          <span className="text-slate-600">·</span>
+                        )}
+                        {selectedFloor.useScope !== undefined && (
+                          <span className="text-xs uppercase tracking-wide text-slate-500">
+                            {useScopeLabel[selectedFloor.useScope]}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {selectedFloor.regulatoryNotes && selectedFloor.regulatoryNotes.length > 0 && (
+                      <div className="mt-1 text-xs italic text-slate-600">
+                        {selectedFloor.regulatoryNotes[0]}
+                      </div>
+                    )}
                   </div>
                   {selectedFloor.residents > 0 && (
                     <div className="text-right">

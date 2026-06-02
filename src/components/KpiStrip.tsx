@@ -5,11 +5,14 @@ function Kpi({
   value,
   suffix,
   tone,
+  sub,
 }: {
   label: string;
   value: number | string;
   suffix?: string;
   tone?: "ok" | "warn" | "crit";
+  /** Optional sub-line rendered beneath the value in muted text-xs. */
+  sub?: string;
 }) {
   const toneClass =
     tone === "crit"
@@ -30,14 +33,27 @@ function Kpi({
           </span>
         ) : null}
       </div>
+      {sub ? (
+        <div className="mt-0.5 text-xs text-slate-400">{sub}</div>
+      ) : null}
     </div>
   );
 }
 
 // F5 — Building KPI strip.
 export default function KpiStrip({ kpis }: { kpis: BuildingKpis }) {
+  const r = kpis.resilience;
+  const resilienceTone: "ok" | "warn" | "crit" =
+    r.overall >= 80 ? "ok" : r.overall >= 60 ? "warn" : "crit";
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:flex lg:flex-wrap">
+      <Kpi
+        label="Resilience"
+        value={r.overall}
+        suffix="%"
+        tone={resilienceTone}
+        sub={`E ${r.energyPct} · W ${r.waterPct} · F ${r.foodPct}`}
+      />
       <Kpi
         label="Energy autonomy"
         value={kpis.autonomyPct}

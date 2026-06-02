@@ -1,7 +1,7 @@
 // Shared presentation helpers: maps domain enums to colors/labels used by both
 // the 3D twin and the 2D panels so the color-coding stays consistent (F1/F2).
 
-import type { Need, Severity } from "@/lib/types";
+import type { Need, OccupancyGroup, Severity, UseScope } from "@/lib/types";
 
 /** Hex colors per human need — matches tailwind.config `need.*`. */
 export const needColor: Record<Need, string> = {
@@ -34,6 +34,28 @@ export const severityRank: Record<Severity, number> = {
   warn: 1,
   info: 2,
   ok: 3,
+};
+
+/**
+ * Human-readable labels for OBC/NBC occupancy groups.
+ * Format: "Letter · Name" so the letter is scannable in dense UIs.
+ */
+export const occupancyGroupLabel: Record<OccupancyGroup, string> = {
+  A: "A · Assembly",
+  B: "B · Care",
+  C: "C · Residential",
+  D: "D · Business",
+  E: "E · Mercantile",
+  F: "F · Industrial",
+};
+
+/** Human-readable labels for floor use scopes. */
+export const useScopeLabel: Record<UseScope, string> = {
+  residential: "Residential",
+  amenity: "Amenity",
+  business: "Business",
+  mechanical: "Mechanical",
+  industrial: "Industrial",
 };
 
 /** Human-readable relative time, e.g. "7m ago". */

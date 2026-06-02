@@ -367,6 +367,26 @@ export default function FleetView({
                     {selected.openIncidents}
                   </div>
                 </div>
+                {selected.gridTied !== undefined ? (
+                  <div className="panel panel-pad">
+                    <div className="kpi-label">Grid</div>
+                    <div
+                      className={`kpi-value ${
+                        selected.gridTied && selected.islandCapable
+                          ? "text-signal-ok"
+                          : !selected.gridTied
+                            ? "text-signal-crit"
+                            : "text-white"
+                      }`}
+                    >
+                      {selected.gridTied && selected.islandCapable
+                        ? "Tied + island"
+                        : selected.gridTied
+                          ? "Grid-tied"
+                          : "Off-grid"}
+                    </div>
+                  </div>
+                ) : null}
               </dl>
 
               <p className="text-xs leading-relaxed text-slate-500">

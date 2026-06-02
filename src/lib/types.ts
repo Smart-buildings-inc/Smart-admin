@@ -2,6 +2,32 @@
 // These mirror the data model in the PRD (§10) and are the single source of
 // truth shared by the API routes, the seed layer, and the React components.
 
+// --- Regulatory / permitting types (OBC/NBC occupancy matrix) ---
+
+/**
+ * OBC/NBC occupancy group for a floor. Maps to the letter classifications used
+ * in the Ontario Building Code and the National Building Code of Canada:
+ *  A = Assembly, B = Care/Detention, C = Residential, D = Business/Personal
+ *  services, E = Mercantile, F = Industrial (including mechanical).
+ *
+ * These are assigned per-floor and must match the permitting strategy in
+ * docs/ATLAS-derisking-plan.md. Keeping them machine-readable allows permit
+ * cost modeling and fire-code occupant-load calculations to be automated.
+ */
+export type OccupancyGroup = "A" | "B" | "C" | "D" | "E" | "F";
+
+/**
+ * High-level use scope for a floor. Distinguishes how the space is operated
+ * (residential tenancy vs. building amenity vs. business vs. mechanical plant
+ * vs. industrial process) for zoning, financing, and insurance purposes.
+ */
+export type UseScope =
+  | "residential"
+  | "amenity"
+  | "business"
+  | "mechanical"
+  | "industrial";
+
 /** The seven human needs each floor is dedicated to (Maslow-mapped). */
 export type Need =
   | "water"
@@ -59,6 +85,34 @@ export interface Floor {
   /** number of residents housed on this floor (0 for non-residential) */
   residents: number;
   metrics: FloorMetrics;
+  /**
+   * OBC/NBC occupancy group for permit classification.
+   * See `OccupancyGroup` for the full mapping. Optional so existing seed data
+   * that predates the regulatory spine stays compatible.
+   */
+  occupancyGroup?: OccupancyGroup;
+  /**
+   * High-level use scope — how this floor is operated for zoning/financing.
+   * See `UseScope`. Optional for back-compat.
+   */
+  useScope?: UseScope;
+  /**
+   * Number of self-contained dwellings on this floor. Only set for
+   * residential (Group C) floors; undefined for mechanical/amenity/etc.
+   * Distinct from `residents` (current occupancy) and `beds` (capacity).
+   */
+  dwellings?: number;
+  /**
+   * Sleeping capacity in beds for this floor. Set on residential floors.
+   * Distinct from `residents` (live occupancy headcount).
+   */
+  beds?: number;
+  /**
+   * Plain-English notes encoding the permitting / regulatory strategy for
+   * this floor — OBC citations, MECP requirements, zoning conditions, etc.
+   * Stored as a string array so they can be rendered as a checklist.
+   */
+  regulatoryNotes?: string[];
 }
 
 export interface Incident {
@@ -78,8 +132,32 @@ export interface Broadcast {
   createdAt: string; // ISO timestamp
 }
 
+/**
+ * Transparent resilience sub-scores for a building (all values 0–100).
+ *
+ * This replaces a single blanket "autonomy" or "self-sufficiency" claim with
+ * three independently auditable dimensions — energy, water, food — plus an
+ * overall average. The split is required by the de-risking plan
+ * (docs/ATLAS-derisking-plan.md) because lenders and permitters flag blanket
+ * claims; sub-scores can be independently verified and stressed.
+ */
+export interface ResilienceIndex {
+  /** Simple average of the three sub-scores: Math.round((energy+water+food)/3). */
+  overall: number;
+  /** % of electrical demand met by on-site generation, capped at 100. */
+  energyPct: number;
+  /** % of non-potable water demand met by on-site reuse, capped at 100. */
+  waterPct: number;
+  /** % of resident daily food caloric need met by on-site production, capped at 100. */
+  foodPct: number;
+}
+
 /** Aggregate building KPIs surfaced in the top strip (F5). */
 export interface BuildingKpis {
+  /**
+   * % of electrical demand met by on-site generation (0–100).
+   * Kept for back-compat; equal to `resilience.energyPct`.
+   */
   autonomyPct: number;
   batteryPct: number;
   solarKw: number;
@@ -87,6 +165,8 @@ export interface BuildingKpis {
   foodKgDay: number;
   residents: number;
   openIncidents: number;
+  /** Transparent resilience sub-scores replacing a blanket "autonomy" claim. */
+  resilience: ResilienceIndex;
 }
 
 // --- F11: sensor ingestion ---
@@ -170,4 +250,16 @@ export interface Building {
   residents: number;
   /** rollup: count of open (crit/warn) incidents */
   openIncidents: number;
+  /**
+   * Whether the building is connected to the utility grid (true for all
+   * current ATLAS buildings — grid-tied is a permitting/financing prerequisite;
+   * pure off-grid is explicitly out of scope per the de-risking plan).
+   */
+  gridTied?: boolean;
+  /**
+   * Whether the building's energy system can island (operate autonomously)
+   * during a grid outage. Requires certified ESS + transfer-switch equipment.
+   * False for sites still in commissioning or without ESS certification.
+   */
+  islandCapable?: boolean;
 }

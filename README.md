@@ -2,7 +2,7 @@
 
 > **Smart-admin** — _a smart admin that controls the entire building and every layer._
 
-The building operations platform for **Project ATLAS**: autonomous, self-sufficient
+The building operations platform for **Project ATLAS**: grid-tied, high-resilience
 residential habitats where every floor is dedicated to one human need (water, energy,
 food, shelter, air, health, restoration). ATLAS OS is the human window into the same
 live telemetry the AI ops layer optimizes against — an interactive **3D digital twin**
@@ -16,13 +16,43 @@ walk-through and AR mode.
 | | Feature | Notes |
 |---|---|---|
 | **F1** | 3D Habitat Twin | Orbitable tower; floors color-coded by human need; floors with an active incident pulse |
-| **F2** | Per-floor telemetry | Tap a floor → live energy / water / food / occupancy / climate metrics |
+| **F2** | Per-floor telemetry | Tap a floor → live energy / water / food / occupancy / climate metrics; occupancy classification (OccupancyGroup + UseScope) and compliance notes per floor |
 | **F3** | Security & incident feed | Severity-ranked, live; click an event to focus its floor |
 | **F4** | Resident broadcast | Compose + send notifications; mirrored into the incident feed |
-| **F5** | Building KPI strip | Autonomy %, battery, solar, water reuse, food output, residents, open incidents |
+| **F5** | Building KPI strip | Resilience Index (energy autonomy / non-potable reuse / food amenity sub-scores), battery, solar, dwellings, residents, open incidents |
 | **+** | **Guided walk-through** | Animated camera descent from the rooftop pool down to the underground Reclamation Core, with futuristic bold-italic annotation callouts (arrows + quotes) |
 | **+** | **WebXR AR mode** | "Enter AR" on compatible devices (Android / Chrome WebXR). iOS Safari lacks WebXR — use the guided walk-through there |
-| **+** | **12 penthouses + shared rooftop pool** | A penthouse floor of up to 12 premium dwellings sharing the Skydeck pool directly overhead |
+| **+** | **12 penthouses + shared rooftop pool** | A penthouse floor of up to 12 premium market dwellings sharing the Skydeck pool directly overhead |
+
+### KPI labels — honest-by-design
+
+| KPI | What it measures | What it does NOT claim |
+|---|---|---|
+| **Energy autonomy** | % of electrical demand met by on-site solar + ESS dispatch | Off-grid independence — building is grid-tied + islanding-capable |
+| **Non-potable reuse** | % of non-potable demand (toilets, irrigation) met by greywater/rainwater reclamation | Blackwater → potable — not permittable under SDWA/MECP ECA in Ontario |
+| **Food (amenity)** | Resident-amenity produce yield, kg/day | Commercial food production or full caloric sufficiency |
+| **Resilience Index** | Blended average of the three sub-scores above (0–100) | A single "autonomy" number that obscures which systems are strong or limited |
+
+### Right-sized to permit (Canada)
+
+ATLAS-01 is designed around what is **defensible, fundable, and buildable** under
+current Ontario/Canadian rules:
+
+- **Water:** greywater + rainwater → non-potable reuse only (CSA B128 dual-plumbing,
+  MECP Environmental Compliance Approval). Bulk cistern is basement-located; rooftop
+  carries the pool only.
+- **Food:** resident amenity / closed-loop (no external sale — avoids CFIA food-premises
+  and provincial licensing). Value is lease-up, ESG, and resident wellbeing; revenue is $0.
+- **Energy:** grid-tied + islanding (IEEE 1547 / LDC interconnection); ESS designed to
+  current fire-code separation and ventilation requirements. Not off-grid.
+- **Occupancy:** conventional market multi-unit residential (OBC Group C) with F/mechanical
+  floors for plant and D/business for the commons. Clinic is telehealth + first-aid only
+  (avoids Group B). Full data: [docs/ATLAS-data-model.md](./docs/ATLAS-data-model.md).
+
+See [docs/ATLAS-derisking-plan.md](./docs/ATLAS-derisking-plan.md) for the full de-risking
+decision record, and [docs/ATLAS-data-model.md](./docs/ATLAS-data-model.md) for the
+expanded domain model (occupancy classification, resilience index, dwellings/beds/floors
+distinction).
 
 ## Local-first by design
 

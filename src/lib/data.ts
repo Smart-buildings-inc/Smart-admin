@@ -16,6 +16,7 @@ import type {
   BuildingKpis,
   Floor,
   Incident,
+  ResilienceIndex,
   Severity,
 } from "@/lib/types";
 
@@ -44,6 +45,12 @@ export async function getFloors(): Promise<Floor[]> {
       level: r.level,
       residents: r.residents,
       metrics: r.metrics,
+      // Regulatory / permitting fields (OBC/NBC occupancy matrix)
+      occupancyGroup: (r.occupancyGroup as Floor["occupancyGroup"]) ?? undefined,
+      useScope: (r.useScope as Floor["useScope"]) ?? undefined,
+      dwellings: r.dwellings ?? undefined,
+      beds: r.beds ?? undefined,
+      regulatoryNotes: r.regulatoryNotes ?? undefined,
     }))
     .sort((a, b) => a.level - b.level);
 }
@@ -206,6 +213,14 @@ function truncate(s: string, max: number): string {
 
 // ---------------------------------- KPIs ----------------------------------
 
+/**
+ * Planning assumption: resident daily food need used to compute the food
+ * sub-score of the resilience index (kg/day per resident).
+ * Based on an approximate 1,500–2,000 kcal/day at ~3 kcal/g for mixed produce.
+ * Adjust this constant to stress-test the food resilience target.
+ */
+export const FOOD_TARGET_KG_PER_RESIDENT = 0.5;
+
 export async function getBuildingKpis(): Promise<BuildingKpis> {
   const [floors, incidents] = await Promise.all([
     getFloors(),
@@ -239,9 +254,29 @@ export async function getBuildingKpis(): Promise<BuildingKpis> {
     : 0;
 
   // Autonomy = share of demand met by on-site generation, capped at 100.
-  const autonomyPct = totalLoadKw
+  // This is also the energy sub-score of the resilience index.
+  const energyPct = totalLoadKw
     ? Math.min(100, Math.round((totalGenKw / totalLoadKw) * 100))
     : 100;
+
+  // Food sub-score: % of resident daily food need met by on-site production.
+  const foodPct = residents
+    ? Math.min(
+        100,
+        Math.round(foodKgDay / (residents * FOOD_TARGET_KG_PER_RESIDENT)),
+      )
+    : 0;
+
+  // Resilience index — three independently auditable sub-scores + overall average.
+  const resilience: ResilienceIndex = {
+    energyPct,
+    waterPct: waterReusePct,
+    foodPct,
+    overall: Math.round((energyPct + waterReusePct + foodPct) / 3),
+  };
+
+  // autonomyPct kept for back-compat; equals resilience.energyPct.
+  const autonomyPct = energyPct;
 
   const openIncidents = incidents.filter(
     (i) => i.severity === "crit" || i.severity === "warn",
@@ -255,6 +290,7 @@ export async function getBuildingKpis(): Promise<BuildingKpis> {
     foodKgDay: Math.round(foodKgDay),
     residents,
     openIncidents,
+    resilience,
   };
 }
 
