@@ -64,7 +64,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Apply the saved theme before first paint so there's no dark→light
+            flash. Defaults to dark (the console's native ops palette). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var t=localStorage.getItem('atlas-theme');if(t==='light'||t==='dark'){document.documentElement.dataset.theme=t}}catch(e){}",
+          }}
+        />
+      </head>
       {/* Bottom padding on mobile clears the fixed MobileTabBar (incl. safe area). */}
       <body className="min-h-screen pb-[calc(4.25rem+env(safe-area-inset-bottom))] md:pb-0">
         <NavBar />

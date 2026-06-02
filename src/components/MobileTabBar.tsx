@@ -106,7 +106,7 @@ export default function MobileTabBar() {
               >
                 <span
                   className={`grid h-8 w-12 place-items-center rounded-full transition-colors ${
-                    active ? "bg-white/10 ring-1 ring-inset ring-white/15" : ""
+                    active ? "bg-ink-700/70 ring-1 ring-inset ring-ink-600/70" : ""
                   }`}
                 >
                   {tab.icon(active)}

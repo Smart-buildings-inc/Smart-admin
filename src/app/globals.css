@@ -9,6 +9,35 @@
   --font-sf:
     "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont,
     "Helvetica Neue", "Inter", system-ui, sans-serif;
+
+  /* Surface scale as space-separated RGB channels — consumed by the Tailwind
+     `ink.*` colors (see tailwind.config.ts) so `/opacity` modifiers still work.
+     Dark theme is the default; `[data-theme="light"]` swaps these below. */
+  --ink-950: 7 11 16; /* #070b10 — page base */
+  --ink-900: 11 18 26; /* #0b121a — panel surface */
+  --ink-800: 16 26 36; /* #101a24 — raised / hover */
+  --ink-700: 23 36 47; /* #17242f */
+  --ink-600: 34 50 63; /* #22323f — borders / dividers */
+
+  /* Ambient body-backdrop bloom (need-color washes behind every page). */
+  --body-bloom:
+    radial-gradient(900px 600px at 80% -10%, rgba(78, 168, 255, 0.08), transparent),
+    radial-gradient(700px 500px at -10% 110%, rgba(93, 220, 122, 0.06), transparent);
+}
+
+/* Light theme — flip the surface scale (dark→light) and let the per-utility
+   overrides further down re-tone text, white fills, and glass chrome. Floors
+   keep their vivid need/signal accents, which read well on light too. */
+[data-theme="light"] {
+  color-scheme: light;
+  --ink-950: 238 242 246; /* #eef2f6 — page base (light) */
+  --ink-900: 255 255 255; /* #ffffff — panel surface (white cards) */
+  --ink-800: 226 232 240; /* #e2e8f0 — raised / hover */
+  --ink-700: 211 219 229; /* #d3dbe5 */
+  --ink-600: 168 181 199; /* #a8b5c7 — borders / dividers */
+  --body-bloom:
+    radial-gradient(900px 600px at 80% -10%, rgba(78, 168, 255, 0.12), transparent),
+    radial-gradient(700px 500px at -10% 110%, rgba(93, 220, 122, 0.10), transparent);
 }
 
 html,
@@ -20,9 +49,7 @@ body {
   font-family: var(--font-sf);
   letter-spacing: -0.01em;
   @apply bg-ink-950 text-slate-200 antialiased;
-  background-image:
-    radial-gradient(900px 600px at 80% -10%, rgba(78, 168, 255, 0.08), transparent),
-    radial-gradient(700px 500px at -10% 110%, rgba(93, 220, 122, 0.06), transparent);
+  background-image: var(--body-bloom);
 }
 
 /* Bold SF Pro italic for the things that matter — Apple-style emphasis. */
@@ -351,4 +378,105 @@ body {
   .drift {
     animation: none;
   }
+}
+
+/* Light theme overrides ---------------------------------------------------- */
+/* The `ink.*` surfaces already re-tone via the `--ink-*` variables above; the
+   rules here flip the remaining hard-coded text / white-fill / glass utilities
+   so every page reads correctly on light. Need/signal accents are intentionally
+   left vivid — they carry the floor color-coding in both themes. Descendant
+   selectors (specificity ≥ 0,2,0) win over Tailwind's single-class utilities
+   without needing !important. */
+
+/* Body text inversion (light → dark hierarchy). */
+[data-theme="light"] .text-white {
+  color: #0f172a;
+}
+[data-theme="light"] .text-slate-100,
+[data-theme="light"] .text-slate-200 {
+  color: #1e293b;
+}
+[data-theme="light"] .text-slate-300 {
+  color: #334155;
+}
+[data-theme="light"] .text-slate-400 {
+  color: #475569;
+}
+[data-theme="light"] .text-slate-500 {
+  color: #64748b;
+}
+[data-theme="light"] .text-slate-600 {
+  color: #94a3b8;
+}
+
+/* Hover / active text variants (e.g. slate-300 → white on hover) follow suit. */
+[data-theme="light"] .hover\:text-white:hover,
+[data-theme="light"] .active\:text-white:active {
+  color: #0f172a;
+}
+[data-theme="light"] .hover\:text-slate-200:hover {
+  color: #1e293b;
+}
+
+/* Prominent filled chips/CTAs are `bg-white text-ink-950` — invert to a dark
+   fill with light text so they stay prominent against light surfaces. The same
+   `text-ink-950` reads as white-on-accent for the bright `bg-signal-info` button. */
+[data-theme="light"] .bg-white {
+  background-color: #0f172a;
+}
+[data-theme="light"] .text-ink-950 {
+  color: #f8fafc;
+}
+
+/* Gradient wordmarks/emphasis are anchored in white (invisible on light) — swap
+   to a darker need-color ramp that pops on light surfaces. */
+[data-theme="light"] .important {
+  background-image: linear-gradient(95deg, #0b3a82 0%, #1f6feb 55%, #0e7490 100%);
+}
+[data-theme="light"] .gradient-text-soft {
+  background-image: linear-gradient(
+    100deg,
+    #0b3a82 0%,
+    #1f6feb 28%,
+    #0e7490 50%,
+    #7c3aed 72%,
+    #be185d 88%,
+    #0b3a82 100%
+  );
+}
+[data-theme="light"] .gradient-text {
+  background-image: linear-gradient(
+    100deg,
+    #1f6feb 0%,
+    #0e7490 22%,
+    #15803d 44%,
+    #7c3aed 66%,
+    #be185d 82%,
+    #1f6feb 100%
+  );
+}
+
+/* Faint engineering grid: darken the hairlines so they read on a light backdrop. */
+[data-theme="light"] .grid-backdrop {
+  background-image:
+    linear-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.06) 1px, transparent 1px);
+}
+
+/* Bare text labels floating directly over the (theme-independent) dark 3D twin
+   stay light in both themes so they remain legible on the scene. Defined after
+   the generic text overrides so they win for these specific overlays. */
+[data-theme="light"] .twin-overlay {
+  color: #cbd5e1;
+}
+[data-theme="light"] .twin-overlay .text-slate-200 {
+  color: #f1f5f9;
+}
+
+/* Themed scrollbar thumb reads better as a darker tint on light. */
+[data-theme="light"] .scroll-thin {
+  scrollbar-color: rgba(15, 23, 42, 0.28) transparent;
+}
+[data-theme="light"] .scroll-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(15, 23, 42, 0.28);
 }

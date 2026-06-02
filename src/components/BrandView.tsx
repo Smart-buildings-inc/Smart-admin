@@ -167,8 +167,10 @@ export default function BrandView() {
               {group.colors.map((color) => {
                 const key = `${color.name}-${color.hex}`;
                 const isCopied = copied === key;
+                // Swatch contrast text is keyed to the (fixed) brand color, so
+                // use literal hex utilities that the light-theme overrides won't flip.
                 const onText =
-                  color.on === "light" ? "text-ink-950" : "text-white";
+                  color.on === "light" ? "text-[#0b121a]" : "text-[#ffffff]";
                 return (
                   <button
                     key={key}

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import BrandMark from "@/components/BrandMark";
 import ProgressiveBlur from "@/components/ProgressiveBlur";
+import ThemeToggle from "@/components/ThemeToggle";
 
 // Shared top navigation across the console + simulator + fleet views. Desktop
 // shows inline links; mobile collapses them behind a hamburger drawer (the
@@ -85,17 +86,21 @@ export default function NavBar() {
               </Link>
             );
           })}
+          {/* Theme toggle sits at the end of the desktop nav cluster. */}
+          <ThemeToggle className="ml-1" />
         </div>
 
-        {/* Mobile hamburger */}
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-label={open ? "Close menu" : "Open menu"}
-          aria-expanded={open}
-          aria-controls="mobile-nav"
-          className="relative grid h-10 w-10 place-items-center rounded-lg border border-ink-600/70 bg-ink-900/60 text-slate-200 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-signal-info focus-visible:outline-none md:hidden"
-        >
+        {/* Mobile controls: theme toggle + hamburger */}
+        <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            aria-controls="mobile-nav"
+            className="relative grid h-10 w-10 place-items-center rounded-lg border border-ink-600/70 bg-ink-900/60 text-slate-200 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-signal-info focus-visible:outline-none"
+          >
           <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
           <span aria-hidden className="relative block h-4 w-5">
             <span
@@ -114,7 +119,8 @@ export default function NavBar() {
               }`}
             />
           </span>
-        </button>
+          </button>
+        </div>
       </div>
 
       {/* Progressive blur beneath the bar: the frosted blur ramps gradually
