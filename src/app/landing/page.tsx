@@ -153,7 +153,7 @@ const TOWER: { name: string; metric: string; color: string; fill: number }[] = [
 
 export default function LandingPage() {
   return (
-    <main className="relative overflow-hidden">
+    <main className="relative overflow-hidden pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-0">
       {/* ---------------------------------------------------------------- Hero */}
       <section className="relative isolate px-4 pt-16 pb-16 sm:pt-24 lg:px-6 lg:pt-32 lg:pb-20">
         {/* Engineering grid + aurora glow stacked behind the hero. */}
