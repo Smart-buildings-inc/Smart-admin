@@ -45,6 +45,14 @@ export const SITE_ROUTES: SiteRoute[] = [
     priority: 0.8,
   },
   {
+    path: "/landing",
+    title: "Overview",
+    description:
+      "Product overview — a guided tour of the ATLAS OS platform: the 3D twin, telemetry, incident triage, broadcast, sensors, and fleet rollup.",
+    changeFrequency: "weekly",
+    priority: 0.6,
+  },
+  {
     path: "/sitemap",
     title: "Site Map",
     description: "This page — an index of every section of ATLAS OS.",

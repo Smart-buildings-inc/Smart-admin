@@ -17,6 +17,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Console" },
   { href: "/simulator", label: "Simulator" },
   { href: "/fleet", label: "Fleet" },
+  { href: "/landing", label: "Overview" },
   { href: "/sitemap", label: "Site Map" },
 ];
 
@@ -68,7 +69,7 @@ export default function NavBar() {
             aria-hidden
             className="h-8 w-8 lg:h-9 lg:w-9"
           />
-          <span className="display text-base font-extrabold tracking-tight text-white lg:text-lg">
+          <span className="gradient-text display text-base font-extrabold tracking-tight lg:text-lg">
             ATLAS&nbsp;OS
           </span>
         </Link>
