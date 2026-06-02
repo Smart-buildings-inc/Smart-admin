@@ -145,7 +145,7 @@ export default function SimulatorView({
             />
 
             {/* Title chip */}
-            <div className="pointer-events-none absolute left-4 top-4 text-xs text-slate-400">
+            <div className="twin-overlay pointer-events-none absolute left-4 top-4 text-xs text-slate-400">
               <div className="display text-sm text-slate-200">ATLAS‑01 · Live Twin</div>
               <div>Orbit to inspect · tap a floor for telemetry</div>
             </div>

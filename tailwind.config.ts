@@ -9,12 +9,16 @@ const config: Config = {
     extend: {
       colors: {
         // Ops-console palette. Dark-first; floors are color-coded by human need.
+        // The `ink.*` surface scale is driven by CSS variables (space-separated
+        // RGB channels) so the whole console can flip to a light theme by
+        // swapping `--ink-*` under `[data-theme="light"]` (see globals.css) —
+        // every `bg-ink-*` / `border-ink-*` (incl. `/opacity`) re-themes for free.
         ink: {
-          950: "#070b10",
-          900: "#0b121a",
-          800: "#101a24",
-          700: "#17242f",
-          600: "#22323f",
+          950: "rgb(var(--ink-950) / <alpha-value>)",
+          900: "rgb(var(--ink-900) / <alpha-value>)",
+          800: "rgb(var(--ink-800) / <alpha-value>)",
+          700: "rgb(var(--ink-700) / <alpha-value>)",
+          600: "rgb(var(--ink-600) / <alpha-value>)",
         },
         signal: {
           ok: "#3ddc97",

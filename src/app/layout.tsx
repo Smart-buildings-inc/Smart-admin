@@ -64,7 +64,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Apply the saved theme before first paint so there's no dark→light
+            flash. Defaults to dark (the console's native ops palette). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var t=localStorage.getItem('atlas-theme');if(t==='light'||t==='dark'){document.documentElement.dataset.theme=t}}catch(e){}",
+          }}
+        />
+      </head>
       {/* Page roots (<main>) carry their own bottom clearance for the fixed
           MobileTabBar — body padding-bottom is ineffective here because
           html/body use height:100%. */}

@@ -143,7 +143,7 @@ export default function FullscreenSimulator({
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
           </button>
-          <div className="pointer-events-none hidden text-xs text-slate-400 sm:block">
+          <div className="twin-overlay pointer-events-none hidden text-xs text-slate-400 sm:block">
             <div className="display text-sm text-slate-200">ATLAS‑01 · Live Twin</div>
             <div>Orbit to inspect · tap a floor for telemetry</div>
           </div>
