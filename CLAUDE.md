@@ -73,5 +73,21 @@ falls back to seed data whenever `DATABASE_URL` is unset (`isDbConfigured` / `ge
 - Tests live in `e2e/`: `api.spec.ts` (API contracts, incl. broadcast→incident mirroring),
   `app.spec.ts` (console UI: header, KPI strip, seed chip, twin controls, feed),
   `broadcast.spec.ts` (broadcast send + feed update). Tests run on seed data; no DB required.
-</content>
-</invoke>
+
+## Working agreement (standing rules for agents)
+
+Durable conventions for this repository — follow them every session:
+
+- **Push directly to `main`.** Commit and push routine work straight to `main`;
+  no feature-branch/PR gate is required (the owner opted out). Keep commits
+  focused with clear messages. CI still runs on every push.
+- **Build & maintain in parallel with sub-agents.** When work splits into
+  independent sub-tasks (distinct files, docs, investigations), fan them out to
+  parallel sub-agents and batch independent tool calls rather than working
+  serially. Reconcile and commit centrally to avoid git conflicts.
+- **Prefer cloud automations.** Lean on GitHub Actions and the connected
+  Vercel / Netlify / Supabase tooling to automate build, test, and deploy. CI
+  runs `build` and `e2e` as parallel jobs (`.github/workflows/ci.yml`); extend
+  it as the app grows.
+- **Verify before pushing.** Run `npm run typecheck`, `npm run lint`, and the
+  relevant `npm run test:e2e` so pushes to `main` stay green.
