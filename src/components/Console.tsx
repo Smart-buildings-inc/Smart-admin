@@ -121,7 +121,7 @@ export default function Console({
         <section className="flex flex-col gap-4">
           <div
             data-testid="twin-stage"
-            className="panel relative h-[920px] overflow-hidden bg-ink-950 lg:h-[560px]"
+            className="panel relative h-[920px] overflow-hidden bg-ink-950 lg:h-[760px]"
           >
             <HabitatTwin
               floors={floors}

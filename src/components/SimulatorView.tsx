@@ -131,7 +131,7 @@ export default function SimulatorView({
         <section className="flex flex-col gap-4">
           <div
             data-testid="sim-stage"
-            className="panel relative h-[1040px] overflow-hidden bg-ink-950 lg:h-[660px]"
+            className="panel relative h-[1040px] overflow-hidden bg-ink-950 lg:h-[820px]"
           >
             <BuildingSimulator
               floors={floors}
