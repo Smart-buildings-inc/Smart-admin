@@ -2,13 +2,30 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { OrbitControls, Html } from "@react-three/drei";
+import {
+  OrbitControls,
+  Html,
+  Environment,
+  Lightformer,
+  ContactShadows,
+} from "@react-three/drei";
 import * as THREE from "three";
 import type { Floor, Incident } from "@/lib/types";
 import { needColor } from "@/lib/ui";
 import { annotationByFloor } from "@/lib/annotations";
 
 export type TwinMode = "orbit" | "walkthrough";
+
+/**
+ * "standard" — the original flat 3-light rig (cheap, always available).
+ * "cinematic" — image-based lighting via a procedural HDRI environment
+ * (Lightformers, no external assets so it stays local-first), soft contact
+ * shadows for grounded ambient occlusion, plus a real shadow-casting key light.
+ */
+export type ShadingMode = "standard" | "cinematic";
+
+/** Which scene the twin renders: the habitat tower, or the site/location mimic. */
+export type SceneKind = "habitat" | "site";
 
 const FLOOR_HEIGHT = 0.9;
 const FLOOR_GAP = 0.12;
@@ -69,6 +86,8 @@ function FloorSlab({
           document.body.style.cursor = "auto";
         }}
         scale={selected || hovered ? 1.04 : 1}
+        castShadow
+        receiveShadow
       >
         <boxGeometry args={[FLOOR_W, FLOOR_HEIGHT, FLOOR_D]} />
         <meshStandardMaterial
@@ -77,6 +96,7 @@ function FloorSlab({
           emissiveIntensity={0.12}
           metalness={0.2}
           roughness={0.45}
+          envMapIntensity={0.9}
           transparent
           opacity={0.92}
         />
@@ -278,11 +298,262 @@ function Tower({
   );
 }
 
+/**
+ * Procedural HDRI: a set of Lightformers arranged like a sky dome + studio
+ * rig. drei renders these into an off-screen cube map used for image-based
+ * lighting, giving soft realistic ambience and reflections with zero external
+ * .hdr assets (keeps the app offline / local-first).
+ */
+function CinematicHdri() {
+  return (
+    <group>
+      {/* Sky / overhead fill */}
+      <Lightformer
+        form="rect"
+        intensity={1.6}
+        color="#bcd4ff"
+        position={[0, 12, 0]}
+        rotation={[Math.PI / 2, 0, 0]}
+        scale={[30, 30, 1]}
+      />
+      {/* Warm key from one side */}
+      <Lightformer
+        form="rect"
+        intensity={2.2}
+        color="#fff0d2"
+        position={[10, 6, 8]}
+        rotation={[0, -Math.PI / 4, 0]}
+        scale={[12, 12, 1]}
+      />
+      {/* Cool sky fill from the opposite side */}
+      <Lightformer
+        form="rect"
+        intensity={1.1}
+        color="#5e8bff"
+        position={[-12, 4, -6]}
+        rotation={[0, Math.PI / 3, 0]}
+        scale={[14, 14, 1]}
+      />
+      {/* Subtle ground bounce */}
+      <Lightformer
+        form="rect"
+        intensity={0.4}
+        color="#1a2530"
+        position={[0, -8, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        scale={[30, 30, 1]}
+      />
+    </group>
+  );
+}
+
+/** Deterministic LCG so the scattered geometry is stable across renders. */
+function makeRng(seed: number) {
+  let s = seed >>> 0;
+  return () => {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 0xffffffff;
+  };
+}
+
+/** A single stylised conifer (cone canopy + trunk). */
+function Conifer({
+  position,
+  scale,
+}: {
+  position: [number, number, number];
+  scale: number;
+}) {
+  return (
+    <group position={position} scale={scale}>
+      <mesh position={[0, 0.25, 0]} castShadow receiveShadow>
+        <cylinderGeometry args={[0.07, 0.1, 0.5, 6]} />
+        <meshStandardMaterial color="#3b2c1e" roughness={0.9} />
+      </mesh>
+      <mesh position={[0, 1.0, 0]} castShadow receiveShadow>
+        <coneGeometry args={[0.55, 1.6, 8]} />
+        <meshStandardMaterial color="#1f3d24" roughness={0.85} />
+      </mesh>
+      <mesh position={[0, 1.55, 0]} castShadow receiveShadow>
+        <coneGeometry args={[0.38, 1.1, 8]} />
+        <meshStandardMaterial color="#264a2c" roughness={0.85} />
+      </mesh>
+    </group>
+  );
+}
+
+/**
+ * A stylised mimic of the user's waterfront: Georgian Bay shoreline near
+ * Manitou Crescent, Tiny, ON — water, a sandy beach with rock groynes,
+ * conifers, a cabin with a dark/blue gabled roof, a dock, and a pulsing
+ * "you are here" marker. Authored entirely in three.js (no GLTF / map tiles)
+ * to stay local-first; not a survey-accurate model.
+ */
+function SiteScene({ cinematic }: { cinematic: boolean }) {
+  const markerRef = useRef<THREE.Group>(null);
+  const waterEnv = cinematic ? 1.0 : 0.0;
+
+  // Static scatter computed once.
+  const { trees, groyneA, groyneB, dockPosts } = useMemo(() => {
+    const rng = makeRng(20260602);
+    const trees: { position: [number, number, number]; scale: number }[] = [];
+    for (let i = 0; i < 46; i++) {
+      const x = (rng() - 0.5) * 44;
+      const z = 2 + rng() * 18; // grass side only
+      // Leave a clearing around the cabin.
+      if (Math.abs(x) < 4 && z < 6) continue;
+      trees.push({ position: [x, 0, z], scale: 0.7 + rng() * 0.9 });
+    }
+    const line = (
+      startX: number,
+      startZ: number,
+      dx: number,
+      dz: number,
+      n: number,
+    ) =>
+      Array.from({ length: n }, (_, i) => ({
+        position: [
+          startX + dx * i + (rng() - 0.5) * 0.4,
+          0.12,
+          startZ + dz * i + (rng() - 0.5) * 0.4,
+        ] as [number, number, number],
+        scale: 0.4 + rng() * 0.5,
+      }));
+    return {
+      trees,
+      groyneA: line(-13, -1, -0.9, -1.4, 10),
+      groyneB: line(-2, -1, -0.7, -1.5, 11),
+      dockPosts: Array.from({ length: 6 }, (_, i) => i),
+    };
+  }, []);
+
+  useFrame((state) => {
+    if (!markerRef.current) return;
+    const t = state.clock.elapsedTime;
+    markerRef.current.position.y = 2.4 + Math.sin(t * 2) * 0.12;
+    const halo = markerRef.current.children[1] as THREE.Mesh | undefined;
+    if (halo) {
+      const s = 1 + (Math.sin(t * 2) + 1) * 0.35;
+      halo.scale.setScalar(s);
+      const mat = halo.material as THREE.MeshBasicMaterial;
+      mat.opacity = 0.5 - (Math.sin(t * 2) + 1) * 0.18;
+    }
+  });
+
+  return (
+    <group>
+      {/* Water (Georgian Bay) */}
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, 0, -16]}
+        receiveShadow
+      >
+        <planeGeometry args={[80, 40]} />
+        <meshStandardMaterial
+          color="#2f6f6a"
+          roughness={0.12}
+          metalness={0.0}
+          envMapIntensity={waterEnv}
+        />
+      </mesh>
+
+      {/* Sandy beach strip */}
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, 0.02, 0.6]}
+        receiveShadow
+      >
+        <planeGeometry args={[80, 6]} />
+        <meshStandardMaterial color="#d8c39a" roughness={0.95} />
+      </mesh>
+
+      {/* Grass / forest floor */}
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, 0.04, 18]}
+        receiveShadow
+      >
+        <planeGeometry args={[80, 40]} />
+        <meshStandardMaterial color="#28401f" roughness={0.95} />
+      </mesh>
+
+      {/* Rock groynes / breakwaters reaching into the bay */}
+      {[...groyneA, ...groyneB].map((r, i) => (
+        <mesh key={`rock-${i}`} position={r.position} scale={r.scale} castShadow receiveShadow>
+          <dodecahedronGeometry args={[0.6, 0]} />
+          <meshStandardMaterial color="#6c6a63" roughness={1} flatShading />
+        </mesh>
+      ))}
+
+      {/* Conifers */}
+      {trees.map((t, i) => (
+        <Conifer key={`tree-${i}`} position={t.position} scale={t.scale} />
+      ))}
+
+      {/* Cabin with dark/blue gabled roof */}
+      <group position={[0, 0, 4]}>
+        <mesh position={[0, 0.7, 0]} castShadow receiveShadow>
+          <boxGeometry args={[3, 1.4, 2.4]} />
+          <meshStandardMaterial color="#cdbfa6" roughness={0.8} />
+        </mesh>
+        {/* Gabled roof (rotated box prism) */}
+        <mesh position={[0, 1.75, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
+          <cylinderGeometry args={[1.6, 1.6, 2.7, 4, 1]} />
+          <meshStandardMaterial color="#26344f" roughness={0.6} metalness={0.1} envMapIntensity={waterEnv} />
+        </mesh>
+        {/* Door */}
+        <mesh position={[0, 0.5, 1.21]}>
+          <planeGeometry args={[0.6, 1.0]} />
+          <meshStandardMaterial color="#3a2c1d" roughness={0.8} />
+        </mesh>
+      </group>
+
+      {/* Dock reaching out into the water (upper-right of the photo) */}
+      <group position={[12, 0, 0]}>
+        <mesh position={[0, 0.35, -6]} castShadow receiveShadow>
+          <boxGeometry args={[1.6, 0.15, 13]} />
+          <meshStandardMaterial color="#7a5c3a" roughness={0.9} />
+        </mesh>
+        {dockPosts.map((i) => (
+          <mesh key={`post-${i}`} position={[0.6, 0.05, -1 - i * 2]} castShadow>
+            <cylinderGeometry args={[0.08, 0.08, 0.8, 6]} />
+            <meshStandardMaterial color="#4a3623" roughness={0.95} />
+          </mesh>
+        ))}
+      </group>
+
+      {/* "You are here" marker — the blue location dot from Maps */}
+      <group ref={markerRef} position={[0, 2.4, 4]}>
+        <mesh castShadow>
+          <sphereGeometry args={[0.32, 24, 24]} />
+          <meshStandardMaterial
+            color="#2f7bff"
+            emissive="#2f7bff"
+            emissiveIntensity={0.8}
+            roughness={0.3}
+          />
+        </mesh>
+        <mesh>
+          <sphereGeometry args={[0.32, 24, 24]} />
+          <meshBasicMaterial color="#67a8ff" transparent opacity={0.4} />
+        </mesh>
+        <Html position={[0, 0.6, 0]} center distanceFactor={14} style={{ pointerEvents: "none" }}>
+          <div className="annotation whitespace-nowrap rounded-md px-2 py-1 text-xs text-white">
+            You are here · 35 Manitou Crescent
+          </div>
+        </Html>
+      </group>
+    </group>
+  );
+}
+
 export default function HabitatTwin({
   floors,
   incidents,
   selectedKey,
   mode,
+  shading = "standard",
+  scene = "habitat",
   onSelect,
   onWalkthroughEnd,
 }: {
@@ -290,12 +561,17 @@ export default function HabitatTwin({
   incidents: Incident[];
   selectedKey: string | null;
   mode: TwinMode;
+  shading?: ShadingMode;
+  scene?: SceneKind;
   onSelect: (key: string | null) => void;
   onWalkthroughEnd: () => void;
 }) {
   const arContainerRef = useRef<HTMLDivElement>(null);
   const [walkFloorIndex, setWalkFloorIndex] = useState(-1);
   const totalHeight = floors.length * STEP;
+  const cinematic = shading === "cinematic";
+  // Walk-through + descent only make sense for the habitat tower.
+  const walkActive = scene === "habitat" && mode === "walkthrough";
 
   const incidentFloorKeys = useMemo(
     () =>
@@ -313,32 +589,81 @@ export default function HabitatTwin({
       <Canvas
         camera={{ position: [8, 2, 8], fov: 42 }}
         frameloop="always"
+        shadows={cinematic}
         onPointerMissed={() => mode === "orbit" && onSelect(null)}
       >
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[6, 10, 6]} intensity={1.1} />
-        <directionalLight position={[-6, -4, -6]} intensity={0.3} color="#4ea8ff" />
+        {cinematic ? (
+          <>
+            {/* Image-based lighting from a procedural HDRI (no external assets,
+                so it works fully offline / local-first). */}
+            <Environment resolution={256} background={false}>
+              <CinematicHdri />
+            </Environment>
+            <ambientLight intensity={0.18} />
+            {/* Shadow-casting key light for crisp, grounded shadows. */}
+            <directionalLight
+              position={[8, 14, 8]}
+              intensity={1.3}
+              color="#fff3da"
+              castShadow
+              shadow-mapSize-width={2048}
+              shadow-mapSize-height={2048}
+              shadow-bias={-0.0005}
+              shadow-camera-near={1}
+              shadow-camera-far={60}
+              shadow-camera-left={-16}
+              shadow-camera-right={16}
+              shadow-camera-top={16}
+              shadow-camera-bottom={-16}
+            />
+            <directionalLight position={[-6, -2, -6]} intensity={0.25} color="#4ea8ff" />
+          </>
+        ) : (
+          <>
+            <ambientLight intensity={0.6} />
+            <directionalLight position={[6, 10, 6]} intensity={1.1} />
+            <directionalLight position={[-6, -4, -6]} intensity={0.3} color="#4ea8ff" />
+          </>
+        )}
 
-        <Tower
-          floors={floors}
-          incidentFloorKeys={incidentFloorKeys}
-          selectedKey={selectedKey}
-          mode={mode}
-          walkFloorIndex={walkFloorIndex}
-          onSelect={onSelect}
-        />
+        {scene === "site" ? (
+          <SiteScene cinematic={cinematic} />
+        ) : (
+          <Tower
+            floors={floors}
+            incidentFloorKeys={incidentFloorKeys}
+            selectedKey={selectedKey}
+            mode={mode}
+            walkFloorIndex={walkFloorIndex}
+            onSelect={onSelect}
+          />
+        )}
 
-        {mode === "orbit" && (
+        {/* Soft contact shadows double as ambient occlusion against the ground. */}
+        {cinematic && (
+          <ContactShadows
+            position={[0, scene === "site" ? -0.02 : -totalHeight / 2 - 0.5, 0]}
+            scale={scene === "site" ? 48 : 14}
+            far={scene === "site" ? 20 : 12}
+            blur={2.6}
+            opacity={0.55}
+            resolution={1024}
+            color="#05080c"
+          />
+        )}
+
+        {(mode === "orbit" || scene === "site") && (
           <OrbitControls
-            enablePan={false}
-            minDistance={6}
-            maxDistance={18}
+            enablePan
+            screenSpacePanning={false}
+            minDistance={scene === "site" ? 4 : 6}
+            maxDistance={scene === "site" ? 60 : 18}
             maxPolarAngle={Math.PI / 1.9}
           />
         )}
 
         <WalkthroughCamera
-          active={mode === "walkthrough"}
+          active={walkActive}
           floorCount={floors.length}
           totalHeight={totalHeight}
           onFloorChange={setWalkFloorIndex}
@@ -349,11 +674,15 @@ export default function HabitatTwin({
       </Canvas>
 
       <div className="pointer-events-none absolute left-4 top-4 text-xs text-slate-400">
-        <div className="display text-sm text-slate-200">ATLAS‑01 · Habitat Twin</div>
+        <div className="display text-sm text-slate-200">
+          {scene === "site" ? "Site · Georgian Bay shoreline" : "ATLAS‑01 · Habitat Twin"}
+        </div>
         <div>
-          {mode === "walkthrough"
-            ? "Descending — rooftop pool to the underground core…"
-            : "Orbit to inspect · tap a floor for telemetry"}
+          {scene === "site"
+            ? "Manitou Crescent, Tiny ON · orbit · drag to pan"
+            : walkActive
+              ? "Descending — rooftop pool to the underground core…"
+              : "Orbit to inspect · drag to pan · tap a floor"}
         </div>
       </div>
 

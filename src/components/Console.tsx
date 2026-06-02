@@ -8,7 +8,7 @@ import type {
   Floor,
   Incident,
 } from "@/lib/types";
-import type { TwinMode } from "@/components/HabitatTwin";
+import type { TwinMode, ShadingMode, SceneKind } from "@/components/HabitatTwin";
 import KpiStrip from "@/components/KpiStrip";
 import FloorPanel from "@/components/FloorPanel";
 import IncidentFeed from "@/components/IncidentFeed";
@@ -42,6 +42,8 @@ export default function Console({
   const [kpis, setKpis] = useState<BuildingKpis>(initialKpis);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [mode, setMode] = useState<TwinMode>("orbit");
+  const [shading, setShading] = useState<ShadingMode>("standard");
+  const [scene, setScene] = useState<SceneKind>("habitat");
 
   const selectedFloor = useMemo(
     () => floors.find((f) => f.key === selectedKey) ?? null,
@@ -185,12 +187,43 @@ export default function Console({
               incidents={incidents}
               selectedKey={selectedKey}
               mode={mode}
+              shading={shading}
+              scene={scene}
               onSelect={setSelectedKey}
               onWalkthroughEnd={() => setMode("orbit")}
             />
 
-            {/* Controls — iOS-style segmented mode buttons + fullscreen toggle */}
-            <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
+            {/* Controls — iOS-style segmented buttons + fullscreen toggle */}
+            <div className="absolute right-4 top-4 z-10 flex max-w-[calc(100%-2rem)] flex-wrap items-center justify-end gap-2">
+              {/* Scene: habitat tower vs. site/location mimic */}
+              <div className="flex gap-1 rounded-full border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur">
+                <button
+                  type="button"
+                  onClick={() => setScene("habitat")}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                    scene === "habitat"
+                      ? "bg-white text-ink-950"
+                      : "text-slate-300 hover:text-white"
+                  }`}
+                >
+                  Habitat
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setScene("site");
+                    setMode("orbit");
+                  }}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                    scene === "site"
+                      ? "bg-white text-ink-950"
+                      : "text-slate-300 hover:text-white"
+                  }`}
+                >
+                  Site
+                </button>
+              </div>
+
               <div className="flex gap-1 rounded-full border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur">
                 <button
                   type="button"
@@ -206,13 +239,42 @@ export default function Console({
                 <button
                   type="button"
                   onClick={startWalkthrough}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                  disabled={scene === "site"}
+                  title={scene === "site" ? "Walk-through is available in the Habitat scene" : undefined}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
                     mode === "walkthrough"
                       ? "bg-white text-ink-950"
                       : "text-slate-300 hover:text-white"
                   }`}
                 >
                   Walk-through
+                </button>
+              </div>
+
+              {/* Shading: standard 3-light rig vs. cinematic HDRI + shadows */}
+              <div className="flex gap-1 rounded-full border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur">
+                <button
+                  type="button"
+                  onClick={() => setShading("standard")}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                    shading === "standard"
+                      ? "bg-white text-ink-950"
+                      : "text-slate-300 hover:text-white"
+                  }`}
+                >
+                  Standard
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShading("cinematic")}
+                  title="HDRI ambience, ambient occlusion & soft shadows"
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                    shading === "cinematic"
+                      ? "bg-white text-ink-950"
+                      : "text-slate-300 hover:text-white"
+                  }`}
+                >
+                  Cinematic
                 </button>
               </div>
               <button
