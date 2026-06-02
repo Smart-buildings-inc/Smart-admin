@@ -5,14 +5,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-// Shared top navigation across the console + fleet views. Desktop shows inline
-// links; mobile collapses them behind a hamburger that opens an accessible
-// slide-down drawer. Active route is highlighted via the current pathname.
+// Shared top navigation across the console + simulator + fleet views. Desktop
+// shows inline links; mobile collapses them behind a hamburger drawer (the
+// fixed bottom tab bar in MobileTabBar complements this on phones). Active
+// route is highlighted via the current pathname.
 
 type NavItem = { href: string; label: string };
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Console" },
+  { href: "/simulator", label: "Simulator" },
   { href: "/fleet", label: "Fleet" },
   { href: "/sitemap", label: "Site Map" },
 ];

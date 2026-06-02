@@ -36,6 +36,26 @@ const TABS: Tab[] = [
     ),
   },
   {
+    href: "/simulator",
+    label: "Simulator",
+    icon: () => (
+      <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden>
+        <path
+          d="M5 21V4.5h14V21"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M5 9.5h14M5 14.5h14M10.5 21v-3h3v3"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
     href: "/fleet",
     label: "Fleet",
     icon: () => (
