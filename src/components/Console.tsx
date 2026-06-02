@@ -6,6 +6,7 @@ import type {
   Broadcast,
   BuildingKpis,
   Floor,
+  FloorPresence,
   Incident,
 } from "@/lib/types";
 import type { TwinMode } from "@/components/HabitatTwin";
@@ -44,6 +45,8 @@ export default function Console({
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [mode, setMode] = useState<TwinMode>("orbit");
   const [ascii, setAscii] = useState(false);
+  // F-RuView: keyed presence map (floorKey → FloorPresence). Empty until first fetch.
+  const [presence, setPresence] = useState<Record<string, FloorPresence>>({});
 
   const selectedFloor = useMemo(
     () => floors.find((f) => f.key === selectedKey) ?? null,
@@ -71,6 +74,21 @@ export default function Console({
     } catch {
       /* keep last-known state on transient failure */
     }
+
+    // F-RuView: fetch presence layer separately so a failure here never
+    // disrupts the incidents/floors refresh above.
+    fetch("/api/presence", { cache: "no-store" })
+      .then(async (res) => {
+        if (!res.ok) return;
+        const { presence: list } = (await res.json()) as {
+          presence: FloorPresence[];
+        };
+        const keyed = Object.fromEntries(list.map((p) => [p.floorKey, p]));
+        setPresence(keyed);
+      })
+      .catch(() => {
+        /* keep last-known presence on transient failure */
+      });
   }, []);
 
   // Light polling so the feed feels live.
@@ -176,7 +194,11 @@ export default function Console({
               <FullscreenLink />
             </div>
           </div>
-          <FloorPanel floor={selectedFloor} incidents={incidents} />
+          <FloorPanel
+            floor={selectedFloor}
+            incidents={incidents}
+            presence={selectedKey ? presence[selectedKey] : undefined}
+          />
         </section>
 
         <section className="flex flex-col gap-4">

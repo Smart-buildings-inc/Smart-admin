@@ -1,4 +1,4 @@
-import type { Floor, FloorMetrics, Incident } from "@/lib/types";
+import type { Floor, FloorMetrics, FloorPresence, Incident } from "@/lib/types";
 import {
   needColor,
   occupancyGroupLabel,
@@ -7,6 +7,7 @@ import {
   timeAgo,
   useScopeLabel,
 } from "@/lib/ui";
+import PresenceBadge from "@/components/PresenceBadge";
 
 // Maps each metric key to a human label + formatter. Only present keys render.
 const METRIC_META: Record<
@@ -32,9 +33,11 @@ const METRIC_ORDER = Object.keys(METRIC_META) as (keyof FloorMetrics)[];
 export default function FloorPanel({
   floor,
   incidents,
+  presence,
 }: {
   floor: Floor | null;
   incidents: Incident[];
+  presence?: FloorPresence;
 }) {
   if (!floor) {
     return (
@@ -115,6 +118,16 @@ export default function FloorPanel({
           </p>
         )}
       </div>
+
+      {/* F-RuView: Presence subsection — fully conditional, renders only when data available */}
+      {presence !== undefined && (
+        <div className="mt-3">
+          <div className="annotation mb-1.5 text-xs uppercase tracking-wide text-slate-500">
+            Presence · WiFi sensing
+          </div>
+          <PresenceBadge presence={presence} />
+        </div>
+      )}
 
       {/* Dwellings / beds summary for residential floors (optional) */}
       {(floor.dwellings != null || floor.beds != null) ? (

@@ -26,6 +26,7 @@ walk-through and AR mode.
 | **+** | **Guided walk-through** | Animated camera descent from the rooftop pool down to the underground Reclamation Core, with futuristic bold-italic annotation callouts (arrows + quotes) |
 | **+** | **WebXR AR mode** | "Enter AR" on compatible devices (Android / Chrome WebXR). iOS Safari lacks WebXR — use the guided walk-through there |
 | **+** | **12 penthouses + shared rooftop pool** | A penthouse floor of up to 12 premium market dwellings sharing the Skydeck pool directly overhead |
+| **+** | **Privacy-by-design presence sensing** | WiFi-CSI occupancy via [RuView](https://github.com/ruvnet/RuView) ESP32-S3 nodes — presence, person count, and vitals through walls with no cameras or wearables; seed fallback when hardware is absent. See [docs/ATLAS-ruview-presence.md](./docs/ATLAS-ruview-presence.md) |
 
 ### KPI labels — honest-by-design
 
@@ -103,6 +104,7 @@ npm run db:seed             # load the canonical ATLAS-01 data
 | `/api/floors` | `GET` | All floors, ordered bottom → top |
 | `/api/incidents` | `GET` / `POST` | Read the feed / create an event |
 | `/api/broadcasts` | `GET` / `POST` | Read history / send a resident broadcast |
+| `/api/presence` | `GET` | Per-floor presence data (`?floor=key` to filter); seed fallback when RuView hardware is absent |
 
 ## Project layout
 
@@ -130,6 +132,7 @@ src/
     finance.ts            # Entity / FundingProgram / ApprovalGate + seed data
     fleet.ts              # fleet buildings
     sensors.ts            # sensor-point ingestion/query (F11)
+    ruview.ts             # RuView WiFi-CSI presence adapter (RUVIEW_API_URL → live; seed fallback)
     db/{schema,index,seed,seed-data}.ts
 ```
 

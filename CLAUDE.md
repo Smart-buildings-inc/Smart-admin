@@ -53,6 +53,14 @@ falls back to seed data whenever `DATABASE_URL` is unset (`isDbConfigured` / `ge
     (`FundingProgram`: CMHC MLI Select, Greener Affordable Housing, Save on Energy, SR&ED, NRC
     IRAP), and a three-phase approvals timeline (`ApprovalGate`). Powers the `/portfolio` page.
   - `src/lib/sensors.ts` — tagged sensor-point ingestion/query (F11), Brick/Haystack-style tags.
+  - `src/lib/ruview.ts` — RuView WiFi-CSI presence adapter: `isRuViewConfigured` (true when
+    `RUVIEW_API_URL` env is set), `getPresence(floorKey?)` (fetches live REST or falls back to
+    seed-derived `FloorPresence[]`; never throws), `ruviewToSensorPoints()` (presence →
+    Brick-tagged F11 SensorPoints: `"sensor.presence.count"`, `"sensor.presence.occupied"`,
+    `"sensor.vital.breathing"`, `"sensor.vital.heart"`). Presence is surfaced in the Console via
+    `/api/presence` (GET, `force-dynamic`, seed fallback) and rendered in `FloorPanel` as a
+    `PresenceBadge` (WiFi sensing · RuView; shows occupied/count/confidence + vitals; "no cameras").
+    `FloorPresence` type lives in `src/lib/types.ts`. See `docs/ATLAS-ruview-presence.md`.
   - `src/lib/db/` — `index.ts` (client + `isDbConfigured`), `schema.ts`, `seed-data.ts`, `seed.ts`.
   - `src/lib/types.ts` — shared domain types (`Floor`, `Incident`, `Broadcast`, `BuildingKpis`,
     `SensorPoint`, `Building`). `src/lib/ui.ts` maps enums → colors/labels (keep in sync with
@@ -73,8 +81,9 @@ falls back to seed data whenever `DATABASE_URL` is unset (`isDbConfigured` / `ge
       `energyPct`; `foodPct` uses `FOOD_TARGET_KG_PER_RESIDENT = 0.5 kg/day/resident` (§4).
     - Full model reference: `docs/ATLAS-data-model.md`.
 - **API routes** (`src/app/api/*`, all `force-dynamic`): `floors`, `incidents`, `broadcasts`,
-  `sensors`. They delegate to the lib data layer and validate POST bodies, returning JSON
-  (`201` on create, `400` on bad input).
+  `sensors`, `presence`. They delegate to the lib data layer and validate POST bodies, returning
+  JSON (`201` on create, `400` on bad input). `/api/presence` always returns `200` with a
+  `{ presence: FloorPresence[] }` body (seed-derived when `RUVIEW_API_URL` is unset).
 - **Client `Console`** (`src/components/Console.tsx`) orchestrates the UI: lazy-loads `HabitatTwin`
   (WebGL, `ssr: false`), wires `KpiStrip`, `FloorPanel`, `IncidentFeed`, `BroadcastComposer`,
   manages floor selection + orbit/walk-through twin modes, and polls `/api/incidents` every ~15s.

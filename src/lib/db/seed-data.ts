@@ -400,6 +400,71 @@ export const seedSensorPoints: SensorPoint[] = [
     unitOfMeasure: "°C",
     ts: sensorTs(6),
   },
+
+  // RuView WiFi-CSI presence & vital-sign points (github.com/ruvnet/RuView, MIT)
+  // Commons & Clinic — presence headcount + vital signs (health floor showcase)
+  {
+    id: "sp-commons-clinic-presence-count",
+    tag: "sensor.presence.count",
+    markers: ["sensor", "presence", "count"],
+    floorKey: "commons-clinic",
+    kind: "presence",
+    value: 34,
+    unitOfMeasure: "people",
+    ts: sensorTs(1),
+  },
+  {
+    id: "sp-commons-clinic-vital-breathing",
+    tag: "sensor.vital.breathing",
+    markers: ["sensor", "vital", "breathing"],
+    floorKey: "commons-clinic",
+    kind: "vital",
+    value: 14,
+    unitOfMeasure: "bpm",
+    ts: sensorTs(1),
+  },
+  {
+    id: "sp-commons-clinic-vital-heart",
+    tag: "sensor.vital.heart",
+    markers: ["sensor", "vital", "heart"],
+    floorKey: "commons-clinic",
+    kind: "vital",
+    value: 68,
+    unitOfMeasure: "bpm",
+    ts: sensorTs(1),
+  },
+  // Residences A — presence headcount + occupied confidence
+  {
+    id: "sp-residences-a-presence-count",
+    tag: "sensor.presence.count",
+    markers: ["sensor", "presence", "count"],
+    floorKey: "residences-a",
+    kind: "presence",
+    value: 24,
+    unitOfMeasure: "people",
+    ts: sensorTs(2),
+  },
+  {
+    id: "sp-residences-a-presence-occupied",
+    tag: "sensor.presence.occupied",
+    markers: ["sensor", "presence", "occupied"],
+    floorKey: "residences-a",
+    kind: "presence",
+    value: 95,
+    unitOfMeasure: "%",
+    ts: sensorTs(2),
+  },
+  // The Lung (air & restoration) — presence headcount
+  {
+    id: "sp-the-lung-presence-count",
+    tag: "sensor.presence.count",
+    markers: ["sensor", "presence", "count"],
+    floorKey: "the-lung",
+    kind: "presence",
+    value: 9,
+    unitOfMeasure: "people",
+    ts: sensorTs(2),
+  },
 ];
 
 // --- F7: fleet ---

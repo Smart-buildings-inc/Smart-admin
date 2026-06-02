@@ -209,6 +209,22 @@ export interface SensorPoint {
   ts: string;
 }
 
+// --- RuView WiFi-CSI presence layer ---
+
+/** Per-floor presence summary derived from RuView WiFi-CSI sensing (privacy-
+ *  by-design: no cameras). `source` is "ruview" when read live from a
+ *  configured RUVIEW_API_URL, else "seed". */
+export interface FloorPresence {
+  floorKey: string;
+  occupied: boolean;
+  personCount: number;
+  confidencePct: number; // 0–100 presence confidence
+  breathingBpm?: number; // optional vital (health/clinic floors)
+  heartBpm?: number; // optional vital
+  source: "ruview" | "seed";
+  ts: string; // ISO-8601
+}
+
 // --- F7: fleet ---
 
 /** Operational status of an ATLAS building in the fleet view (F7). */

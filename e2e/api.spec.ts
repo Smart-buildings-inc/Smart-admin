@@ -81,4 +81,42 @@ test.describe("ATLAS OS API", () => {
     const mirrored = incidents.some((i) => i.title.includes(marker));
     expect(mirrored).toBe(true);
   });
+
+  test("GET /api/presence returns 200 with a valid FloorPresence array including clinic vitals", async ({
+    request,
+  }) => {
+    const res = await request.get("/api/presence");
+    expect(res.status()).toBe(200);
+
+    const body = (await res.json()) as {
+      presence: Array<{
+        floorKey: string;
+        occupied: boolean;
+        personCount: number;
+        confidencePct: number;
+        breathingBpm?: number;
+        heartBpm?: number;
+        source: string;
+        ts: string;
+      }>;
+    };
+
+    expect(Array.isArray(body.presence)).toBe(true);
+    expect(body.presence.length).toBeGreaterThan(0);
+
+    // Every entry must have the required FloorPresence fields with correct types.
+    for (const entry of body.presence) {
+      expect(typeof entry.floorKey).toBe("string");
+      expect(typeof entry.occupied).toBe("boolean");
+      expect(typeof entry.personCount).toBe("number");
+      expect(typeof entry.confidencePct).toBe("number");
+      expect(entry.source === "ruview" || entry.source === "seed").toBe(true);
+    }
+
+    // The commons-clinic floor is seeded with breathing and heart-rate vitals.
+    const clinic = body.presence.find((p) => p.floorKey === "commons-clinic");
+    expect(clinic).toBeDefined();
+    expect(typeof clinic!.breathingBpm).toBe("number");
+    expect(typeof clinic!.heartBpm).toBe("number");
+  });
 });
