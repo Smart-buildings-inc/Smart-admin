@@ -86,14 +86,10 @@ export default function MobileTabBar() {
       aria-label="Primary"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-ink-600/50 bg-gradient-to-t from-ink-950 to-ink-950/60 backdrop-blur md:hidden"
     >
-      {/* Progressive blur + gradient fade above the bar: the frosted blur ramps
-          down to zero and the bar's background bleeds into a soft fade so
-          scrolling content blends with the page bg instead of a hard edge. */}
-      <ProgressiveBlur side="bottom" className="bottom-full h-10" />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-full h-6 bg-gradient-to-t from-ink-950/85 to-transparent"
-      />
+      {/* Progressive blur above the bar: the frosted blur ramps gradually down
+          to zero so scrolling content fades out smoothly instead of hitting a
+          hard edge. */}
+      <ProgressiveBlur side="bottom" className="bottom-full h-16" />
       <ul className="mx-auto flex max-w-[520px] items-stretch justify-around px-2 pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         {TABS.map((tab) => {
           const active = isActive(pathname, tab.href);

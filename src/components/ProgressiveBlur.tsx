@@ -10,13 +10,16 @@ type Side = "top" | "bottom";
 
 // Heavier blur is masked tight against the bar; lighter blur reaches further
 // out. Stacked, the layers add up to a smooth strong→clear ramp. Percentages
-// run away from the bar (0% = the edge touching the bar).
+// run away from the bar (0% = the edge touching the bar). The bands overlap
+// generously and step the blur down gently for a gradual, shadow-free fade.
 const LAYERS: { blur: number; stops: string }[] = [
-  { blur: 12, stops: "#000 0%, #000 16%, transparent 40%" },
-  { blur: 8, stops: "transparent 0%, #000 16%, #000 33%, transparent 56%" },
-  { blur: 4, stops: "transparent 16%, #000 33%, #000 50%, transparent 72%" },
-  { blur: 2, stops: "transparent 33%, #000 50%, #000 66%, transparent 88%" },
-  { blur: 1, stops: "transparent 50%, #000 66%, #000 83%, transparent 100%" },
+  { blur: 16, stops: "#000 0%, #000 8%, transparent 28%" },
+  { blur: 11, stops: "transparent 0%, #000 10%, #000 22%, transparent 42%" },
+  { blur: 7, stops: "transparent 12%, #000 24%, #000 36%, transparent 56%" },
+  { blur: 4, stops: "transparent 26%, #000 38%, #000 50%, transparent 70%" },
+  { blur: 2, stops: "transparent 40%, #000 52%, #000 64%, transparent 84%" },
+  { blur: 1, stops: "transparent 54%, #000 66%, #000 80%, transparent 100%" },
+  { blur: 0.5, stops: "transparent 70%, #000 84%, transparent 100%" },
 ];
 
 export default function ProgressiveBlur({

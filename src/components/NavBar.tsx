@@ -117,14 +117,10 @@ export default function NavBar() {
         </button>
       </div>
 
-      {/* Progressive blur + gradient fade beneath the bar: the frosted blur
-          ramps down to zero and the bar's background bleeds into a soft fade so
-          scrolling content blends with the page bg instead of a hard edge. */}
-      <ProgressiveBlur side="top" className="top-full h-10" />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-full h-6 bg-gradient-to-b from-ink-950/80 to-transparent"
-      />
+      {/* Progressive blur beneath the bar: the frosted blur ramps gradually
+          down to zero so scrolling content fades out smoothly instead of
+          hitting a hard edge. */}
+      <ProgressiveBlur side="top" className="top-full h-16" />
 
       {/* Mobile drawer + overlay */}
       <div
