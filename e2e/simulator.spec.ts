@@ -24,6 +24,45 @@ test.describe("ATLAS OS building simulator", () => {
     await expect(page.getByText("Floor telemetry", { exact: true })).toBeVisible();
   });
 
+  test("fullscreen expands the simulator stage to cover the whole viewport", async ({
+    page,
+  }) => {
+    await page.goto("/simulator");
+    const stage = page.getByTestId("sim-stage");
+    const viewport = page.viewportSize();
+    if (!viewport) throw new Error("no viewport size");
+
+    await page.getByRole("button", { name: "Enter fullscreen" }).click();
+
+    // The stage fills the viewport (allow a 2px rounding tolerance).
+    await expect
+      .poll(async () => {
+        const box = await stage.boundingBox();
+        if (!box) return false;
+        return (
+          Math.abs(box.x) <= 2 &&
+          Math.abs(box.y) <= 2 &&
+          Math.abs(box.width - viewport.width) <= 2 &&
+          Math.abs(box.height - viewport.height) <= 2
+        );
+      })
+      .toBe(true);
+
+    // Body scroll is locked while expanded.
+    await expect
+      .poll(() => page.evaluate(() => document.body.style.overflow))
+      .toBe("hidden");
+
+    // Exit returns the stage to its inline (non-viewport) size.
+    await page.getByRole("button", { name: "Exit fullscreen" }).click();
+    await expect
+      .poll(async () => {
+        const box = await stage.boundingBox();
+        return box ? box.height < viewport.height : false;
+      })
+      .toBe(true);
+  });
+
   test("simulator is reachable from the nav bar", async ({ page }) => {
     await page.goto("/");
     // On mobile use the bottom tab bar (MobileTabBar); on desktop the inline top nav.

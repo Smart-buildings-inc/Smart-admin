@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import BrandMark from "@/components/BrandMark";
 import ProgressiveBlur from "@/components/ProgressiveBlur";
 
 // Shared top navigation across the console + simulator + fleet views. Desktop
@@ -17,6 +17,8 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Console" },
   { href: "/simulator", label: "Simulator" },
   { href: "/fleet", label: "Fleet" },
+  { href: "/landing", label: "Overview" },
+  { href: "/brand", label: "Brand" },
   { href: "/sitemap", label: "Site Map" },
 ];
 
@@ -58,17 +60,8 @@ export default function NavBar() {
           className="flex items-center gap-2.5 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-signal-info"
           aria-label="ATLAS OS home"
         >
-          <Image
-            src="/icon.svg"
-            alt=""
-            width={36}
-            height={36}
-            priority
-            unoptimized
-            aria-hidden
-            className="h-8 w-8 lg:h-9 lg:w-9"
-          />
-          <span className="display text-base font-extrabold tracking-tight text-white lg:text-lg">
+          <BrandMark className="h-8 w-8 lg:h-9 lg:w-9" />
+          <span className="gradient-text display text-base font-extrabold tracking-tight lg:text-lg">
             ATLAS&nbsp;OS
           </span>
         </Link>

@@ -44,6 +44,52 @@ body {
   letter-spacing: -0.03em;
 }
 
+/* Animated gradient wordmark / headline — a multi-stop need-color gradient
+   that flows continuously across the text. Used on the NavBar brand and the
+   landing-page hero. Honors prefers-reduced-motion (freezes the flow). */
+@keyframes atlas-flow {
+  to {
+    background-position: 200% center;
+  }
+}
+.gradient-text {
+  background-image: linear-gradient(
+    100deg,
+    #4ea8ff 0%,
+    #7fe7e0 22%,
+    #5ddc7a 44%,
+    #c0a4ff 66%,
+    #ff8fb1 82%,
+    #4ea8ff 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: atlas-flow 6s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gradient-text {
+    animation: none;
+  }
+}
+
+/* Slow conic aurora used behind the landing hero. */
+@keyframes atlas-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+.aurora-spin {
+  animation: atlas-spin 28s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .aurora-spin {
+    animation: none;
+  }
+}
+
 /* Bespoke ops-console primitives ----------------------------------------- */
 
 .panel {
