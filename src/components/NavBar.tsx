@@ -13,6 +13,7 @@ type NavItem = { href: string; label: string };
 const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Console" },
   { href: "/fleet", label: "Fleet" },
+  { href: "/sitemap", label: "Site Map" },
 ];
 
 function isActive(pathname: string, href: string): boolean {
