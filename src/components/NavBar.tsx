@@ -4,9 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-// Shared navigation across the console + fleet + simulator views. Desktop shows
-// inline links; mobile gets both a hamburger drawer (top) and an iOS-style
-// bottom tab bar for one-thumb reach. Active route is highlighted via pathname.
+// Shared top navigation across the console + simulator + fleet views. Desktop
+// shows inline links; mobile collapses them behind a hamburger drawer (the
+// fixed bottom tab bar in MobileTabBar complements this on phones). Active
+// route is highlighted via the current pathname.
 
 type NavItem = { href: string; label: string };
 
@@ -19,50 +20,6 @@ const NAV_ITEMS: NavItem[] = [
 function isActive(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(`${href}/`);
-}
-
-// Minimal line icons for the bottom tab bar, keyed by route.
-function NavIcon({ href, className }: { href: string; className?: string }) {
-  const common = {
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: 1.9,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-    className,
-    "aria-hidden": true,
-  };
-  if (href === "/simulator") {
-    // Stacked building — the per-floor twin.
-    return (
-      <svg {...common}>
-        <rect x="5" y="3" width="14" height="18" rx="1" />
-        <line x1="5" y1="9" x2="19" y2="9" />
-        <line x1="5" y1="15" x2="19" y2="15" />
-        <line x1="10.5" y1="18" x2="13.5" y2="18" />
-      </svg>
-    );
-  }
-  if (href === "/fleet") {
-    // Globe — the multi-building rollup.
-    return (
-      <svg {...common}>
-        <circle cx="12" cy="12" r="9" />
-        <line x1="3" y1="12" x2="21" y2="12" />
-        <ellipse cx="12" cy="12" rx="4" ry="9" />
-      </svg>
-    );
-  }
-  // Console — dashboard grid.
-  return (
-    <svg {...common}>
-      <rect x="3" y="3" width="7" height="7" rx="1" />
-      <rect x="14" y="3" width="7" height="7" rx="1" />
-      <rect x="3" y="14" width="7" height="7" rx="1" />
-      <rect x="14" y="14" width="7" height="7" rx="1" />
-    </svg>
-  );
 }
 
 export default function NavBar() {
@@ -90,7 +47,6 @@ export default function NavBar() {
   }, [open]);
 
   return (
-    <>
     <nav className="sticky top-0 z-40 border-b border-ink-600/50 bg-ink-950/80 backdrop-blur supports-[backdrop-filter]:bg-ink-950/60">
       <div className="mx-auto flex h-14 max-w-[1500px] items-center justify-between gap-3 px-4 lg:h-16 lg:px-6">
         {/* Brand */}
@@ -211,39 +167,5 @@ export default function NavBar() {
         </div>
       </div>
     </nav>
-
-      {/* Mobile bottom tab bar — one-thumb reach, alongside the hamburger. */}
-      <nav
-        aria-label="Bottom navigation"
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-ink-600/50 bg-ink-950/90 backdrop-blur supports-[backdrop-filter]:bg-ink-950/70 md:hidden"
-        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-      >
-        <ul className="flex items-stretch justify-around">
-          {NAV_ITEMS.map((item) => {
-            const active = isActive(pathname, item.href);
-            return (
-              <li key={item.href} className="flex-1">
-                <Link
-                  href={item.href}
-                  aria-current={active ? "page" : undefined}
-                  className={`flex flex-col items-center gap-1 py-2 text-[10px] font-semibold transition-colors ${
-                    active ? "text-white" : "text-slate-400 hover:text-slate-200"
-                  }`}
-                >
-                  <span
-                    className={`grid h-8 w-8 place-items-center rounded-xl transition-colors ${
-                      active ? "bg-white text-ink-950" : "text-current"
-                    }`}
-                  >
-                    <NavIcon href={item.href} className="h-5 w-5" />
-                  </span>
-                  {item.label}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-    </>
   );
 }

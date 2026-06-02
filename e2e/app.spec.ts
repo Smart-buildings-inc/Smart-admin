@@ -46,4 +46,51 @@ test.describe("ATLAS OS console", () => {
       page.getByRole("heading", { name: "Incident feed" }),
     ).toBeVisible();
   });
+
+  // Fullscreen toggle must make the twin cover the entire viewport (no scroll),
+  // on both phone and desktop. We assert the stage's box matches the viewport.
+  test("fullscreen expands the twin to cover the whole viewport", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const stage = page.getByTestId("twin-stage");
+    const viewport = page.viewportSize();
+    if (!viewport) throw new Error("no viewport size");
+
+    await page.getByRole("button", { name: "Enter fullscreen" }).click();
+
+    // The stage fills the viewport (allow a 2px rounding tolerance).
+    await expect
+      .poll(async () => {
+        const box = await stage.boundingBox();
+        if (!box) return false;
+        return (
+          Math.abs(box.x) <= 2 &&
+          Math.abs(box.y) <= 2 &&
+          Math.abs(box.width - viewport.width) <= 2 &&
+          Math.abs(box.height - viewport.height) <= 2
+        );
+      })
+      .toBe(true);
+
+    // Body scroll is locked while expanded.
+    await expect
+      .poll(() => page.evaluate(() => document.body.style.overflow))
+      .toBe("hidden");
+  });
+
+  // Bottom tab bar is mobile-only (md:hidden): visible on Pixel 5, hidden on
+  // Desktop Chrome. Assert per viewport so both projects stay green.
+  test("mobile bottom tab bar visibility tracks viewport", async ({ page }) => {
+    await page.goto("/");
+    const tabBar = page.getByRole("navigation", { name: "Primary" });
+    const width = page.viewportSize()?.width ?? 0;
+    if (width < 768) {
+      await expect(tabBar).toBeVisible();
+      await expect(tabBar.getByRole("link", { name: "Console" })).toBeVisible();
+      await expect(tabBar.getByRole("link", { name: "Fleet" })).toBeVisible();
+    } else {
+      await expect(tabBar).toBeHidden();
+    }
+  });
 });

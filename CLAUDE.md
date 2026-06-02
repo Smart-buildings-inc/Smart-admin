@@ -88,6 +88,11 @@ Durable conventions for this repository — follow them every session:
 - **Push directly to `main`.** Commit and push routine work straight to `main`;
   no feature-branch/PR gate is required (the owner opted out). Keep commits
   focused with clear messages. CI still runs on every push.
+- **Always resolve merge conflicts (and surface them).** Whenever a branch/PR
+  has conflicts with `main`, merge the latest `main` into the branch, resolve
+  the conflicts, and re-verify (typecheck/lint/e2e) so the branch stays
+  mergeable — don't leave a conflicted PR sitting. Tell the owner what
+  conflicted and how it was resolved.
 - **Build & maintain in parallel with sub-agents.** When work splits into
   independent sub-tasks (distinct files, docs, investigations), fan them out to
   parallel sub-agents and batch independent tool calls rather than working
