@@ -22,5 +22,17 @@ export default function manifest(): MetadataRoute.Manifest {
         purpose: "maskable",
       },
     ],
+    // Install-prompt promo image (the AOS brand card). A wide brochure can't
+    // serve as a square app icon, so it lives here as a screenshot instead.
+    // form_factor/label are valid manifest fields the route serializes, but
+    // aren't in Next's narrow screenshot type — cast so they're still emitted.
+    screenshots: [
+      {
+        src: "/social.png",
+        type: "image/png",
+        form_factor: "wide",
+        label: "AOS — Building the future. Creating lasting spaces.",
+      },
+    ] as unknown as MetadataRoute.Manifest["screenshots"],
   };
 }
