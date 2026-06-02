@@ -65,6 +65,12 @@ export default function MobileTabBar() {
       aria-label="Primary"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-ink-600/50 bg-ink-950/85 backdrop-blur supports-[backdrop-filter]:bg-ink-950/70 md:hidden"
     >
+      {/* Gradient fade: extends the bar's background upward into a soft fade so
+          scrolling content blends with the page bg instead of a hard edge. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-full h-6 bg-gradient-to-t from-ink-950/85 to-transparent"
+      />
       <ul className="mx-auto flex max-w-[520px] items-stretch justify-around px-2 pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         {TABS.map((tab) => {
           const active = isActive(pathname, tab.href);
