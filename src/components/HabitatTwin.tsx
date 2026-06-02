@@ -7,6 +7,8 @@ import * as THREE from "three";
 import type { Floor, Incident } from "@/lib/types";
 import { needColor } from "@/lib/ui";
 import { annotationByFloor } from "@/lib/annotations";
+import AsciiRenderer from "@/components/AsciiRenderer";
+import { createChamferedBoxGeometry } from "@/lib/geometry";
 
 export type TwinMode = "orbit" | "walkthrough";
 
@@ -15,6 +17,24 @@ const FLOOR_GAP = 0.12;
 const FLOOR_W = 3.4;
 const FLOOR_D = 3.4;
 const STEP = FLOOR_HEIGHT + FLOOR_GAP;
+
+// Poly-modelled floor plate: filleted vertical corners + a flat chamfer along
+// the top/bottom edges so each slab catches a rim of light like a fabricated
+// floor plate instead of a raw box. Shared across every slab (one BufferGeometry).
+const SLAB_GEOMETRY = createChamferedBoxGeometry(FLOOR_W, FLOOR_HEIGHT, FLOOR_D, {
+  cornerRadius: 0.18,
+  edge: 0.08,
+  edgeSegments: 1,
+  cornerSegments: 4,
+});
+
+// A slightly rounder bevel for the foundation plinth at the tower's base.
+const PLINTH_GEOMETRY = createChamferedBoxGeometry(FLOOR_W + 0.7, 0.5, FLOOR_D + 0.7, {
+  cornerRadius: 0.28,
+  edge: 0.14,
+  edgeSegments: 3,
+  cornerSegments: 5,
+});
 
 interface SlabProps {
   floor: Floor;
@@ -69,8 +89,8 @@ function FloorSlab({
           document.body.style.cursor = "auto";
         }}
         scale={selected || hovered ? 1.04 : 1}
+        geometry={SLAB_GEOMETRY}
       >
-        <boxGeometry args={[FLOOR_W, FLOOR_HEIGHT, FLOOR_D]} />
         <meshStandardMaterial
           color={base}
           emissive={hasIncident ? "#ff5d5d" : base}
@@ -263,6 +283,11 @@ function Tower({
 
   return (
     <group ref={groupRef} position={[0, -totalHeight / 2, 0]}>
+      {/* Beveled foundation plinth the stack sits on (extruded + rounded bevel). */}
+      <mesh geometry={PLINTH_GEOMETRY} position={[0, -FLOOR_HEIGHT / 2 - 0.32, 0]}>
+        <meshStandardMaterial color="#1b2733" metalness={0.35} roughness={0.6} />
+      </mesh>
+
       {floors.map((floor, i) => (
         <FloorSlab
           key={floor.key}
@@ -283,6 +308,7 @@ export default function HabitatTwin({
   incidents,
   selectedKey,
   mode,
+  ascii = false,
   onSelect,
   onWalkthroughEnd,
 }: {
@@ -290,6 +316,7 @@ export default function HabitatTwin({
   incidents: Incident[];
   selectedKey: string | null;
   mode: TwinMode;
+  ascii?: boolean;
   onSelect: (key: string | null) => void;
   onWalkthroughEnd: () => void;
 }) {
@@ -346,6 +373,9 @@ export default function HabitatTwin({
         />
 
         <ARLauncher containerRef={arContainerRef} />
+
+        {/* Signature ASCII pass over the live twin. */}
+        {ascii && <AsciiRenderer color resolution={0.2} />}
       </Canvas>
 
       <div className="twin-overlay pointer-events-none absolute left-4 top-4 text-xs text-slate-400">

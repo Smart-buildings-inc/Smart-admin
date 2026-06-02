@@ -75,8 +75,10 @@ export default function RootLayout({
           }}
         />
       </head>
-      {/* Bottom padding on mobile clears the fixed MobileTabBar (incl. safe area). */}
-      <body className="min-h-screen pb-[calc(4.25rem+env(safe-area-inset-bottom))] md:pb-0">
+      {/* Page roots (<main>) carry their own bottom clearance for the fixed
+          MobileTabBar — body padding-bottom is ineffective here because
+          html/body use height:100%. */}
+      <body className="min-h-screen">
         <NavBar />
         {children}
         <MobileTabBar />

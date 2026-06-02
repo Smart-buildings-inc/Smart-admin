@@ -13,8 +13,7 @@ import KpiStrip from "@/components/KpiStrip";
 import FloorPanel from "@/components/FloorPanel";
 import IncidentFeed from "@/components/IncidentFeed";
 import BroadcastComposer from "@/components/BroadcastComposer";
-import FullscreenButton from "@/components/FullscreenButton";
-import { useFullscreen, FULLSCREEN_STAGE_CLASS } from "@/lib/useFullscreen";
+import FullscreenLink from "@/components/FullscreenLink";
 
 // The twin is client/WebGL-only — load it without SSR.
 const HabitatTwin = dynamic(() => import("@/components/HabitatTwin"), {
@@ -44,6 +43,7 @@ export default function Console({
   const [kpis, setKpis] = useState<BuildingKpis>(initialKpis);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [mode, setMode] = useState<TwinMode>("orbit");
+  const [ascii, setAscii] = useState(false);
 
   const selectedFloor = useMemo(
     () => floors.find((f) => f.key === selectedKey) ?? null,
@@ -84,15 +84,8 @@ export default function Console({
     setMode("walkthrough");
   }, []);
 
-  // Fullscreen for the twin / walk-through (native FS + CSS overlay fallback).
-  const {
-    ref: twinWrapRef,
-    isFullscreen: expanded,
-    toggle: toggleExpand,
-  } = useFullscreen<HTMLDivElement>();
-
   return (
-    <main className="mx-auto flex min-h-screen max-w-[1500px] flex-col gap-4 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:p-6">
+    <main className="mx-auto flex min-h-screen max-w-[1500px] flex-col gap-4 p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-[max(1rem,env(safe-area-inset-bottom))] lg:p-6">
       {/* Header */}
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
@@ -127,17 +120,15 @@ export default function Console({
       <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-[1.6fr_1fr]">
         <section className="flex flex-col gap-4">
           <div
-            ref={twinWrapRef}
             data-testid="twin-stage"
-            className={`relative overflow-hidden bg-ink-950 ${
-              expanded ? FULLSCREEN_STAGE_CLASS : "panel h-[460px] lg:h-[560px]"
-            }`}
+            className="panel relative h-[920px] overflow-hidden bg-ink-950 lg:h-[560px]"
           >
             <HabitatTwin
               floors={floors}
               incidents={incidents}
               selectedKey={selectedKey}
               mode={mode}
+              ascii={ascii}
               onSelect={setSelectedKey}
               onWalkthroughEnd={() => setMode("orbit")}
             />
@@ -168,7 +159,21 @@ export default function Console({
                   Walk-through
                 </button>
               </div>
-              <FullscreenButton isFullscreen={expanded} onToggle={toggleExpand} />
+              <div className="flex rounded-full border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur">
+                <button
+                  type="button"
+                  onClick={() => setAscii((a) => !a)}
+                  aria-pressed={ascii}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                    ascii
+                      ? "bg-white text-ink-950"
+                      : "text-slate-300 hover:text-white"
+                  }`}
+                >
+                  ASCII
+                </button>
+              </div>
+              <FullscreenLink />
             </div>
           </div>
           <FloorPanel floor={selectedFloor} incidents={incidents} />
