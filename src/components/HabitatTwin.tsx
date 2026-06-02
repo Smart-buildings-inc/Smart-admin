@@ -8,11 +8,19 @@ import {
   Environment,
   Lightformer,
   ContactShadows,
+  SoftShadows,
 } from "@react-three/drei";
 import * as THREE from "three";
 import type { Floor, Incident } from "@/lib/types";
 import { needColor } from "@/lib/ui";
 import { annotationByFloor } from "@/lib/annotations";
+import {
+  slabDetailMaps,
+  sandMaps,
+  grassMaps,
+  woodMaps,
+  waterNormalMap,
+} from "@/lib/proceduralTextures";
 
 export type TwinMode = "orbit" | "walkthrough";
 
@@ -50,6 +58,10 @@ const CHASE_X = FLOOR_W / 2 - 0.5;
 const CHASE_Z = -(FLOOR_D / 2 - 0.5);
 // Structural column inset from each slab corner.
 const COL_INSET = 0.14;
+
+// Procedural micro-surface detail shared by every floor slab (built once).
+const slabMaps = slabDetailMaps();
+const SLAB_NORMAL_SCALE = new THREE.Vector2(0.35, 0.35);
 
 interface SlabProps {
   floor: Floor;
@@ -115,6 +127,9 @@ function FloorSlab({
           metalness={0.2}
           roughness={0.45}
           envMapIntensity={0.9}
+          roughnessMap={slabMaps.roughnessMap}
+          normalMap={slabMaps.normalMap}
+          normalScale={SLAB_NORMAL_SCALE}
           transparent
           opacity={0.92}
         />
@@ -177,6 +192,15 @@ function FloorSlab({
       )}
     </group>
   );
+}
+
+/** Nudges tone-mapping exposure up in cinematic mode for a richer image. */
+function ExposureRig({ cinematic }: { cinematic: boolean }) {
+  const gl = useThree((s) => s.gl);
+  useEffect(() => {
+    gl.toneMappingExposure = cinematic ? 1.15 : 1.0;
+  }, [cinematic, gl]);
+  return null;
 }
 
 /**
@@ -515,6 +539,44 @@ function SiteScene({ cinematic }: { cinematic: boolean }) {
   const markerRef = useRef<THREE.Group>(null);
   const waterEnv = cinematic ? 1.0 : 0.0;
 
+  // Procedural RGBA textures (albedo + roughness + normal), built once.
+  const sand = useMemo(() => sandMaps(), []);
+  const grass = useMemo(() => grassMaps(), []);
+  const wood = useMemo(() => woodMaps(), []);
+  const waterNormal = useMemo(() => waterNormalMap(), []);
+
+  /**
+   * Smart water shader: a MeshStandardMaterial with a custom GLSL injection.
+   * A `uTime` uniform drives summed sine waves that displace the surface in the
+   * vertex stage, while the animated normal map (scrolled in useFrame) supplies
+   * fine ripple detail and the environment map provides realistic reflection.
+   */
+  const waterTime = useMemo(() => ({ value: 0 }), []);
+  const waterMat = useMemo(() => {
+    const mat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#2f6f6a"),
+      roughness: 0.08,
+      metalness: 0.0,
+      normalMap: waterNormal,
+      normalScale: new THREE.Vector2(0.5, 0.5),
+    });
+    mat.onBeforeCompile = (shader) => {
+      shader.uniforms.uTime = waterTime;
+      shader.vertexShader =
+        "uniform float uTime;\n" +
+        shader.vertexShader.replace(
+          "#include <begin_vertex>",
+          `#include <begin_vertex>
+           float wv =
+             sin(position.x * 0.45 + uTime * 1.1) * 0.07 +
+             cos(position.y * 0.6 + uTime * 0.9) * 0.05 +
+             sin((position.x + position.y) * 0.3 - uTime * 0.7) * 0.04;
+           transformed.z += wv;`,
+        );
+    };
+    return mat;
+  }, [waterNormal, waterTime]);
+
   // Static scatter computed once.
   const { trees, groyneA, groyneB, dockPosts } = useMemo(() => {
     const rng = makeRng(20260602);
@@ -549,9 +611,14 @@ function SiteScene({ cinematic }: { cinematic: boolean }) {
     };
   }, []);
 
-  useFrame((state) => {
-    if (!markerRef.current) return;
+  useFrame((state, delta) => {
     const t = state.clock.elapsedTime;
+    // Drive the water shader + scroll its ripple normals.
+    waterTime.value = t;
+    waterNormal.offset.x = (t * 0.015) % 1;
+    waterNormal.offset.y = (t * 0.01) % 1;
+    if (!markerRef.current) return;
+    void delta;
     markerRef.current.position.y = 2.4 + Math.sin(t * 2) * 0.12;
     const halo = markerRef.current.children[1] as THREE.Mesh | undefined;
     if (halo) {
@@ -564,19 +631,14 @@ function SiteScene({ cinematic }: { cinematic: boolean }) {
 
   return (
     <group>
-      {/* Water (Georgian Bay) */}
+      {/* Water (Georgian Bay) — animated procedural surface */}
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
         position={[0, 0, -16]}
         receiveShadow
+        material={waterMat}
       >
-        <planeGeometry args={[80, 40]} />
-        <meshStandardMaterial
-          color="#2f6f6a"
-          roughness={0.12}
-          metalness={0.0}
-          envMapIntensity={waterEnv}
-        />
+        <planeGeometry args={[80, 40, 96, 48]} />
       </mesh>
 
       {/* Sandy beach strip */}
@@ -586,7 +648,13 @@ function SiteScene({ cinematic }: { cinematic: boolean }) {
         receiveShadow
       >
         <planeGeometry args={[80, 6]} />
-        <meshStandardMaterial color="#d8c39a" roughness={0.95} />
+        <meshStandardMaterial
+          map={sand.albedoMap}
+          roughnessMap={sand.roughnessMap}
+          normalMap={sand.normalMap}
+          normalScale={SLAB_NORMAL_SCALE}
+          roughness={0.95}
+        />
       </mesh>
 
       {/* Grass / forest floor */}
@@ -596,7 +664,13 @@ function SiteScene({ cinematic }: { cinematic: boolean }) {
         receiveShadow
       >
         <planeGeometry args={[80, 40]} />
-        <meshStandardMaterial color="#28401f" roughness={0.95} />
+        <meshStandardMaterial
+          map={grass.albedoMap}
+          roughnessMap={grass.roughnessMap}
+          normalMap={grass.normalMap}
+          normalScale={SLAB_NORMAL_SCALE}
+          roughness={0.95}
+        />
       </mesh>
 
       {/* Rock groynes / breakwaters reaching into the bay */}
@@ -616,7 +690,13 @@ function SiteScene({ cinematic }: { cinematic: boolean }) {
       <group position={[0, 0, 4]}>
         <mesh position={[0, 0.7, 0]} castShadow receiveShadow>
           <boxGeometry args={[3, 1.4, 2.4]} />
-          <meshStandardMaterial color="#cdbfa6" roughness={0.8} />
+          <meshStandardMaterial
+            map={wood.albedoMap}
+            roughnessMap={wood.roughnessMap}
+            normalMap={wood.normalMap}
+            normalScale={SLAB_NORMAL_SCALE}
+            roughness={0.8}
+          />
         </mesh>
         {/* Gabled roof (rotated box prism) */}
         <mesh position={[0, 1.75, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
@@ -713,11 +793,20 @@ export default function HabitatTwin({
       <Canvas
         camera={{ position: [8, 2, 8], fov: 42 }}
         frameloop="always"
-        shadows={cinematic}
+        shadows={cinematic ? "soft" : false}
+        dpr={[1, 2]}
+        gl={{
+          antialias: true,
+          powerPreference: "high-performance",
+          toneMapping: THREE.ACESFilmicToneMapping,
+        }}
         onPointerMissed={() => mode === "orbit" && onSelect(null)}
       >
+        <ExposureRig cinematic={cinematic} />
         {cinematic ? (
           <>
+            {/* PCSS-style soft, distance-attenuated shadow penumbra. */}
+            <SoftShadows size={26} samples={12} focus={0.7} />
             {/* Image-based lighting from a procedural HDRI (no external assets,
                 so it works fully offline / local-first). */}
             <Environment resolution={256} background={false}>
@@ -779,11 +868,25 @@ export default function HabitatTwin({
 
         {(mode === "orbit" || scene === "site") && (
           <OrbitControls
+            makeDefault
             enablePan
-            screenSpacePanning={false}
+            enableDamping
+            dampingFactor={0.08}
+            rotateSpeed={0.7}
+            zoomSpeed={0.9}
+            panSpeed={0.8}
+            screenSpacePanning
             minDistance={scene === "site" ? 4 : 6}
             maxDistance={scene === "site" ? 60 : 18}
             maxPolarAngle={Math.PI / 1.9}
+            // 1 finger orbit · 2 fingers pinch-zoom + pan; mouse: LMB orbit,
+            // wheel zoom, RMB pan.
+            touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN }}
+            mouseButtons={{
+              LEFT: THREE.MOUSE.ROTATE,
+              MIDDLE: THREE.MOUSE.DOLLY,
+              RIGHT: THREE.MOUSE.PAN,
+            }}
           />
         )}
 
