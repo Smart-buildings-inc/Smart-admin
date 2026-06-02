@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import NavBar from "@/components/NavBar";
+import BottomNav from "@/components/BottomNav";
 
 export const metadata: Metadata = {
   title: "ATLAS OS — Habitat Twin",
@@ -24,9 +25,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen">
+      {/* Reserve room for the fixed mobile tab bar (its height + safe area) so
+          page content never hides behind it. Cleared at md+ where the bottom
+          bar is gone. */}
+      <body className="min-h-screen pb-[calc(4.25rem+env(safe-area-inset-bottom))] md:pb-0">
         <NavBar />
         {children}
+        <BottomNav />
       </body>
     </html>
   );
