@@ -42,17 +42,18 @@ test.describe("ATLAS OS building simulator", () => {
     expect(res.status()).toBe(200);
   });
 
-  test("fullscreen expands the simulator stage to cover the whole viewport", async ({
+  test("fullscreen control opens the full-viewport viewer and exits back", async ({
     page,
   }) => {
     await page.goto("/simulator");
-    const stage = page.getByTestId("sim-stage");
     const viewport = page.viewportSize();
     if (!viewport) throw new Error("no viewport size");
 
-    await page.getByRole("button", { name: "Enter fullscreen" }).click();
+    await page.getByRole("link", { name: "Open fullscreen viewer" }).click();
+    await expect(page).toHaveURL(/\/simulate\/atlas-01$/);
 
-    // The stage fills the viewport (allow a 2px rounding tolerance).
+    // The full-screen stage fills the viewport (allow a 2px rounding tolerance).
+    const stage = page.getByTestId("fullscreen-stage");
     await expect
       .poll(async () => {
         const box = await stage.boundingBox();
@@ -66,19 +67,36 @@ test.describe("ATLAS OS building simulator", () => {
       })
       .toBe(true);
 
-    // Body scroll is locked while expanded.
+    // Body scroll is locked while the viewer owns the screen.
     await expect
       .poll(() => page.evaluate(() => document.body.style.overflow))
       .toBe("hidden");
 
-    // Exit returns the stage to its inline (non-viewport) size.
-    await page.getByRole("button", { name: "Exit fullscreen" }).click();
+    // Exit returns to the simulator (history back).
+    await page.getByRole("button", { name: "Exit fullscreen viewer" }).click();
+    await expect(page).toHaveURL(/\/simulator$/);
+  });
+
+  test("dedicated full-screen viewer renders edge-to-edge", async ({ page }) => {
+    await page.goto("/simulate/atlas-01");
+    const viewport = page.viewportSize();
+    if (!viewport) throw new Error("no viewport size");
+
+    const stage = page.getByTestId("fullscreen-stage");
     await expect
       .poll(async () => {
         const box = await stage.boundingBox();
-        return box ? box.height < viewport.height : false;
+        if (!box) return false;
+        return (
+          Math.abs(box.width - viewport.width) <= 2 &&
+          Math.abs(box.height - viewport.height) <= 2
+        );
       })
       .toBe(true);
+
+    // Option toggles and the exit affordance are present.
+    await expect(page.getByRole("button", { name: "Cut-away", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Exit fullscreen viewer" })).toBeVisible();
   });
 
   test("simulator is reachable from the nav bar", async ({ page }) => {

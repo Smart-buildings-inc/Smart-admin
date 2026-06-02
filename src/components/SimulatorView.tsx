@@ -10,8 +10,7 @@ import { useCallback, useMemo, useState } from "react";
 import type { Floor, FloorMetrics, Incident } from "@/lib/types";
 import type { SimOptions } from "@/components/BuildingSimulator";
 import { needColor } from "@/lib/ui";
-import FullscreenButton from "@/components/FullscreenButton";
-import { useFullscreen, FULLSCREEN_STAGE_CLASS } from "@/lib/useFullscreen";
+import FullscreenLink from "@/components/FullscreenLink";
 
 const BuildingSimulator = dynamic(() => import("@/components/BuildingSimulator"), {
   ssr: false,
@@ -100,13 +99,6 @@ export default function SimulatorView({
     });
   }, []);
 
-  // Fullscreen for the simulator stage (native FS + CSS overlay fallback).
-  const {
-    ref: stageRef,
-    isFullscreen,
-    toggle: toggleFullscreen,
-  } = useFullscreen<HTMLDivElement>();
-
   const set = useCallback(
     (patch: Partial<SimOptions>) => setOptions((o) => ({ ...o, ...patch })),
     [],
@@ -147,13 +139,8 @@ export default function SimulatorView({
         {/* Stage */}
         <section className="flex flex-col gap-4">
           <div
-            ref={stageRef}
             data-testid="sim-stage"
-            className={`relative overflow-hidden bg-ink-950 ${
-              isFullscreen
-                ? FULLSCREEN_STAGE_CLASS
-                : "panel h-[1040px] lg:h-[660px]"
-            }`}
+            className="panel relative h-[1040px] overflow-hidden bg-ink-950 lg:h-[660px]"
           >
             <BuildingSimulator
               floors={floors}
@@ -180,7 +167,7 @@ export default function SimulatorView({
                 <Toggle label="Orbit" active={options.autoRotate} onClick={() => set({ autoRotate: !options.autoRotate })} />
                 <Toggle label="Elevator" active={options.elevatorRunning} onClick={() => set({ elevatorRunning: !options.elevatorRunning })} />
               </div>
-              <FullscreenButton isFullscreen={isFullscreen} onToggle={toggleFullscreen} />
+              <FullscreenLink />
             </div>
 
             {/* Live elevator indicator */}

@@ -54,19 +54,18 @@ test.describe("ATLAS OS console", () => {
     ).toBeVisible();
   });
 
-  // Fullscreen toggle must make the twin cover the entire viewport (no scroll),
-  // on both phone and desktop. We assert the stage's box matches the viewport.
-  test("fullscreen expands the twin to cover the whole viewport", async ({
-    page,
-  }) => {
+  // The twin's fullscreen control links to the dedicated /simulate/atlas-01
+  // viewer, which renders the twin edge-to-edge on phone and desktop alike.
+  test("fullscreen control opens the full-viewport viewer", async ({ page }) => {
     await page.goto("/");
-    const stage = page.getByTestId("twin-stage");
     const viewport = page.viewportSize();
     if (!viewport) throw new Error("no viewport size");
 
-    await page.getByRole("button", { name: "Enter fullscreen" }).click();
+    await page.getByRole("link", { name: "Open fullscreen viewer" }).click();
+    await expect(page).toHaveURL(/\/simulate\/atlas-01$/);
 
-    // The stage fills the viewport (allow a 2px rounding tolerance).
+    // The full-screen stage fills the viewport (allow a 2px rounding tolerance).
+    const stage = page.getByTestId("fullscreen-stage");
     await expect
       .poll(async () => {
         const box = await stage.boundingBox();
@@ -80,7 +79,7 @@ test.describe("ATLAS OS console", () => {
       })
       .toBe(true);
 
-    // Body scroll is locked while expanded.
+    // Body scroll is locked while the viewer owns the screen.
     await expect
       .poll(() => page.evaluate(() => document.body.style.overflow))
       .toBe("hidden");
