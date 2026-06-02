@@ -46,6 +46,7 @@ export default function Console({
   const [mode, setMode] = useState<TwinMode>("orbit");
   const [shading, setShading] = useState<ShadingMode>("standard");
   const [scene, setScene] = useState<SceneKind>("habitat");
+  const [showSystems, setShowSystems] = useState(false);
 
   const selectedFloor = useMemo(
     () => floors.find((f) => f.key === selectedKey) ?? null,
@@ -142,6 +143,7 @@ export default function Console({
               mode={mode}
               shading={shading}
               scene={scene}
+              showSystems={showSystems}
               onSelect={setSelectedKey}
               onWalkthroughEnd={() => setMode("orbit")}
             />
@@ -230,6 +232,25 @@ export default function Console({
                   Cinematic
                 </button>
               </div>
+
+              {/* Layers: reveal the structural + MEP (water/power/HVAC) build-out */}
+              <div className="flex gap-1 rounded-full border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur">
+                <button
+                  type="button"
+                  onClick={() => setShowSystems((s) => !s)}
+                  disabled={scene === "site"}
+                  aria-pressed={showSystems}
+                  title="Show structural frame, water/waste/power/HVAC risers & rooftop plant"
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+                    showSystems && scene === "habitat"
+                      ? "bg-white text-ink-950"
+                      : "text-slate-300 hover:text-white"
+                  }`}
+                >
+                  Systems
+                </button>
+              </div>
+
               <FullscreenButton isFullscreen={expanded} onToggle={toggleExpand} />
             </div>
           </div>

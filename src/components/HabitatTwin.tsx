@@ -33,6 +33,24 @@ const FLOOR_W = 3.4;
 const FLOOR_D = 3.4;
 const STEP = FLOOR_HEIGHT + FLOOR_GAP;
 
+/**
+ * Building services (MEP) carried by the vertical chase. Each riser runs the
+ * full height of the tower and feeds a branch into every floor — the way a
+ * real building distributes utilities. Colors double as the legend.
+ */
+const SERVICE_RISERS = [
+  { key: "water", label: "Potable water", color: "#3aa0ff", radius: 0.05, offset: [0.0, 0.18] },
+  { key: "waste", label: "Waste / greywater", color: "#7d94a6", radius: 0.06, offset: [0.0, -0.18] },
+  { key: "power", label: "Power bus", color: "#ffcf4d", radius: 0.045, offset: [0.18, 0.0] },
+  { key: "air", label: "Air / HVAC duct", color: "#7fe7e0", radius: 0.07, offset: [-0.18, 0.0] },
+] as const;
+
+// Back-right corner chase location (inside the slab footprint).
+const CHASE_X = FLOOR_W / 2 - 0.5;
+const CHASE_Z = -(FLOOR_D / 2 - 0.5);
+// Structural column inset from each slab corner.
+const COL_INSET = 0.14;
+
 interface SlabProps {
   floor: Floor;
   index: number;
@@ -161,6 +179,107 @@ function FloorSlab({
   );
 }
 
+/**
+ * Engineered build-out for the habitat tower: a structural frame (corner
+ * columns + per-floor edge beams), a vertical services chase carrying the
+ * potable-water / waste / power / HVAC risers with a branch tapping into every
+ * floor, a foundation raft, and a rooftop plant deck (PV array + reservoir).
+ * Rendered as a sibling of the slabs so the translucent floors read like a
+ * cut-away CAD section.
+ */
+function BuildingSystems({ floorCount }: { floorCount: number }) {
+  const spanH = (floorCount - 1) * STEP + FLOOR_HEIGHT;
+  const centerY = ((floorCount - 1) * STEP) / 2;
+  const topY = (floorCount - 1) * STEP + FLOOR_HEIGHT / 2;
+  const cx = FLOOR_W / 2 - COL_INSET;
+  const cz = FLOOR_D / 2 - COL_INSET;
+  const corners: [number, number][] = [
+    [cx, cz],
+    [cx, -cz],
+    [-cx, cz],
+    [-cx, -cz],
+  ];
+
+  return (
+    <group>
+      {/* Structural columns at every corner, full height */}
+      {corners.map(([x, z], i) => (
+        <mesh key={`col-${i}`} position={[x, centerY, z]} castShadow receiveShadow>
+          <boxGeometry args={[0.16, spanH, 0.16]} />
+          <meshStandardMaterial color="#9aa7b4" metalness={0.85} roughness={0.35} />
+        </mesh>
+      ))}
+
+      {/* Per-floor structural elements + service branch tap */}
+      {Array.from({ length: floorCount }, (_, i) => {
+        const y = i * STEP;
+        return (
+          <group key={`lvl-${i}`} position={[0, y, 0]}>
+            {/* Edge beams (a thin structural ring at the slab perimeter) */}
+            <mesh position={[0, -FLOOR_HEIGHT / 2 - 0.02, 0]} receiveShadow>
+              <boxGeometry args={[FLOOR_W + 0.04, 0.06, FLOOR_D + 0.04]} />
+              <meshStandardMaterial color="#5b6776" metalness={0.7} roughness={0.5} />
+            </mesh>
+            {/* Branch tap: a stub from the chase toward the floor core */}
+            <mesh
+              position={[CHASE_X - 0.45, -FLOOR_HEIGHT / 2 + 0.12, CHASE_Z]}
+              rotation={[0, 0, Math.PI / 2]}
+            >
+              <cylinderGeometry args={[0.03, 0.03, 0.9, 8]} />
+              <meshStandardMaterial color="#cdd6df" metalness={0.7} roughness={0.4} />
+            </mesh>
+          </group>
+        );
+      })}
+
+      {/* Vertical service risers in the chase */}
+      {SERVICE_RISERS.map((r) => (
+        <mesh
+          key={r.key}
+          position={[CHASE_X + r.offset[0], centerY, CHASE_Z + r.offset[1]]}
+          castShadow
+        >
+          <cylinderGeometry args={[r.radius, r.radius, spanH, 12]} />
+          <meshStandardMaterial
+            color={r.color}
+            emissive={r.color}
+            emissiveIntensity={0.35}
+            metalness={0.6}
+            roughness={0.3}
+          />
+        </mesh>
+      ))}
+
+      {/* Foundation raft below the lowest floor */}
+      <mesh position={[0, -FLOOR_HEIGHT / 2 - 0.18, 0]} receiveShadow castShadow>
+        <boxGeometry args={[FLOOR_W + 0.7, 0.3, FLOOR_D + 0.7]} />
+        <meshStandardMaterial color="#3a4654" metalness={0.2} roughness={0.9} />
+      </mesh>
+
+      {/* Rooftop plant deck: reservoir tank + PV array */}
+      <group position={[0, topY + 0.05, 0]}>
+        {/* Reservoir / header tank */}
+        <mesh position={[-0.8, 0.4, -0.7]} castShadow>
+          <cylinderGeometry args={[0.55, 0.55, 0.8, 20]} />
+          <meshStandardMaterial color="#3aa0ff" metalness={0.3} roughness={0.4} transparent opacity={0.85} />
+        </mesh>
+        {/* Tilted PV panels */}
+        {[-0.6, 0.2, 1.0].map((px, i) => (
+          <mesh key={`pv-${i}`} position={[px, 0.28, 0.9]} rotation={[-Math.PI / 6, 0, 0]} castShadow>
+            <boxGeometry args={[0.7, 0.04, 0.55]} />
+            <meshStandardMaterial color="#11203a" metalness={0.5} roughness={0.25} emissive="#16385f" emissiveIntensity={0.25} />
+          </mesh>
+        ))}
+        {/* Parapet rail */}
+        <mesh position={[0, 0.12, 0]}>
+          <boxGeometry args={[FLOOR_W, 0.04, FLOOR_D]} />
+          <meshStandardMaterial color="#6b7787" metalness={0.6} roughness={0.5} transparent opacity={0.5} />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
 /** Drives the camera on a top→underground descent during walk-through mode. */
 function WalkthroughCamera({
   active,
@@ -260,6 +379,7 @@ function Tower({
   selectedKey,
   mode,
   walkFloorIndex,
+  showSystems,
   onSelect,
 }: {
   floors: Floor[];
@@ -267,6 +387,7 @@ function Tower({
   selectedKey: string | null;
   mode: TwinMode;
   walkFloorIndex: number;
+  showSystems: boolean;
   onSelect: (key: string) => void;
 }) {
   const groupRef = useRef<THREE.Group>(null);
@@ -294,6 +415,7 @@ function Tower({
           onSelect={onSelect}
         />
       ))}
+      {showSystems && <BuildingSystems floorCount={floors.length} />}
     </group>
   );
 }
@@ -554,6 +676,7 @@ export default function HabitatTwin({
   mode,
   shading = "standard",
   scene = "habitat",
+  showSystems = false,
   onSelect,
   onWalkthroughEnd,
 }: {
@@ -563,6 +686,7 @@ export default function HabitatTwin({
   mode: TwinMode;
   shading?: ShadingMode;
   scene?: SceneKind;
+  showSystems?: boolean;
   onSelect: (key: string | null) => void;
   onWalkthroughEnd: () => void;
 }) {
@@ -635,6 +759,7 @@ export default function HabitatTwin({
             selectedKey={selectedKey}
             mode={mode}
             walkFloorIndex={walkFloorIndex}
+            showSystems={showSystems}
             onSelect={onSelect}
           />
         )}
@@ -685,6 +810,30 @@ export default function HabitatTwin({
               : "Orbit to inspect · drag to pan · tap a floor"}
         </div>
       </div>
+
+      {/* MEP / systems legend — only while the engineered layer is visible. */}
+      {showSystems && scene === "habitat" && (
+        <div className="annotation pointer-events-none absolute bottom-4 left-4 rounded-lg px-3 py-2 text-xs text-slate-200">
+          <div className="mb-1 text-[10px] uppercase tracking-[0.18em] text-slate-400">
+            Building systems
+          </div>
+          <ul className="space-y-1">
+            {SERVICE_RISERS.map((r) => (
+              <li key={r.key} className="flex items-center gap-2">
+                <span
+                  className="inline-block h-2 w-2 rounded-full"
+                  style={{ backgroundColor: r.color }}
+                />
+                {r.label}
+              </li>
+            ))}
+            <li className="flex items-center gap-2">
+              <span className="inline-block h-2 w-2 rounded-full bg-[#9aa7b4]" />
+              Structural frame
+            </li>
+          </ul>
+        </div>
+      )}
 
       {/* WebXR "Enter AR" button mounts here when supported. */}
       <div ref={arContainerRef} className="absolute bottom-4 right-4 z-10" />
