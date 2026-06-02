@@ -10,8 +10,7 @@ import { useCallback, useMemo, useState } from "react";
 import type { Floor, FloorMetrics, Incident } from "@/lib/types";
 import type { SimOptions } from "@/components/BuildingSimulator";
 import { needColor } from "@/lib/ui";
-import FullscreenButton from "@/components/FullscreenButton";
-import { useFullscreen, FULLSCREEN_STAGE_CLASS } from "@/lib/useFullscreen";
+import FullscreenLink from "@/components/FullscreenLink";
 
 const BuildingSimulator = dynamic(() => import("@/components/BuildingSimulator"), {
   ssr: false,
@@ -91,13 +90,6 @@ export default function SimulatorView({
   const [pixel, setPixel] = useState(true);
   const [ascii, setAscii] = useState(false);
 
-  // Fullscreen for the simulator stage (native FS + CSS overlay fallback).
-  const {
-    ref: stageRef,
-    isFullscreen,
-    toggle: toggleFullscreen,
-  } = useFullscreen<HTMLDivElement>();
-
   const set = useCallback(
     (patch: Partial<SimOptions>) => setOptions((o) => ({ ...o, ...patch })),
     [],
@@ -114,7 +106,7 @@ export default function SimulatorView({
     : [];
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-[1500px] flex-col gap-4 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:p-6">
+    <main className="mx-auto flex min-h-screen max-w-[1500px] flex-col gap-4 p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-[max(1rem,env(safe-area-inset-bottom))] lg:p-6">
       {/* Header */}
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
@@ -138,13 +130,8 @@ export default function SimulatorView({
         {/* Stage */}
         <section className="flex flex-col gap-4">
           <div
-            ref={stageRef}
             data-testid="sim-stage"
-            className={`relative overflow-hidden bg-ink-950 ${
-              isFullscreen
-                ? FULLSCREEN_STAGE_CLASS
-                : "panel h-[1040px] lg:h-[660px]"
-            }`}
+            className="panel relative h-[1040px] overflow-hidden bg-ink-950 lg:h-[660px]"
           >
             <BuildingSimulator
               floors={floors}
@@ -173,7 +160,7 @@ export default function SimulatorView({
                 <Toggle label="Orbit" active={options.autoRotate} onClick={() => set({ autoRotate: !options.autoRotate })} />
                 <Toggle label="Elevator" active={options.elevatorRunning} onClick={() => set({ elevatorRunning: !options.elevatorRunning })} />
               </div>
-              <FullscreenButton isFullscreen={isFullscreen} onToggle={toggleFullscreen} />
+              <FullscreenLink />
             </div>
 
             {/* Live elevator indicator */}

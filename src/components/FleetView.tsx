@@ -114,7 +114,7 @@ export default function FleetView({
   }, [buildings]);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-[1500px] flex-col gap-4 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:p-6">
+    <main className="mx-auto flex min-h-screen max-w-[1500px] flex-col gap-4 p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-[max(1rem,env(safe-area-inset-bottom))] lg:p-6">
       {/* Header */}
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
