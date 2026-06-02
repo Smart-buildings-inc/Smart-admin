@@ -214,6 +214,65 @@ export interface SensorPoint {
 /** Operational status of an ATLAS building in the fleet view (F7). */
 export type BuildingStatus = "online" | "degraded" | "offline";
 
+// --- Permitting / building-code compliance layer ---
+
+/**
+ * Status of the MECP Environmental Compliance Approval for the building's
+ * water-reuse works (greywater/rainwater → non-potable distribution).
+ *  "approved"          — ECA in hand; construction/operation permitted.
+ *  "in-review"         — formal ECA submission filed; MECP review underway.
+ *  "pre-consultation"  — pre-submission meeting held; formal submission pending.
+ *  "not-started"       — ECA process not yet initiated.
+ */
+export type EcaStatus =
+  | "approved"
+  | "in-review"
+  | "pre-consultation"
+  | "not-started";
+
+/**
+ * Egress, accessibility, fire, plumbing, and ESS compliance snapshot for a
+ * single ATLAS building, capturing the key items from the de-risking plan
+ * (docs/ATLAS-derisking-plan.md flaws #5–#8).
+ *
+ * All fields reflect the *designed / permitted* state — operators update these
+ * as permit milestones are achieved. Optional on `Building` so buildings that
+ * predate this layer stay valid.
+ */
+export interface BuildingCompliance {
+  /** Number of passenger elevators. Two is the minimum for redundancy and AODA accessibility. */
+  elevators: number;
+  /** Whether a dedicated firefighter elevator (OBC 3.2.6.7) is provided. */
+  firefighterElevator: boolean;
+  /** Number of pressurized exit stairs (OBC 9.9 / Part 3 egress). */
+  exitStairs: number;
+  /** Whether the building is fully sprinklered (NFPA 13 / OBC Div.B Pt.3). */
+  sprinklered: boolean;
+  /** Whether the building is barrier-free throughout (AODA / OBC 3.8). */
+  barrierFree: boolean;
+  /**
+   * Whether CSA B128 non-potable (purple-pipe) dual distribution is installed.
+   * Required for any on-site greywater/rainwater reuse serving toilets/irrigation.
+   */
+  dualPlumbing: boolean;
+  /**
+   * MECP Environmental Compliance Approval status for the water-reuse works.
+   * Required before any non-potable reuse system can legally operate in Ontario.
+   */
+  mecpEcaStatus: EcaStatus;
+  /**
+   * Location of the bulk water cistern / reservoir.
+   * Decision from the de-risking plan: relocate from roof to basement to
+   * eliminate the structural/seismic loading premium and simplify the core.
+   */
+  reservoirLocation: "basement" | "roof";
+  /**
+   * Whether the ESS (battery-wall) installation is designed to the current
+   * energy-storage fire code (separation, ventilation, detection per OBC/NFPA 855).
+   */
+  essFireCompliant: boolean;
+}
+
 /**
  * A single ATLAS building, plotted on the fleet map (PRD §10). Carries a few
  * rollup metrics so the fleet view can render at-a-glance health without
@@ -262,4 +321,10 @@ export interface Building {
    * False for sites still in commissioning or without ESS certification.
    */
   islandCapable?: boolean;
+  /**
+   * Egress, accessibility, fire, plumbing, and ESS compliance snapshot.
+   * Optional — buildings that predate this compliance layer render unchanged.
+   * See `BuildingCompliance` and docs/ATLAS-derisking-plan.md §5–8.
+   */
+  compliance?: BuildingCompliance;
 }

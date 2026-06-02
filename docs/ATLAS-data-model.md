@@ -230,10 +230,127 @@ this range.
 
 ---
 
-## 8. Related documents
+## 8. BuildingCompliance
+
+`BuildingCompliance` is an optional field (`compliance?: BuildingCompliance`) on
+`Building`. It is stored as a JSON column in the Drizzle/Neon schema and seeded
+for all six fleet buildings. It surfaces in the Fleet detail panel under
+**"Permitting & compliance"** so fleet operators can audit the permit posture of
+every building at a glance.
+
+### 8.1 Interface definition
+
+```ts
+type EcaStatus = "approved" | "in-review" | "pre-consultation" | "not-started"
+
+interface BuildingCompliance {
+  elevators:          number       // total elevator count (including service lift)
+  firefighterElevator: boolean     // dedicated firefighter elevator per OBC Div.B 3.2.6
+  exitStairs:         number       // number of compliant exit-stair enclosures
+  sprinklered:        boolean      // fully sprinklered per OBC / NFPA 13
+  barrierFree:        boolean      // meets OBC barrier-free path of travel + AODA
+  dualPlumbing:       boolean      // CSA B128 non-potable / potable dual distribution
+  mecpEcaStatus:      EcaStatus    // MECP Environmental Compliance Approval stage
+  reservoirLocation:  "basement" | "roof"   // physical location of bulk cistern
+  essFireCompliant:   boolean      // ESS (battery-wall) complies with current fire-code separation
+}
+```
+
+### 8.2 Field-by-field rationale
+
+| Field | Regulation / standard | Why it matters for ATLAS |
+|---|---|---|
+| `elevators` | OBC Div.B 3.5 (vertical transportation) | ATLAS-01 requires a minimum of **two elevators** to meet occupancy-load and redundancy requirements for a 13-floor building |
+| `firefighterElevator` | OBC Div.B 3.2.6.4 — buildings > 18 m, or with certain floor areas | A dedicated firefighter elevator with its own lobby, two-way communications, and standby power is mandatory for ATLAS-01's height; absence is a permit-blocking deficiency |
+| `exitStairs` | OBC Div.B 3.4 (means of egress) | Independent pressurized exit stair enclosures for each occupancy zone; open-atrium or cut-away designs require a fire-engineering report under OBC 3.2.8 |
+| `sprinklered` | OBC Div.B 3.2.5 / NFPA 13 | Full wet-pipe sprinkler system throughout all occupancies; mandated for buildings of ATLAS's height and multiple major-occupancy mix |
+| `barrierFree` | OBC Div.B 3.8 + Accessibility for Ontarians with Disabilities Act (AODA) | Complete barrier-free path of travel from the public way to every dwelling, amenity, and common area; elevators, widths, washrooms, and hardware must comply |
+| `dualPlumbing` | CSA B128.1/B128.3 — Design and Installation of Non-Potable Water Systems | Mandatory for on-site water reuse; physically separate distribution for potable and non-potable (greywater/rainwater) supply with backflow prevention and cross-connection control throughout |
+| `mecpEcaStatus` | Ontario Environmental Protection Act / Ontario Water Resources Act — MECP Environmental Compliance Approval | Any building treating and reusing non-potable water (greywater, stormwater) must obtain a MECP ECA before operating the reclamation system; the four-stage value tracks the approval lifecycle |
+| `reservoirLocation` | Structural / gravity / seismic engineering — not a code citation but a design decision codified here | Bulk cistern in the **basement** is structurally trivial; rooftop bulk water creates 150 t+ of live/dead + seismic/sloshing load that drives the entire structural core (see Flaw 7 in the de-risking plan). Only the **pool** remains on the rooftop. |
+| `essFireCompliant` | OBC Div.B 3.2 + Ontario Electrical Safety Code (OESC) + NFPA 855 (Standard for the Installation of Stationary Energy Storage Systems) | The building's battery-wall ESS must be in a rated enclosure with dedicated fire detection, suppression, and ventilation; inadequate separation is a life-safety and insurance-underwriting deficiency |
+
+### 8.3 EcaStatus lifecycle
+
+| Value | Meaning |
+|---|---|
+| `"not-started"` | MECP ECA application not yet initiated |
+| `"pre-consultation"` | Pre-submission consultation with MECP underway (recommended before full application) |
+| `"in-review"` | Full application submitted; MECP review in progress |
+| `"approved"` | ECA granted; reclamation system may operate |
+
+---
+
+## 9. Finance model — `src/lib/finance.ts`
+
+The `src/lib/finance.ts` module encodes the OpCo/PropCo capital structure and
+the Canadian funding programs the project is targeting. Its types and seed data
+power the **/portfolio** page (`src/app/portfolio/page.tsx`).
+
+### 9.1 Types
+
+```ts
+// A legal entity in the capital structure
+interface Entity {
+  id:       string
+  name:     string        // e.g. "ATLAS OS Inc."
+  role:     "opco" | "propco"
+  description: string
+}
+
+// A government grant, loan guarantee, or tax-incentive program
+interface FundingProgram {
+  id:        string
+  name:      string       // e.g. "CMHC MLI Select"
+  sponsor:   string       // administering agency
+  type:      "debt" | "grant" | "tax-incentive" | "loan-guarantee"
+  entity:    "opco" | "propco" | "both"
+  notes:     string
+}
+
+// A milestone in the approvals / permits timeline
+interface ApprovalGate {
+  id:        string
+  phase:     number       // 1-indexed phase
+  label:     string       // short name
+  month:     string       // target window, e.g. "0–2"
+  status:    "complete" | "in-progress" | "pending"
+  description: string
+}
+```
+
+### 9.2 Seed data
+
+| Record | Key detail |
+|---|---|
+| **ATLAS OS Inc. (OpCo)** | Platform IP owner; sells the twin/sensor/fleet SaaS to third-party buildings; funded by venture capital + SR&ED + NRC IRAP |
+| **ATLAS-01 PropCo** | Single-asset real-estate entity; funded by CMHC MLI Select debt + yield equity; PropCo is OpCo's anchor reference customer under an arm's-length licence |
+| **CMHC MLI Select** | Low-rate insured mortgage (PropCo); eligibility points from energy performance and barrier-free design |
+| **Greener Affordable Housing** | NRCan capital contribution toward above-code energy and resilience performance |
+| **Save on Energy** | Ontario IESO incentive for energy efficiency and demand-response measures |
+| **SR&ED** | Federal Scientific Research & Experimental Development tax credit; applies to OpCo's twin/sensor platform R&D |
+| **NRC IRAP** | National Research Council Industrial Research Assistance Program; non-dilutive grant for early OpCo R&D |
+
+### 9.3 Approvals timeline
+
+Three phases tracking the critical path from pre-consultation through permit set,
+mirroring the sequence described in `docs/ATLAS-derisking-plan.md §Approvals sequence`:
+
+| Phase | Window | Key gates |
+|---|---|---|
+| 1 | Months 0–2 | Municipality pre-consultation; CBO; MECP pre-consultation |
+| 2 | Months 2–6 | Zoning/site plan; MECP ECA pre-submission; CMHC MLI Select eligibility; LDC interconnection study |
+| 3 | Months 6–12 | OBC code matrix; fire-engineering report (interconnected space); CSA B128 dual-plumbing design; ESS fire design; barrier-free design |
+
+Note: OpCo software ships and generates revenue throughout all three phases — the permit critical path does not gate software delivery.
+
+---
+
+## 10. Related documents
 
 - [De-Risking & Win-Win Plan](./ATLAS-derisking-plan.md) — the decision record
   behind every change in this model.
 - `src/lib/types.ts` — TypeScript source of truth for all types described here.
+- `src/lib/finance.ts` — Entity, FundingProgram, ApprovalGate types and seed data (§9).
 - `src/lib/db/schema.ts` — Drizzle/Neon schema, mirrors `types.ts`.
 - `src/lib/db/seed-data.ts` — canonical ATLAS-01 seed values for every field.

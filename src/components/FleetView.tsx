@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Building, BuildingStatus } from "@/lib/types";
+import type { Building, BuildingStatus, EcaStatus } from "@/lib/types";
 
 // F7 — Fleet view. A zoomed-out, stylized map of every ATLAS building across
 // the network (Canada → US). No real map library: we normalize lat/lng into the
@@ -81,6 +81,37 @@ function FleetKpi({
       </div>
     </div>
   );
+}
+
+/** Human-readable label + tone for an MECP ECA status value. */
+function ecaDisplay(status: EcaStatus): {
+  label: string;
+  tone: "ok" | "warn" | "info" | "crit";
+} {
+  switch (status) {
+    case "approved":
+      return { label: "Approved", tone: "ok" };
+    case "in-review":
+      return { label: "In review", tone: "warn" };
+    case "pre-consultation":
+      return { label: "Pre-consultation", tone: "info" };
+    case "not-started":
+      return { label: "Not started", tone: "crit" };
+  }
+}
+
+/** Maps a tone name to the matching Tailwind text colour class. */
+function toneText(tone: "ok" | "warn" | "info" | "crit"): string {
+  switch (tone) {
+    case "ok":
+      return "text-signal-ok";
+    case "warn":
+      return "text-signal-warn";
+    case "crit":
+      return "text-signal-crit";
+    case "info":
+      return "text-signal-info";
+  }
 }
 
 export default function FleetView({
@@ -388,6 +419,142 @@ export default function FleetView({
                   </div>
                 ) : null}
               </dl>
+
+              {/* Compliance section — only rendered when compliance data is present */}
+              {selected.compliance ? (
+                <div className="flex flex-col gap-2">
+                  {/* Section header */}
+                  <h3 className="kpi-label text-[0.625rem] uppercase tracking-[0.14em] text-slate-500">
+                    Permitting &amp; compliance
+                  </h3>
+                  <div className="panel panel-pad flex flex-col gap-2">
+                    {/* Elevators */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-slate-400">Elevators</span>
+                      <span
+                        className={`text-xs font-semibold ${
+                          selected.compliance.elevators >= 2
+                            ? "text-signal-ok"
+                            : "text-signal-warn"
+                        }`}
+                      >
+                        {selected.compliance.elevators}
+                      </span>
+                    </div>
+                    {/* Firefighter elevator */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-slate-400">
+                        Firefighter elevator
+                      </span>
+                      <span
+                        className={`text-xs font-semibold ${
+                          selected.compliance.firefighterElevator
+                            ? "text-signal-ok"
+                            : "text-signal-warn"
+                        }`}
+                      >
+                        {selected.compliance.firefighterElevator ? "Yes" : "No"}
+                      </span>
+                    </div>
+                    {/* Exit stairs */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-slate-400">Exit stairs</span>
+                      <span className="text-xs font-semibold text-white">
+                        {selected.compliance.exitStairs}
+                      </span>
+                    </div>
+                    {/* Sprinklered */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-slate-400">Sprinklered</span>
+                      <span
+                        className={`text-xs font-semibold ${
+                          selected.compliance.sprinklered
+                            ? "text-signal-ok"
+                            : "text-signal-crit"
+                        }`}
+                      >
+                        {selected.compliance.sprinklered ? "Yes" : "No"}
+                      </span>
+                    </div>
+                    {/* Barrier-free (AODA) */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-slate-400">
+                        Barrier-free (AODA)
+                      </span>
+                      <span
+                        className={`text-xs font-semibold ${
+                          selected.compliance.barrierFree
+                            ? "text-signal-ok"
+                            : "text-signal-warn"
+                        }`}
+                      >
+                        {selected.compliance.barrierFree ? "Yes" : "No"}
+                      </span>
+                    </div>
+                    {/* Dual plumbing (CSA B128) */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-slate-400">
+                        Dual plumbing (CSA B128)
+                      </span>
+                      <span
+                        className={`text-xs font-semibold ${
+                          selected.compliance.dualPlumbing
+                            ? "text-signal-ok"
+                            : "text-signal-warn"
+                        }`}
+                      >
+                        {selected.compliance.dualPlumbing ? "Yes" : "No"}
+                      </span>
+                    </div>
+                    {/* MECP ECA status */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-slate-400">MECP ECA</span>
+                      {(() => {
+                        const { label, tone } = ecaDisplay(
+                          selected.compliance.mecpEcaStatus,
+                        );
+                        return (
+                          <span
+                            className={`text-xs font-semibold ${toneText(tone)}`}
+                          >
+                            {label}
+                          </span>
+                        );
+                      })()}
+                    </div>
+                    {/* Reservoir location */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-slate-400">Reservoir</span>
+                      <span
+                        className={`text-xs font-semibold ${
+                          selected.compliance.reservoirLocation === "basement"
+                            ? "text-signal-ok"
+                            : "text-signal-warn"
+                        }`}
+                      >
+                        {selected.compliance.reservoirLocation === "basement"
+                          ? "Basement"
+                          : "Roof"}
+                      </span>
+                    </div>
+                    {/* ESS fire-code */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-slate-400">
+                        ESS fire-code
+                      </span>
+                      <span
+                        className={`text-xs font-semibold ${
+                          selected.compliance.essFireCompliant
+                            ? "text-signal-ok"
+                            : "text-signal-crit"
+                        }`}
+                      >
+                        {selected.compliance.essFireCompliant ? "Yes" : "No"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
 
               <p className="text-xs leading-relaxed text-slate-500">
                 Lat {selected.location.lat.toFixed(4)}, Lng{" "}

@@ -189,9 +189,26 @@ function FloorInterior({
 }) {
   switch (floor.need) {
     case "water":
-      // Reclamation tanks + pipe runs + pump skid.
+      // Reclamation Core (basement / floor −1): bulk water reservoir relocated
+      // here per ATLAS-derisking-plan.md §Flaw 7 (structurally trivial at grade,
+      // vs. 150 t+ on the roof). Large cistern + greywater/rainwater tanks +
+      // pipe runs + pump skid.
       return (
         <group>
+          {/* Bulk reservoir — large cistern spanning the back wall.
+              Right-sized geometry: relocated from rooftop to basement. */}
+          <Vox position={[0, 0.55, -1.9]} size={[3.6, 1.1, 0.6]} color="#1a3d52" />
+          <PulseVox
+            position={[0, 0.72, -1.9]}
+            size={[3.58, 0.5, 0.62]}
+            color={accent}
+            emissive={accent}
+            base={0.2}
+            amp={0.2}
+            speed={1.0}
+            opacity={0.8}
+          />
+          {/* reclamation treatment tanks (greywater / rainwater) */}
           {[-1.4, 0, 1.4].map((x, i) => (
             <group key={x}>
               <Vox position={[x, 0.6, -1.6]} size={[0.9, 1.2, 0.9]} color="#1d4e6b" />
@@ -606,9 +623,15 @@ function FloorBlock({
   );
 }
 
+// --- elevator geometry constants ------------------------------------------
+// Second elevator shaft is offset +1.8 in Z from the primary.
+// Dual elevators per ATLAS-derisking-plan.md §Flaw 5 (redundancy + accessibility).
+const CORE_Z2 = CORE_Z + 1.8; // second shaft Z offset
+
 // --------------------------------------------------------------------------
 // Elevator: a glass shaft running the full height with a car that visits each
 // floor (ping-pong), doors, and an interior light.
+// Primary elevator (Elevator A) — animated, ping-pong across all floors.
 // --------------------------------------------------------------------------
 function Elevator({
   stops,
@@ -679,6 +702,43 @@ function Elevator({
 }
 
 // --------------------------------------------------------------------------
+// Elevator B (second shaft) — static car parked mid-height for redundancy /
+// accessibility. Dual elevators per ATLAS-derisking-plan.md §Flaw 5.
+// Shares the same core column (CORE_X) but is offset to CORE_Z2.
+// --------------------------------------------------------------------------
+function ElevatorB({ stops }: { stops: number[] }) {
+  const top = stops[stops.length - 1] + CAR_H / 2 + 0.6;
+  // Park the standby car roughly mid-building (offset phase so it reads
+  // as independently positioned, not a duplicate of car A).
+  const parkedY = stops[Math.floor(stops.length / 2)] ?? CAR_H / 2;
+
+  return (
+    <group position={[CORE_X, 0, CORE_Z2]}>
+      {/* shaft frame — identical profile to Elevator A */}
+      <Vox position={[0, top / 2, -0.78]} size={[1.6, top, 0.08]} color="#0d161e" />
+      <Vox position={[-0.78, top / 2, 0]} size={[0.08, top, 1.5]} color="#7fe7e0" opacity={0.12} />
+      <Vox position={[0.78, top / 2, 0]} size={[0.08, top, 1.5]} color="#7fe7e0" opacity={0.12} />
+      {/* shaft guide rails */}
+      <Vox position={[-0.5, top / 2, -0.6]} size={[0.06, top, 0.06]} color="#2c3a47" />
+      <Vox position={[0.5, top / 2, -0.6]} size={[0.06, top, 0.06]} color="#2c3a47" />
+      {/* standby car — static, parked at mid-floor */}
+      <group position={[0, parkedY, 0]}>
+        <Vox position={[0, 0, -0.6]} size={[1.3, CAR_H, 0.08]} color="#1a2832" />
+        <Vox position={[-0.6, 0, 0]} size={[0.08, CAR_H, 1.2]} color="#1a2832" />
+        <Vox position={[0.6, 0, 0]} size={[0.08, CAR_H, 1.2]} color="#1a2832" />
+        <Vox position={[0, -CAR_H / 2, 0]} size={[1.3, 0.08, 1.2]} color="#26323d" />
+        <Vox position={[0, CAR_H / 2, 0]} size={[1.3, 0.08, 1.2]} color="#26323d" />
+        {/* cabin light — dimmer to signal standby */}
+        <PulseVox position={[0, CAR_H / 2 - 0.1, 0]} size={[1.0, 0.06, 0.9]} color="#ffd9a0" base={0.3} amp={0.05} speed={0.5} />
+        {/* doors — closed */}
+        <Vox position={[-0.3, 0, 0.58]} size={[0.55, CAR_H * 0.92, 0.06]} color="#4ea8ff" opacity={0.85} />
+        <Vox position={[0.3, 0, 0.58]} size={[0.55, CAR_H * 0.92, 0.06]} color="#4ea8ff" opacity={0.85} />
+      </group>
+    </group>
+  );
+}
+
+// --------------------------------------------------------------------------
 // Switchback staircase linking every floor, alternating direction each flight.
 // --------------------------------------------------------------------------
 function Staircase({ floorCount }: { floorCount: number }) {
@@ -714,7 +774,9 @@ function Staircase({ floorCount }: { floorCount: number }) {
 }
 
 // --------------------------------------------------------------------------
-// Rooftop: tilted solar array, water reservoir tank, and a comms mast.
+// Rooftop: tilted solar array, POOL ONLY (bulk reservoir relocated to
+// basement per ATLAS-derisking-plan.md §Flaw 7 — pool stays, tank removed
+// to reduce rooftop structural load), and comms mast.
 // --------------------------------------------------------------------------
 function Rooftop({ y, night }: { y: number; night: boolean }) {
   return (
@@ -736,9 +798,10 @@ function Rooftop({ y, night }: { y: number; night: boolean }) {
           />
         ))}
       </group>
-      {/* reservoir tank */}
-      <Vox position={[2.2, 0.8, -1.4]} size={[1.4, 1.4, 1.4]} color="#1d4e6b" />
-      <PulseVox position={[2.2, 1.2, -1.4]} size={[1.42, 0.5, 1.42]} color="#3aa0ff" base={0.15} amp={0.15} speed={1.3} opacity={0.8} />
+      {/* Skydeck pool (shallow) — the only rooftop water mass after reservoir
+          relocation; coping surround + shimmering water surface */}
+      <Vox position={[2.2, 0.16, -1.4]} size={[1.6, 0.32, 1.6]} color="#15384d" />
+      <PulseVox position={[2.2, 0.34, -1.4]} size={[1.4, 0.06, 1.4]} color="#3aa0ff" base={0.2} amp={0.15} speed={1.5} opacity={0.75} />
       {/* comms mast */}
       <Vox position={[2.4, 1.4, 1.6]} size={[0.1, 2.0, 0.1]} color="#2c3a47" />
       <PulseVox position={[2.4, 2.45, 1.6]} size={[0.18, 0.18, 0.18]} color="#ff5d5d" base={0.5} amp={0.5} speed={3} />
@@ -794,7 +857,10 @@ function Tower({
       ))}
 
       <Staircase floorCount={floors.length} />
+      {/* Elevator A — animated primary car */}
       <Elevator stops={stops} running={options.elevatorRunning} onArrive={onElevatorArrive} />
+      {/* Elevator B — second shaft (redundancy/accessibility, ATLAS-derisking-plan.md §5) */}
+      <ElevatorB stops={stops} />
       <Rooftop y={totalHeight} night={options.night} />
     </group>
   );

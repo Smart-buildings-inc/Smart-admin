@@ -35,15 +35,23 @@ falls back to seed data whenever `DATABASE_URL` is unset (`isDbConfigured` / `ge
 - **Pages (server components)** fetch initial data and pass it into client components:
   - `src/app/page.tsx` — main Console (the twin + panels). `force-dynamic`.
   - `src/app/simulator/page.tsx` — Building Simulator (F12): a live, operating
-    voxel/pixel-art twin of ATLAS-01 (cut-away floors, working elevator,
-    switchback stairs, rooftop solar + reservoir, voxel residents). `force-dynamic`.
+    voxel/pixel-art twin of ATLAS-01 (cut-away floors, **dual elevators**,
+    switchback stairs, rooftop solar + **pool-only** rooftop, **bulk reservoir in
+    basement**, voxel residents). Geometry reflects the right-sized permitted design
+    (reservoir → basement, pool-only roof, dual elevator shafts). `force-dynamic`.
   - `src/app/fleet/page.tsx` — Fleet view (F7), multi-building rollup.
+  - `src/app/portfolio/page.tsx` — Portfolio page: OpCo/PropCo capital structure,
+    Canadian funding programs, and three-phase approvals timeline. Powered by
+    `src/lib/finance.ts`. `force-dynamic`.
   - `src/app/layout.tsx` — root layout; renders the shared `NavBar` above all pages.
 - **Data access** is centralized and DB-optional:
   - `src/lib/data.ts` — floors, incidents, broadcasts, building KPIs. Each function calls `getDb()`
     and falls back to seed data (with mutable in-memory stores for incidents/broadcasts) when no DB.
     Sending a broadcast also mirrors an `info` incident into the feed.
   - `src/lib/fleet.ts` — fleet buildings (kept separate from the single-building console).
+  - `src/lib/finance.ts` — OpCo/PropCo entity structure (`Entity`), Canadian funding programs
+    (`FundingProgram`: CMHC MLI Select, Greener Affordable Housing, Save on Energy, SR&ED, NRC
+    IRAP), and a three-phase approvals timeline (`ApprovalGate`). Powers the `/portfolio` page.
   - `src/lib/sensors.ts` — tagged sensor-point ingestion/query (F11), Brick/Haystack-style tags.
   - `src/lib/db/` — `index.ts` (client + `isDbConfigured`), `schema.ts`, `seed-data.ts`, `seed.ts`.
   - `src/lib/types.ts` — shared domain types (`Floor`, `Incident`, `Broadcast`, `BuildingKpis`,
@@ -54,6 +62,12 @@ falls back to seed data whenever `DATABASE_URL` is unset (`isDbConfigured` / `ge
       and `regulatoryNotes[]` — see `docs/ATLAS-data-model.md` §2.
     - `Building` now carries `dwellings`, `beds`, `gridTied`, and `islandCapable` — the
       energy strategy is explicitly grid-tied + islanding, not off-grid (§3).
+    - `Building` also carries `compliance?: BuildingCompliance` (jsonb column, seeded for all
+      six fleet buildings). `BuildingCompliance` records: `elevators`, `firefighterElevator`
+      (OBC 3.2.6), `exitStairs`, `sprinklered`, `barrierFree` (OBC/AODA), `dualPlumbing`
+      (CSA B128), `mecpEcaStatus` (`EcaStatus` enum), `reservoirLocation` (`"basement"|"roof"`),
+      and `essFireCompliant`. Surfaced in the Fleet detail panel under "Permitting &
+      compliance" — see `docs/ATLAS-data-model.md` §8.
     - `BuildingKpis` now carries a `resilience` object with sub-scores (`energyPct`,
       `waterPct`, `foodPct`, `overall`); `autonomyPct` is kept as a back-compat alias for
       `energyPct`; `foodPct` uses `FOOD_TARGET_KG_PER_RESIDENT = 0.5 kg/day/resident` (§4).

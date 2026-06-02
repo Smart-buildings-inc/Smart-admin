@@ -20,6 +20,9 @@ walk-through and AR mode.
 | **F3** | Security & incident feed | Severity-ranked, live; click an event to focus its floor |
 | **F4** | Resident broadcast | Compose + send notifications; mirrored into the incident feed |
 | **F5** | Building KPI strip | Resilience Index (energy autonomy / non-potable reuse / food amenity sub-scores), battery, solar, dwellings, residents, open incidents |
+| **F7** | Fleet view | Multi-building rollup with per-building KPIs, `gridTied`/`islandCapable` flags, and a **Permitting & compliance** detail panel per building (elevator count, firefighter elevator, exit stairs, sprinkler coverage, barrier-free/AODA, CSA B128 dual-plumbing, MECP ECA status, reservoir location, ESS fire-code compliance) |
+| **F12** | Building Simulator | Live voxel/pixel-art twin of ATLAS-01 (cut-away floors, working **dual elevators**, switchback stairs, **bulk reservoir in basement** / Reclamation Core, **pool-only rooftop**) — geometry matches the right-sized permitted design |
+| **+** | **Portfolio** | `/portfolio` — OpCo/PropCo capital structure, Canadian funding programs (CMHC MLI Select, Greener Affordable Housing, Save on Energy, SR&ED, NRC IRAP), and three-phase approvals timeline |
 | **+** | **Guided walk-through** | Animated camera descent from the rooftop pool down to the underground Reclamation Core, with futuristic bold-italic annotation callouts (arrows + quotes) |
 | **+** | **WebXR AR mode** | "Enter AR" on compatible devices (Android / Chrome WebXR). iOS Safari lacks WebXR — use the guided walk-through there |
 | **+** | **12 penthouses + shared rooftop pool** | A penthouse floor of up to 12 premium market dwellings sharing the Skydeck pool directly overhead |
@@ -84,6 +87,15 @@ npm run db:push             # create tables
 npm run db:seed             # load the canonical ATLAS-01 data
 ```
 
+## Routes
+
+| Route | Purpose |
+|---|---|
+| `/` | Main Console — 3D twin, per-floor telemetry, KPI strip, incident feed, broadcast |
+| `/fleet` | Fleet view — multi-building rollup with KPIs and compliance detail |
+| `/simulator` | Building Simulator (F12) — live voxel twin with right-sized geometry |
+| `/portfolio` | Portfolio — OpCo/PropCo structure, funding programs, approvals timeline |
+
 ## API surface
 
 | Route | Method | Purpose |
@@ -98,18 +110,26 @@ npm run db:seed             # load the canonical ATLAS-01 data
 src/
   app/
     page.tsx              # server load (seed fallback) → Console
+    fleet/page.tsx        # Fleet view (F7)
+    simulator/page.tsx    # Building Simulator (F12)
+    portfolio/page.tsx    # Portfolio — OpCo/PropCo + funding programs + approvals
     layout.tsx, globals.css
-    api/{floors,incidents,broadcasts}/route.ts
+    api/{floors,incidents,broadcasts,sensors}/route.ts
   components/
     Console.tsx           # client orchestrator + mode controls
     HabitatTwin.tsx       # 3D twin, walk-through camera, AR launcher, annotations
-    FloorPanel.tsx        # F2 per-floor telemetry
+    FloorPanel.tsx        # F2 per-floor telemetry + occupancy classification
     IncidentFeed.tsx      # F3 severity-ranked feed
     BroadcastComposer.tsx # F4 resident broadcast
-    KpiStrip.tsx          # F5 building KPIs
+    KpiStrip.tsx          # F5 building KPIs + Resilience Index
+    SimulatorView.tsx     # F12 DOM chrome + controls
+    BuildingSimulator.tsx # F12 voxel scene (three.js, ssr:false)
   lib/
     types.ts, ui.ts, annotations.ts
     data.ts               # data access with seed fallback
+    finance.ts            # Entity / FundingProgram / ApprovalGate + seed data
+    fleet.ts              # fleet buildings
+    sensors.ts            # sensor-point ingestion/query (F11)
     db/{schema,index,seed,seed-data}.ts
 ```
 

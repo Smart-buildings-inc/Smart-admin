@@ -85,12 +85,41 @@
 
 So the demo models the building we can actually permit (not an oversold one):
 
+### Applied — shipped and reflected in the app
+
 - **KPI strip + floor panels + simulator + landing:** `Water reuse` → **`Non-potable reuse`**;
-  `Food output` → **`Food (amenity)`**; `Autonomy` → **`Energy autonomy`**.
+  `Food output` → **`Food (amenity)`**; `Autonomy` → **`Energy autonomy`**. *(Applied.)*
 - **Fleet `Building` model:** split into **`unitCount` (floors) / `dwellings` (homes) /
   `beds` (capacity) / `residents` (occupancy)** — in `types.ts`, `schema.ts`, `fleet.ts`,
-  seed data, and the fleet detail panel (`Units` → `Floors`, plus Dwellings/Beds).
-- **`FloorMetrics.waterReusePct`** doc-comment scoped explicitly to **non-potable** reuse.
+  seed data, and the fleet detail panel (`Units` → `Floors`, plus Dwellings/Beds). *(Applied.)*
+- **`FloorMetrics.waterReusePct`** doc-comment scoped explicitly to **non-potable** reuse. *(Applied.)*
+- **`BuildingCompliance` model (Flaw 5, 6, 7, 8 — applied):** `types.ts` gains `EcaStatus` +
+  `BuildingCompliance` interface; `Building` gains `compliance?: BuildingCompliance` (jsonb column).
+  Seeded for all six fleet buildings. Fleet detail panel surfaces the full compliance record under
+  **"Permitting & compliance"**: elevator count, firefighter elevator (OBC 3.2.6), exit stairs,
+  sprinkler coverage, barrier-free (OBC/AODA), CSA B128 dual-plumbing flag, MECP ECA status,
+  reservoir location, and ESS fire-code compliance. *(Applied.)*
+- **Finance / portfolio model (Decision 1 — applied):** `src/lib/finance.ts` encodes OpCo/PropCo
+  entity structure, five funding programs (CMHC MLI Select, Greener Affordable Housing, Save on
+  Energy, SR&ED, NRC IRAP), and a three-phase approvals timeline. A new **/portfolio** page
+  (nav label "Portfolio") renders the capital structure, programs table, and approvals timeline.
+  *(Applied.)*
+- **Simulator right-sizing (Flaws 5, 7 — applied):** `BuildingSimulator.tsx` now renders the bulk
+  reservoir in the **basement** (Reclamation Core level), the **pool only** on the rooftop (Skydeck),
+  and **dual elevators** in the core shaft. The voxel model matches the permitted design. *(Applied.)*
+
+### Flaw → fix status (updated)
+
+| # | Flaw | Fix | Status |
+|---|------|-----|--------|
+| 1 | Unit/dwelling/resident conflation | Separate floors / `dwellings` / `beds` / `residents` in data model and pro forma | **Applied** |
+| 2 | Water autonomy overstated | Non-potable reuse KPI; reservoir → basement; CSA B128 dual-plumbing | **Applied** |
+| 3 | Food floors mis-scoped as production | Resident-amenity closed-loop; KPI relabelled "Food (amenity)" | **Applied** |
+| 4 | "Autonomy %" misleading | Resilience Index with three transparent sub-scores | **Applied** |
+| 5 | Single elevator + open atrium | Dual elevators + firefighter elevator modelled in `BuildingCompliance`; simulator updated | **Applied** |
+| 6 | Occupancy classification | Multiple-major-occupancy design; sprinklers, barrier-free in `BuildingCompliance` | **Applied** |
+| 7 | Rooftop reservoir load | Reservoir → basement in model + simulator; pool-only rooftop | **Applied** |
+| 8 | ESS under residences | `essFireCompliant` flag in `BuildingCompliance`; ESS design note in seed data | **Applied** |
 
 > Disclaimer: this is a planning aid, not legal/engineering advice. Code citations (OBC/NBC,
 > SDWA, CSA B128, MECP ECA, CMHC/NRCan programs) must be confirmed with qualified

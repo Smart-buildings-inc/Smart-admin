@@ -14,7 +14,7 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
-import type { FloorMetrics } from "@/lib/types";
+import type { BuildingCompliance, FloorMetrics } from "@/lib/types";
 
 export const floors = pgTable("floors", {
   id: serial("id").primaryKey(),
@@ -111,6 +111,10 @@ export const buildings = pgTable("buildings", {
   gridTied: boolean("grid_tied"),
   // island_capable: whether the ESS + transfer-switch can island on outage.
   islandCapable: boolean("island_capable"),
+  // --- Permitting / building-code compliance (egress, fire, plumbing, ESS) ---
+  // Stored as jsonb so the full BuildingCompliance object is preserved and
+  // queryable. Optional — rows without this column stay valid.
+  compliance: jsonb("compliance").$type<BuildingCompliance>(),
 });
 
 export type BuildingRow = typeof buildings.$inferSelect;

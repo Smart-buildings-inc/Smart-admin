@@ -45,6 +45,14 @@ export const SITE_ROUTES: SiteRoute[] = [
     priority: 0.8,
   },
   {
+    path: "/portfolio",
+    title: "Portfolio",
+    description:
+      "The win-win plan — OpCo/PropCo structure, CMHC/NRCan funding programs, and the permitting approvals timeline.",
+    changeFrequency: "weekly",
+    priority: 0.7,
+  },
+  {
     path: "/landing",
     title: "Overview",
     description:
