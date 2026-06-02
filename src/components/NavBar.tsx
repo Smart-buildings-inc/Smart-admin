@@ -16,6 +16,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Console" },
   { href: "/simulator", label: "Simulator" },
   { href: "/fleet", label: "Fleet" },
+  { href: "/brand", label: "Brand" },
   { href: "/sitemap", label: "Site Map" },
 ];
 

@@ -45,6 +45,14 @@ export const SITE_ROUTES: SiteRoute[] = [
     priority: 0.8,
   },
   {
+    path: "/brand",
+    title: "Brand",
+    description:
+      "The ATLAS OS brand identity — logo, color, typography, and voice. Tokens copyable inline and downloadable as a brand kit.",
+    changeFrequency: "monthly",
+    priority: 0.5,
+  },
+  {
     path: "/sitemap",
     title: "Site Map",
     description: "This page — an index of every section of ATLAS OS.",
