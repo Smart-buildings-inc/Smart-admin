@@ -15,7 +15,7 @@ export default function SiteMapPage() {
   const baseUrl = getBaseUrl();
 
   return (
-    <main className="mx-auto max-w-[1100px] px-4 py-8 lg:px-6 lg:py-12">
+    <main className="mx-auto max-w-[1100px] px-4 pt-8 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-8 lg:px-6 lg:py-12">
       <header className="mb-8">
         <p className="kpi-label mb-2">ATLAS OS</p>
         <h1 className="display text-3xl font-extrabold tracking-tight text-white lg:text-4xl">

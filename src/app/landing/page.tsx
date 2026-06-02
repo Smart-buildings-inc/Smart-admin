@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import AsciiSignature from "@/components/AsciiSignature";
 
 // Marketing / overview landing page ("Overview" in the nav). A unicorn-SaaS
 // style presentation of ATLAS OS: a layered grid+aurora hero with an in-browser
@@ -153,7 +154,7 @@ const TOWER: { name: string; metric: string; color: string; fill: number }[] = [
 
 export default function LandingPage() {
   return (
-    <main className="relative overflow-hidden">
+    <main className="relative overflow-hidden pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-0">
       {/* ---------------------------------------------------------------- Hero */}
       <section className="relative isolate px-4 pt-16 pb-16 sm:pt-24 lg:px-6 lg:pt-32 lg:pb-20">
         {/* Engineering grid + aurora glow stacked behind the hero. */}
@@ -203,6 +204,14 @@ export default function LandingPage() {
               Explore the Simulator
             </Link>
           </div>
+        </div>
+
+        {/* Signature: the voxel ATLAS tower, rendered live as colored ASCII. */}
+        <div className="mx-auto mt-16 max-w-2xl">
+          <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            The signature render
+          </p>
+          <AsciiSignature />
         </div>
 
         {/* In-browser console product-shot. Pure CSS/SVG — no screenshots. */}
