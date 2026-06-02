@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import ProgressiveBlur from "@/components/ProgressiveBlur";
 
 // Shared top navigation across the console + simulator + fleet views. Desktop
 // shows inline links; mobile collapses them behind a hamburger drawer (the
@@ -123,8 +124,10 @@ export default function NavBar() {
         </button>
       </div>
 
-      {/* Gradient fade: extends the bar's background downward into a soft fade so
+      {/* Progressive blur + gradient fade beneath the bar: the frosted blur
+          ramps down to zero and the bar's background bleeds into a soft fade so
           scrolling content blends with the page bg instead of a hard edge. */}
+      <ProgressiveBlur side="top" className="top-full h-10" />
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-full h-6 bg-gradient-to-b from-ink-950/80 to-transparent"
