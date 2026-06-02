@@ -2,8 +2,9 @@ import Link from "next/link";
 import type { Audience } from "@/lib/audiences";
 import { AUDIENCES } from "@/lib/audiences";
 import AsciiSignature from "@/components/AsciiSignature";
+import Reveal from "@/components/Reveal";
 
-// Shared template for the five /for/<audience> marketing pages. Pure
+// Shared template for the seven /for/<audience> marketing pages. Pure
 // presentation — server-rendered on static content — reusing the landing
 // primitives (.gradient-text / .aurora-spin / .grid-backdrop / .feature-card /
 // .sheen / .rise-in / .beam) so every audience page is choreographed the same
@@ -125,10 +126,10 @@ export default function MarketingPage({ audience }: { audience: Audience }) {
 
           <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {a.values.map((v, i) => (
-              <article
+              <Reveal
                 key={v.tag}
-                className="feature-card panel panel-pad rise-in group flex flex-col transition-transform duration-300 hover:-translate-y-0.5"
-                style={{ animationDelay: `${i * 70}ms` }}
+                delay={i * 80}
+                className="feature-card panel panel-pad group flex flex-col transition-transform duration-300 hover:-translate-y-0.5"
               >
                 <div className="flex items-center gap-3">
                   <span
@@ -157,7 +158,7 @@ export default function MarketingPage({ audience }: { audience: Audience }) {
                 </div>
                 <h3 className="mt-4 text-lg font-bold text-white">{v.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-300">{v.body}</p>
-              </article>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -169,9 +170,10 @@ export default function MarketingPage({ audience }: { audience: Audience }) {
           <p className="kpi-label" style={{ color: a.accent }}>
             {a.steps.kicker}
           </p>
-          <ol className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {a.steps.items.map((l) => (
-              <li key={l.step} className="panel panel-pad relative flex flex-col">
+          <Reveal>
+            <ol className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {a.steps.items.map((l) => (
+                <li key={l.step} className="panel panel-pad relative flex flex-col">
                 <span className="font-mono text-xs font-bold tabular-nums" style={{ color: a.accent }}>
                   {l.step}
                 </span>
@@ -182,24 +184,26 @@ export default function MarketingPage({ audience }: { audience: Audience }) {
                 />
                 <h3 className="mt-4 text-lg font-bold text-white">{l.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-300">{l.body}</p>
-              </li>
-            ))}
-          </ol>
+                </li>
+              ))}
+            </ol>
+          </Reveal>
         </div>
       </section>
 
       {/* ---------------------------------------------------- ASCII signature */}
       <section className="px-4 pb-20 lg:px-6">
-        <div className="mx-auto max-w-2xl">
+        <Reveal className="mx-auto max-w-2xl">
           <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
             The signature render
           </p>
           <AsciiSignature caption={a.signatureCaption} />
-        </div>
+        </Reveal>
       </section>
 
       {/* -------------------------------------------------------------- Quote */}
       <section className="px-4 pb-20 lg:px-6">
+        <Reveal>
         <figure className="mx-auto max-w-3xl panel panel-pad text-center sm:p-10">
           <blockquote className="text-balance text-xl font-bold leading-snug text-white sm:text-2xl">
             “{a.quote.text}”
@@ -208,11 +212,12 @@ export default function MarketingPage({ audience }: { audience: Audience }) {
             <span className="font-semibold text-slate-200">{a.quote.who}</span> · {a.quote.role}
           </figcaption>
         </figure>
+        </Reveal>
       </section>
 
       {/* ---------------------------------------------------------------- CTA */}
       <section className="px-4 pb-24 lg:px-6">
-        <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl border border-ink-600/60 bg-ink-900/70 p-10 text-center backdrop-blur sm:p-16">
+        <Reveal className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl border border-ink-600/60 bg-ink-900/70 p-10 text-center backdrop-blur sm:p-16">
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 -z-10 opacity-60"
@@ -239,13 +244,13 @@ export default function MarketingPage({ audience }: { audience: Audience }) {
               All solutions
             </Link>
           </div>
-        </div>
+        </Reveal>
       </section>
     </main>
   );
 }
 
-// Pill row linking across the five audiences, current one highlighted.
+// Pill row linking across the seven audiences, current one highlighted.
 function AudienceSwitcher({ current }: { current: string }) {
   return (
     <nav

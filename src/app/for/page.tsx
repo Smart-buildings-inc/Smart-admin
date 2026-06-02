@@ -8,7 +8,7 @@ import { AUDIENCES } from "@/lib/audiences";
 export const metadata: Metadata = {
   title: "Solutions — ATLAS OS for every stakeholder",
   description:
-    "ATLAS OS, framed for who you are: developers and owners, operators, residents, investors, and cities. One platform, five points of view.",
+    "ATLAS OS, framed for who you are: developers and owners, operators, residents, investors, and cities. One platform, seven points of view.",
 };
 
 export default function SolutionsIndex() {
@@ -25,7 +25,7 @@ export default function SolutionsIndex() {
         <div className="max-w-2xl">
           <p className="kpi-label text-signal-info">Solutions</p>
           <h1 className="display mt-3 text-balance text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
-            One platform, <span className="gradient-text">five points of view</span>.
+            One platform, <span className="gradient-text">seven points of view</span>.
           </h1>
           <p className="mt-4 text-pretty text-slate-300">
             The same self-sufficient habitat means something different depending on where

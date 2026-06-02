@@ -410,7 +410,7 @@ export default function LandingPage() {
           <div className="max-w-2xl">
             <p className="kpi-label text-signal-info">Who it&apos;s for</p>
             <h2 className="display mt-3 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-              One platform, <span className="gradient-text">five points of view</span>.
+              One platform, <span className="gradient-text">seven points of view</span>.
             </h2>
             <p className="mt-4 text-pretty text-slate-300">
               The same self-sufficient habitat reads differently depending on where you

@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 // ---------------------------------------------------------------------------
 // Audience marketing pages — content model.
 //
-// Five intentional landing pages, one per buyer/user we sell to. Each is the
+// Seven intentional landing pages, one per buyer/user we sell to. Each is the
 // same template (see components/MarketingPage.tsx) driven by the config below,
 // so messaging stays on-brand and the pages never drift structurally. Accents
 // are drawn from the need-palette so every audience owns one of the seven
@@ -52,6 +52,9 @@ const I = {
   scale: <path d="M12 3v18M7 21h10M5 7h14M5 7l-2 6a3 3 0 0 0 6 0L7 7m12 0-2 6a3 3 0 0 0 6 0l-2-6" />,
   users: <path d="M16 18a4 4 0 0 0-8 0M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6M20 18a3 3 0 0 0-4-2.8M18 11a2.5 2.5 0 0 0 0-5" />,
   sun: <path d="M12 4V2m0 20v-2m8-8h2M2 12h2m13.7-5.7 1.4-1.4M4.9 19.1l1.4-1.4m0-11.4L4.9 4.9m14.2 14.2-1.4-1.4M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" />,
+  compass: <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM16 8l-2.5 5.5L8 16l2.5-5.5L16 8Z" />,
+  recycle: <path d="M7 19h10M5 13l-2 4 4 1M17 5l2 4-4 1M9 5l3-2 3 5M7 13 4 9l5-2M17 13l3 4-5 2" />,
+  ruler: <path d="m3 17 14-14 4 4L7 21l-4-4Zm4-1 2-2m1 4 2-2m1 4 2-2m1 4 2-2M6 12l2-2" />,
 };
 
 export const AUDIENCES: Audience[] = [
@@ -367,6 +370,132 @@ export const AUDIENCES: Audience[] = [
     cta: {
       title: "Housing that carries its weight",
       body: "Explore the live console and see how self-sufficiency and accountability are built into every floor.",
+    },
+  },
+
+  // ------------------------------------------------------------ 6. Architects
+  {
+    slug: "architects",
+    nav: "Architects",
+    eyebrow: "For architects & engineers",
+    accent: "#ffd9a0", // restoration
+    metaTitle: "ATLAS OS for Architects & Engineers — Keep the model alive",
+    metaDescription:
+      "Design the building around seven human needs and hand off a model that keeps living — from design intent into a verifiable operating twin, on open Brick/Haystack standards.",
+    headline: { lead: "Design the building, ", accent: "keep the model alive", tail: "." },
+    subhead:
+      "Lay out the tower as seven systems of life and carry that same model from design intent all the way into operations — so the performance you specified is the performance you can verify, live.",
+    stats: [
+      { value: "7→1", label: "Seven systems, one coherent model" },
+      { value: "Design→Ops", label: "One model across the whole lifecycle" },
+      { value: "Open", label: "Brick / Haystack standards throughout" },
+    ],
+    values: [
+      {
+        tag: "Design intent",
+        title: "Compose around human needs",
+        body: "Author the building as water, energy, food, shelter, air, health, and restoration — a structure the whole team reads the same way.",
+        icon: I.compass,
+      },
+      {
+        tag: "Continuity",
+        title: "One model, design to operations",
+        body: "The model you design in becomes the twin operators run. No throwaway artifacts, no translation loss at handover.",
+        icon: I.layers,
+      },
+      {
+        tag: "Verification",
+        title: "Specified, then proven",
+        body: "Compare design targets against live telemetry — the performance you promised is measurable the day the doors open.",
+        icon: I.ruler,
+      },
+      {
+        tag: "Interoperable",
+        title: "Open by construction",
+        body: "Tagged on Brick / Haystack so the model speaks to the tools your engineers and consultants already use.",
+        icon: I.cpu,
+      },
+    ],
+    steps: {
+      kicker: "From intent to a living model",
+      items: [
+        { step: "01", title: "Design", body: "Compose the tower as seven systems — the twin is authored alongside the drawings." },
+        { step: "02", title: "Validate", body: "Check live behavior against design targets, floor by floor, in the twin." },
+        { step: "03", title: "Hand off", body: "Deliver a model that keeps living as the building's operating console." },
+      ],
+    },
+    signatureCaption: "Design intent that survives into operations",
+    quote: {
+      text: "For once the model didn't die at handover — it became the way the building is run.",
+      who: "Project engineer",
+      role: "ATLAS-01 design team",
+    },
+    cta: {
+      title: "Design a model that lasts",
+      body: "See how one model carries design intent into a living, verifiable operating twin.",
+    },
+  },
+
+  // -------------------------------------------------------- 7. Sustainability
+  {
+    slug: "sustainability",
+    nav: "Sustainability",
+    eyebrow: "For sustainability & ESG leaders",
+    accent: "#ff8fb1", // health
+    metaTitle: "ATLAS OS for Sustainability & ESG — Proof, not estimates",
+    metaDescription:
+      "Energy autonomy, water reuse, and air quality measured continuously from tagged sensor points — sustainability and ESG claims you can audit live, not reconstruct once a year.",
+    headline: { lead: "Sustainability you can ", accent: "actually prove", tail: "." },
+    subhead:
+      "Autonomy, water reuse, and air quality stream continuously from tagged sensor points — so your ESG story is grounded in live, auditable measurement instead of an annual estimate stitched together after the fact.",
+    stats: [
+      { value: "99%", label: "Energy autonomy, measured live" },
+      { value: "96%", label: "Water reused on-site" },
+      { value: "Auditable", label: "Continuous, sensor-grounded metrics" },
+    ],
+    values: [
+      {
+        tag: "Measured",
+        title: "Proven, not modeled",
+        body: "Every headline number traces to a tagged sensor point streaming in real time — claims you can stand behind in an audit.",
+        icon: I.gauge,
+      },
+      {
+        tag: "Continuous",
+        title: "Reporting that never goes stale",
+        body: "Autonomy, reuse, and air quality update continuously, so the picture is always current — not reconstructed once a year.",
+        icon: I.trend,
+      },
+      {
+        tag: "Impact",
+        title: "Less load on shared systems",
+        body: "Self-generated energy and reused water measurably ease demand on grids and mains — quantified relief, not goodwill.",
+        icon: I.recycle,
+      },
+      {
+        tag: "Open data",
+        title: "Built on open standards",
+        body: "Brick / Haystack tagging means your data exports cleanly into the disclosure and reporting tools you already run.",
+        icon: I.leaf,
+      },
+    ],
+    steps: {
+      kicker: "From claim to evidence",
+      items: [
+        { step: "01", title: "Instrument", body: "Tag every relevant point — energy, water, air — on open standards." },
+        { step: "02", title: "Measure", body: "Stream continuously into the twin; nothing waits for a yearly tally." },
+        { step: "03", title: "Report", body: "Export auditable, sensor-grounded metrics straight into disclosure." },
+      ],
+    },
+    signatureCaption: "Every metric traced to a live sensor point",
+    quote: {
+      text: "We replaced a spreadsheet of estimates with numbers we can defend in real time.",
+      who: "Sustainability lead",
+      role: "ESG program, ATLAS portfolio",
+    },
+    cta: {
+      title: "Prove it, continuously",
+      body: "See how live telemetry turns sustainability claims into auditable, always-current evidence.",
     },
   },
 ];

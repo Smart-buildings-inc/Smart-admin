@@ -101,6 +101,22 @@ export const SITE_ROUTES: SiteRoute[] = [
     priority: 0.6,
   },
   {
+    path: "/for/architects",
+    title: "For Architects & Engineers",
+    description:
+      "Design the building around seven human needs and hand off a model that keeps living — from design intent into a verifiable operating twin.",
+    changeFrequency: "monthly",
+    priority: 0.6,
+  },
+  {
+    path: "/for/sustainability",
+    title: "For Sustainability & ESG",
+    description:
+      "Energy autonomy, water reuse, and air quality measured continuously — ESG claims you can audit live, not reconstruct once a year.",
+    changeFrequency: "monthly",
+    priority: 0.6,
+  },
+  {
     path: "/brand",
     title: "Brand",
     description:

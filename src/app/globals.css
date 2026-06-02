@@ -413,6 +413,29 @@ body {
     0 0 0 1px rgba(127, 231, 224, 0.06) inset;
 }
 
+/* Scroll-reveal: sections ease up + fade in the first time they enter view.
+   Driven by components/Reveal.tsx toggling `.in-view`. JS-on by design (the app
+   already requires it); reduced-motion shows everything immediately. */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.reveal.in-view {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
 /* Accent underline that sweeps in beneath the audience-page headline word. */
 @keyframes atlas-beam {
   from {
