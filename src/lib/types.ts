@@ -2,7 +2,7 @@
 // These mirror the data model in the PRD (§10) and are the single source of
 // truth shared by the API routes, the seed layer, and the React components.
 
-/** The seven human needs each floor is dedicated to (Maslow-mapped). */
+/** The human needs each floor is dedicated to (Maslow-mapped). */
 export type Need =
   | "water"
   | "energy"
@@ -10,6 +10,7 @@ export type Need =
   | "shelter"
   | "air"
   | "health"
+  | "knowledge"
   | "restoration";
 
 /** Severity ranking for the incident feed. */

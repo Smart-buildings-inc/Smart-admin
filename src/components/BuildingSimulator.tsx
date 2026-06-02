@@ -379,7 +379,59 @@ function FloorInterior({
     case "air":
       // The Lung — a living atrium tree that gently sways.
       return <LungTree accent={accent} />;
-    case "health":
+    case "health": {
+      if (floor.key === "medical-bay") {
+        // Medical Bay — a clinic / mini-hospital ward: a row of monitored
+        // treatment beds, an isolation pod, a nurse station, and staff on round.
+        return (
+          <group>
+            {/* treatment beds along the back wall, each with a vitals monitor */}
+            {[-1.5, -0.5, 0.5, 1.5].map((x, i) => (
+              <group key={x}>
+                {/* bed + linen + pillow */}
+                <Vox position={[x, 0.2, -1.6]} size={[0.7, 0.2, 1.2]} color="#cfd8e3" />
+                <Vox position={[x, 0.34, -2.05]} size={[0.7, 0.14, 0.3]} color="#eef3f9" />
+                {/* IV pole */}
+                <Vox position={[x + 0.34, 0.55, -1.7]} size={[0.05, 0.7, 0.05]} color="#9aa7b6" />
+                <Vox position={[x + 0.34, 0.9, -1.7]} size={[0.16, 0.12, 0.1]} color={accent} />
+                {/* wall-mounted vitals monitor with a pulsing green trace */}
+                <Vox position={[x, 1.15, -2.5]} size={[0.34, 0.26, 0.05]} color="#10202a" />
+                <PulseVox
+                  position={[x, 1.15, -2.46]}
+                  size={[0.26, 0.07, 0.03]}
+                  color="#5ddc7a"
+                  emissive="#5ddc7a"
+                  base={0.45}
+                  amp={0.5}
+                  speed={4 + i}
+                  phase={x}
+                />
+              </group>
+            ))}
+            {/* glass-walled isolation pod, front-right */}
+            <Vox position={[1.4, 0.7, 1.3]} size={[1.4, 1.4, 1.6]} color="#9fd6e8" opacity={0.18} />
+            <Vox position={[1.4, 0.22, 1.3]} size={[0.7, 0.2, 1.0]} color="#cfd8e3" />
+            <PulseVox
+              position={[1.4, 1.42, 1.3]}
+              size={[1.3, 0.04, 1.5]}
+              color={accent}
+              emissive={accent}
+              base={night ? 0.6 : 0.35}
+              amp={0.15}
+              speed={1.4}
+            />
+            {/* nurse station, front-left */}
+            <Vox position={[-1.2, 0.42, 1.3]} size={[1.6, 0.1, 0.7]} color="#26323d" />
+            <PulseVox position={[-1.2, 0.64, 1.4]} size={[1.0, 0.3, 0.04]} color="#4ea8ff" base={night ? 0.5 : 0.25} amp={0.2} speed={1.2} />
+            {/* red cross on the back wall */}
+            <PulseVox position={[0, 1.75, -2.55]} size={[0.5, 0.16, 0.05]} color="#ff5d5d" base={0.6} amp={0.3} speed={1} />
+            <PulseVox position={[0, 1.75, -2.55]} size={[0.16, 0.5, 0.05]} color="#ff5d5d" base={0.6} amp={0.3} speed={1} />
+            {/* staff on round + an attending clinician */}
+            <VoxPerson position={[-0.5, 0, 0.4]} color={accent} pace={0.22} />
+            <VoxPerson position={[0.6, 0, 0.0]} color="#7fe7e0" pace={0.18} />
+          </group>
+        );
+      }
       // Commons & clinic: beds, a red cross, equipment, staff + visitors.
       return (
         <group>
@@ -397,6 +449,50 @@ function FloorInterior({
           <Vox position={[0.6, 0.4, 1.4]} size={[2.0, 0.1, 0.7]} color="#26323d" />
           <VoxPerson position={[-0.6, 0, 1.0]} color={accent} pace={0.2} />
           <VoxPerson position={[1.2, 0, 0.6]} color="#c0a4ff" pace={0.3} />
+        </group>
+      );
+    }
+    case "knowledge":
+      // Forum & Academy — a tiered auditorium: a glowing presentation screen,
+      // a lectern, raked rows of seats and a seated audience facing the stage.
+      return (
+        <group>
+          {/* presentation screen on the back wall */}
+          <Vox position={[0, 1.35, -2.52]} size={[2.8, 1.5, 0.05]} color="#0d161e" />
+          <PulseVox
+            position={[0, 1.35, -2.48]}
+            size={[2.5, 1.25, 0.03]}
+            color={accent}
+            emissive={accent}
+            base={night ? 0.6 : 0.4}
+            amp={0.18}
+            speed={1.1}
+          />
+          {/* lectern, stage-left, with a small reading light */}
+          <Vox position={[-1.6, 0.4, -1.4]} size={[0.4, 0.8, 0.4]} color="#26323d" />
+          <PulseVox position={[-1.6, 0.84, -1.4]} size={[0.3, 0.06, 0.24]} color="#ffd9a0" emissive="#ffd9a0" base={night ? 0.7 : 0.3} amp={0.15} speed={0.9} />
+          {/* three raked tiers of seats, each row stepped up and back */}
+          {[0, 1, 2].map((tier) => {
+            const z = -0.5 + tier * 0.78;
+            const y = 0.12 + tier * 0.22;
+            return (
+              <group key={tier}>
+                {/* riser the row sits on */}
+                <Vox position={[0, y - 0.06, z]} size={[4.0, 0.12, 0.66]} color="#1a2832" />
+                {[-1.5, -0.9, -0.3, 0.3, 0.9, 1.5].map((x) => (
+                  <group key={x}>
+                    {/* seat pan + accent seat-back */}
+                    <Vox position={[x, y + 0.12, z + 0.12]} size={[0.4, 0.1, 0.36]} color="#2c3a47" />
+                    <Vox position={[x, y + 0.3, z + 0.28]} size={[0.4, 0.34, 0.08]} color={accent} />
+                  </group>
+                ))}
+              </group>
+            );
+          })}
+          {/* a sparse, seated audience (front + middle rows) */}
+          {[-0.9, 0.3, 1.5].map((x, i) => (
+            <VoxPerson key={x} position={[x, 0.12 + (i % 2) * 0.22, -0.4 + (i % 2) * 0.78]} color={i % 2 ? "#7fe7e0" : accent} pace={0.05} />
+          ))}
         </group>
       );
     case "restoration":
