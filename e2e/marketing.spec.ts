@@ -1,7 +1,14 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("ATLAS OS marketing parallax", () => {
-  for (const route of ["/landing", "/for", "/for/operators"]) {
+  for (const route of [
+    "/landing",
+    "/for",
+    "/for/operators",
+    "/brand",
+    "/fleet",
+    "/simulator",
+  ]) {
     test(`${route} renders the layered parallax visual`, async ({ page }) => {
       await page.goto(route);
 
