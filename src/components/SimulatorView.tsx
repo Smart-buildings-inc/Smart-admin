@@ -11,6 +11,7 @@ import type { Floor, FloorMetrics, Incident } from "@/lib/types";
 import type { SimOptions } from "@/components/BuildingSimulator";
 import { needColor } from "@/lib/ui";
 import FullscreenLink from "@/components/FullscreenLink";
+import MarketingParallax from "@/components/MarketingParallax";
 
 const BuildingSimulator = dynamic(() => import("@/components/BuildingSimulator"), {
   ssr: false,
@@ -126,6 +127,12 @@ export default function SimulatorView({
         </span>
       </header>
 
+      <MarketingParallax
+        accent="#ffcf4d"
+        compact
+        label="ATLAS simulator habitat systems visual"
+      />
+
       <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-[1.7fr_1fr]">
         {/* Stage */}
         <section className="flex flex-col gap-4">
@@ -145,7 +152,7 @@ export default function SimulatorView({
             />
 
             {/* Title chip */}
-            <div className="pointer-events-none absolute left-4 top-4 text-xs text-slate-400">
+            <div className="pointer-events-none absolute left-4 top-4 hidden text-xs text-slate-400 sm:block">
               <div className="display text-sm text-slate-200">ATLAS‑01 · Live Twin</div>
               <div>Orbit to inspect · tap a floor for telemetry</div>
             </div>

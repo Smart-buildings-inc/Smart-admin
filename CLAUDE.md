@@ -25,6 +25,7 @@ falls back to seed data whenever `DATABASE_URL` is unset (`isDbConfigured` / `ge
 - `npm run build` / `npm run start` — production build / serve
 - `npm run lint` — Next.js ESLint
 - `npm run typecheck` — `tsc --noEmit`
+- `npm run verify` — typecheck, lint, build, then the full Playwright matrix
 - `npm run test:e2e` — Playwright (its `webServer` runs `build && start` first)
 - `npm run db:generate` — drizzle-kit generate migrations
 - `npm run db:push` — push schema to the configured DB
@@ -76,7 +77,8 @@ falls back to seed data whenever `DATABASE_URL` is unset (`isDbConfigured` / `ge
 ## Testing
 
 - Playwright config (`playwright.config.ts`) runs `npm run build && npm run start` on port 3000,
-  across two projects: **Desktop Chrome** and **Mobile Chrome** (Pixel 5).
+  across three projects: **Desktop Chrome**, **Tablet Chrome** (Galaxy Tab S9), and
+  **Mobile Chrome** (Pixel 5).
 - Tests live in `e2e/`: `api.spec.ts` (API contracts, incl. broadcast→incident mirroring),
   `app.spec.ts` (console UI: header, KPI strip, seed chip, twin controls, feed),
   `broadcast.spec.ts` (broadcast send + feed update). Tests run on seed data; no DB required.

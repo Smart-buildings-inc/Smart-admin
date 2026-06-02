@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Audience } from "@/lib/audiences";
 import { AUDIENCES } from "@/lib/audiences";
 import AsciiSignature from "@/components/AsciiSignature";
+import MarketingParallax from "@/components/MarketingParallax";
 import Reveal from "@/components/Reveal";
 
 // Shared template for the seven /for/<audience> marketing pages. Pure
@@ -92,8 +93,15 @@ export default function MarketingPage({ audience }: { audience: Audience }) {
           </div>
         </div>
 
+        <MarketingParallax
+          accent={a.accent}
+          compact
+          className="mx-auto mt-12 max-w-5xl"
+          label={`${a.nav} ATLAS habitat skyline, twin, and infrastructure layers`}
+        />
+
         {/* Stat strip — staggered rise-in. */}
-        <div className="mx-auto mt-14 grid max-w-4xl grid-cols-1 gap-px overflow-hidden rounded-2xl border border-ink-600/60 bg-ink-600/40 sm:grid-cols-3">
+        <div className="mx-auto mt-10 grid max-w-4xl grid-cols-1 gap-px overflow-hidden rounded-2xl border border-ink-600/60 bg-ink-600/40 sm:grid-cols-3">
           {a.stats.map((s, i) => (
             <div
               key={s.label}

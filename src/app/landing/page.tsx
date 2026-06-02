@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import AsciiSignature from "@/components/AsciiSignature";
+import MarketingParallax from "@/components/MarketingParallax";
 import { AUDIENCES } from "@/lib/audiences";
 
 // Marketing / overview landing page ("Overview" in the nav). A unicorn-SaaS
@@ -206,6 +207,12 @@ export default function LandingPage() {
             </Link>
           </div>
         </div>
+
+        <MarketingParallax
+          accent="#7fe7e0"
+          className="mx-auto mt-14 max-w-5xl"
+          label="ATLAS habitat skyline, digital twin, and infrastructure layers"
+        />
 
         {/* Signature: the voxel ATLAS tower, rendered live as colored ASCII. */}
         <div className="mx-auto mt-16 max-w-2xl">
