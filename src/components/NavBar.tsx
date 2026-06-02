@@ -50,7 +50,7 @@ export default function NavBar() {
   }, [open]);
 
   return (
-    <nav className="sticky top-0 z-40 border-b border-ink-600/50 bg-ink-950/80 backdrop-blur supports-[backdrop-filter]:bg-ink-950/60">
+    <nav className="sticky top-0 z-40 border-b border-ink-600/50 bg-gradient-to-b from-ink-950 to-ink-950/60 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-[1500px] items-center justify-between gap-3 px-4 lg:h-16 lg:px-6">
         {/* Brand */}
         <Link

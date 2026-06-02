@@ -84,7 +84,7 @@ export default function MobileTabBar() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-ink-600/50 bg-ink-950/85 backdrop-blur supports-[backdrop-filter]:bg-ink-950/70 md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-ink-600/50 bg-gradient-to-t from-ink-950 to-ink-950/60 backdrop-blur md:hidden"
     >
       {/* Progressive blur + gradient fade above the bar: the frosted blur ramps
           down to zero and the bar's background bleeds into a soft fade so
