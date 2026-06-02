@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import AsciiSignature from "@/components/AsciiSignature";
+import { AUDIENCES } from "@/lib/audiences";
 
 // Marketing / overview landing page ("Overview" in the nav). A unicorn-SaaS
 // style presentation of ATLAS OS: a layered grid+aurora hero with an in-browser
@@ -400,6 +401,58 @@ export default function LandingPage() {
               </li>
             ))}
           </ul>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------- Who it's for */}
+      <section className="px-4 pb-20 lg:px-6">
+        <div className="mx-auto max-w-5xl">
+          <div className="max-w-2xl">
+            <p className="kpi-label text-signal-info">Who it&apos;s for</p>
+            <h2 className="display mt-3 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+              One platform, <span className="gradient-text">five points of view</span>.
+            </h2>
+            <p className="mt-4 text-pretty text-slate-300">
+              The same self-sufficient habitat reads differently depending on where you
+              stand. See ATLAS OS framed for your seat.
+            </p>
+          </div>
+
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {AUDIENCES.map((a, i) => (
+              <Link
+                key={a.slug}
+                href={`/for/${a.slug}`}
+                style={{ ["--accent" as string]: a.accent, animationDelay: `${i * 60}ms` }}
+                className="feature-card panel panel-pad rise-in group flex items-center justify-between gap-3 outline-none transition-transform duration-300 hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-signal-info"
+              >
+                <div>
+                  <div
+                    className="text-[11px] font-bold uppercase tracking-[0.14em]"
+                    style={{ color: a.accent }}
+                  >
+                    {a.eyebrow}
+                  </div>
+                  <div className="mt-1 text-base font-bold text-white">For {a.nav}</div>
+                </div>
+                <span
+                  aria-hidden
+                  className="shrink-0 transition-transform group-hover:translate-x-0.5"
+                  style={{ color: a.accent }}
+                >
+                  →
+                </span>
+              </Link>
+            ))}
+            <Link
+              href="/for"
+              className="panel panel-pad rise-in flex items-center justify-between gap-3 text-slate-300 outline-none transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-signal-info"
+              style={{ animationDelay: `${AUDIENCES.length * 60}ms` }}
+            >
+              <span className="text-base font-bold">All solutions</span>
+              <span aria-hidden>→</span>
+            </Link>
+          </div>
         </div>
       </section>
 

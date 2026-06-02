@@ -53,6 +53,54 @@ export const SITE_ROUTES: SiteRoute[] = [
     priority: 0.6,
   },
   {
+    path: "/for",
+    title: "Solutions",
+    description:
+      "ATLAS OS framed for every stakeholder — developers & owners, operators, residents, investors, and cities. One platform, five points of view.",
+    changeFrequency: "weekly",
+    priority: 0.7,
+  },
+  {
+    path: "/for/developers",
+    title: "For Developers & Owners",
+    description:
+      "Deliver buildings that run themselves — a live operating twin from day one on an open, fleet-ready stack.",
+    changeFrequency: "monthly",
+    priority: 0.6,
+  },
+  {
+    path: "/for/operators",
+    title: "For Operators",
+    description:
+      "Run the whole habitat from one pane — live twin, per-floor telemetry, sub-15-second incident triage, and broadcast.",
+    changeFrequency: "monthly",
+    priority: 0.6,
+  },
+  {
+    path: "/for/residents",
+    title: "For Residents",
+    description:
+      "A home built around seven human needs — clean air, reused water, in-building food, and care that reaches you in seconds.",
+    changeFrequency: "monthly",
+    priority: 0.6,
+  },
+  {
+    path: "/for/investors",
+    title: "For Investors",
+    description:
+      "A software-defined, self-sufficient asset class — lower opex, resilient operation, and a model that scales tower to fleet.",
+    changeFrequency: "monthly",
+    priority: 0.6,
+  },
+  {
+    path: "/for/cities",
+    title: "For Cities & Public Sector",
+    description:
+      "Resilient, self-sufficient housing that stays online through outages and reports its own sustainability, live and auditable.",
+    changeFrequency: "monthly",
+    priority: 0.6,
+  },
+  {
     path: "/brand",
     title: "Brand",
     description:
