@@ -1,75 +1,34 @@
 <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ATLAS OS">
   <defs>
-    <radialGradient id="s" cx="42%" cy="36%" r="80%">
-      <stop offset="0%" stop-color="#1b2530"/>
-      <stop offset="55%" stop-color="#0b121a"/>
-      <stop offset="100%" stop-color="#03060a"/>
-    </radialGradient>
-    <linearGradient id="c" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="50%" stop-color="#c7d0d9"/>
-      <stop offset="75%" stop-color="#919ba6"/>
-      <stop offset="100%" stop-color="#f3f6f9"/>
+    <linearGradient id="t" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0%" stop-color="#f4f7fa"/>
+      <stop offset="100%" stop-color="#d4dae0"/>
     </linearGradient>
-    <linearGradient id="cv" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="55%" stop-color="#bcc5ce"/>
-      <stop offset="100%" stop-color="#dde3e9"/>
+    <linearGradient id="l" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c2c9d1"/>
+      <stop offset="100%" stop-color="#97a0a9"/>
+    </linearGradient>
+    <linearGradient id="r" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#b1b9c2"/>
+      <stop offset="100%" stop-color="#878f99"/>
     </linearGradient>
   </defs>
 
-  <circle cx="32" cy="32" r="31" fill="#04070b"/>
-  <circle cx="32" cy="32" r="29.5" fill="url(#s)"/>
-  <circle cx="32" cy="32" r="31" fill="none" stroke="url(#c)" stroke-width="2.5"/>
+  <rect x="1" y="1" width="62" height="62" rx="14" fill="#0a0d11"/>
 
-  <clipPath id="d"><circle cx="32" cy="32" r="28.5"/></clipPath>
-  <g clip-path="url(#d)">
-    <!-- stars -->
-    <g fill="#fff">
-      <circle cx="15" cy="16" r="1"/>
-      <circle cx="49" cy="18" r="1.1"/>
-      <circle cx="13" cy="40" r=".9"/>
-      <circle cx="51" cy="42" r=".9"/>
-    </g>
+  <!-- faces -->
+  <polygon points="32,6 54.5,19 32,32 9.5,19" fill="url(#t)" stroke="#586068" stroke-width="0.6" stroke-linejoin="round"/>
+  <polygon points="9.5,19 32,32 32,58 9.5,45" fill="url(#l)" stroke="#586068" stroke-width="0.6" stroke-linejoin="round"/>
+  <polygon points="32,32 54.5,19 54.5,45 32,58" fill="url(#r)" stroke="#586068" stroke-width="0.6" stroke-linejoin="round"/>
 
-    <!-- rings behind city -->
-    <g transform="rotate(-22 32 32)">
-      <ellipse cx="32" cy="32" rx="31" ry="11" fill="none" stroke="#04070b" stroke-width="5"/>
-      <ellipse cx="32" cy="32" rx="31" ry="11" fill="none" stroke="url(#c)" stroke-width="2.8"/>
-    </g>
-
-    <!-- skyline -->
-    <g fill="url(#cv)">
-      <rect x="18" y="29" width="7" height="18"/>
-      <rect x="27" y="22" width="7.5" height="25"/>
-      <rect x="29.7" y="15" width="2" height="7"/>
-      <circle cx="30.7" cy="14.5" r="2"/>
-      <rect x="37" y="26" width="8.5" height="21"/>
-    </g>
-    <g fill="#0b121a">
-      <rect x="38.6" y="30" width="2.2" height="2.2"/>
-      <rect x="42"   y="30" width="2.2" height="2.2"/>
-      <rect x="38.6" y="34.5" width="2.2" height="2.2"/>
-      <rect x="42"   y="34.5" width="2.2" height="2.2"/>
-      <rect x="38.6" y="39" width="2.2" height="2.2"/>
-      <rect x="42"   y="39" width="2.2" height="2.2"/>
-      <rect x="28.6" y="27" width="1.8" height="1.8"/>
-      <rect x="31.2" y="27" width="1.8" height="1.8"/>
-      <rect x="28.6" y="31" width="1.8" height="1.8"/>
-      <rect x="31.2" y="31" width="1.8" height="1.8"/>
-      <rect x="28.6" y="35" width="1.8" height="1.8"/>
-      <rect x="31.2" y="35" width="1.8" height="1.8"/>
-    </g>
-
-    <!-- wifi -->
-    <g fill="none" stroke="url(#cv)" stroke-linecap="round">
-      <path d="M26.7 12.5 a6 6 0 0 1 8 0" stroke-width="1.8"/>
-    </g>
-
-    <!-- front ring sweep over the base -->
-    <g transform="rotate(-22 32 32)">
-      <path d="M3 35 A31 11 0 0 0 61 35" fill="none" stroke="#04070b" stroke-width="4.5"/>
-      <path d="M3 35 A31 11 0 0 0 61 35" fill="none" stroke="url(#c)" stroke-width="2.4"/>
-    </g>
+  <!-- letters (bright, raised) -->
+  <g transform="matrix(0.2252,0.13,-0.2252,0.13,32,6)" stroke="#f8fafc" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M30 80 L50 22 L70 80 M38 60 L62 60"/>
+  </g>
+  <g transform="matrix(0.2252,0.13,0,0.26,9.5,19)" stroke="#eaeff3" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <rect x="27" y="25" width="46" height="54" rx="15"/>
+  </g>
+  <g transform="matrix(0.2252,-0.13,0,0.26,32,32)" stroke="#dfe5ea" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M67 34 C67 23 33 23 33 40 C33 53 67 51 67 67 C67 84 33 84 33 71"/>
   </g>
 </svg>
