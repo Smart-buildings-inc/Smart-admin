@@ -1,7 +1,7 @@
 "use client";
 
 // The ATLAS ASCII signature — a self-contained voxel tower rendered as live,
-// colored ASCII art. Seven stacked blocks (one per human need, base→roof) plus
+// colored ASCII art. One stacked block per human need (base→roof) plus
 // a rooftop array and reservoir, lit so the need-palette tints carry through the
 // glyphs via AsciiRenderer's per-pixel color. On mount the floors "boot" in
 // bottom-up, then the tower slowly turns. No data, no assets — pure three.js,
@@ -22,6 +22,7 @@ const FLOORS: { color: string }[] = [
   { color: "#c0a4ff" }, // shelter
   { color: "#7fe7e0" }, // air
   { color: "#ff8fb1" }, // health
+  { color: "#8aa0ff" }, // knowledge
   { color: "#ffd9a0" }, // restoration
 ];
 

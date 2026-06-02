@@ -44,6 +44,7 @@ const NEEDS: { need: Floor["need"]; label: string }[] = [
   { need: "shelter", label: "Shelter" },
   { need: "air", label: "Air" },
   { need: "health", label: "Health" },
+  { need: "knowledge", label: "Knowledge" },
   { need: "restoration", label: "Restoration" },
 ];
 

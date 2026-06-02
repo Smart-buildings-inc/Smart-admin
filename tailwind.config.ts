@@ -30,6 +30,7 @@ const config: Config = {
           shelter: "#c0a4ff",
           air: "#7fe7e0",
           health: "#ff8fb1",
+          knowledge: "#8aa0ff",
           restoration: "#ffd9a0",
         },
       },

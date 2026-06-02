@@ -78,6 +78,7 @@ export const COLOR_GROUPS: BrandColorGroup[] = [
       { name: "need-shelter", hex: "#c0a4ff", use: "Shelter", on: "dark" },
       { name: "need-air", hex: "#7fe7e0", use: "Air", on: "dark" },
       { name: "need-health", hex: "#ff8fb1", use: "Health", on: "dark" },
+      { name: "need-knowledge", hex: "#8aa0ff", use: "Knowledge", on: "dark" },
       { name: "need-restoration", hex: "#ffd9a0", use: "Restoration", on: "dark" },
     ],
   },
