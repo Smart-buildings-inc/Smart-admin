@@ -53,14 +53,19 @@ test.describe("ATLAS OS building simulator", () => {
       .poll(() => page.evaluate(() => document.body.style.overflow))
       .toBe("hidden");
 
-    // Exit returns the stage to its inline (non-viewport) size.
+    // Exit returns the stage to its inline state. Geometry is an unreliable
+    // discriminator here (the inline stage is intentionally taller than a phone
+    // viewport, and headless fullscreen sizing is browser-dependent), so verify
+    // the exit semantically: the toggle flips back to "Enter fullscreen" and the
+    // body scroll lock is released — both of which only happen when isFullscreen
+    // is false and the FULLSCREEN_STAGE_CLASS overlay has been removed.
     await page.getByRole("button", { name: "Exit fullscreen" }).click();
+    await expect(
+      page.getByRole("button", { name: "Enter fullscreen" }),
+    ).toBeVisible();
     await expect
-      .poll(async () => {
-        const box = await stage.boundingBox();
-        return box ? box.height < viewport.height : false;
-      })
-      .toBe(true);
+      .poll(() => page.evaluate(() => document.body.style.overflow))
+      .not.toBe("hidden");
   });
 
   test("simulator is reachable from the nav bar", async ({ page }) => {
