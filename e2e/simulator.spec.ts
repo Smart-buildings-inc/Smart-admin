@@ -26,10 +26,12 @@ test.describe("ATLAS OS building simulator", () => {
 
   test("simulator is reachable from the nav bar", async ({ page }) => {
     await page.goto("/");
-    // On mobile the nav links live behind the hamburger drawer — open it first.
-    const menu = page.getByRole("button", { name: "Open menu" });
-    if (await menu.isVisible()) await menu.click();
-    await page.getByRole("link", { name: "Simulator" }).click();
+    // On mobile use the bottom tab bar; on desktop the inline top nav.
+    const bottom = page.getByRole("navigation", { name: "Bottom navigation" });
+    const link = (await bottom.isVisible())
+      ? bottom.getByRole("link", { name: "Simulator" })
+      : page.getByRole("link", { name: "Simulator" });
+    await link.click();
     await expect(page).toHaveURL(/\/simulator$/);
   });
 });

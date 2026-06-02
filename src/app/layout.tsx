@@ -24,7 +24,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen">
+      {/* Bottom padding on mobile keeps content clear of the fixed bottom tab
+          bar (md:pb-0 once the bar is hidden at the md breakpoint). */}
+      <body className="min-h-screen pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
         <NavBar />
         {children}
       </body>
