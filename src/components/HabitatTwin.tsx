@@ -263,6 +263,7 @@ function Tower({
   selectedKey,
   mode,
   walkFloorIndex,
+  detailed,
   onSelect,
 }: {
   floors: Floor[];
@@ -270,6 +271,7 @@ function Tower({
   selectedKey: string | null;
   mode: TwinMode;
   walkFloorIndex: number;
+  detailed: boolean;
   onSelect: (key: string) => void;
 }) {
   const groupRef = useRef<THREE.Group>(null);
@@ -302,11 +304,14 @@ function Tower({
           onSelect={onSelect}
         />
       ))}
-      {/* optional detailed crown atop the tower (additive; off until set) */}
-      <GltfProp
-        slot="twinCrown"
-        position={[0, (floors.length - 1) * STEP + FLOOR_HEIGHT / 2 + 0.2, 0]}
-      />
+      {/* optional detailed crown atop the tower — only in realistic (non-pixel)
+          mode; additive and off until an asset is set */}
+      {detailed && (
+        <GltfProp
+          slot="twinCrown"
+          position={[0, (floors.length - 1) * STEP + FLOOR_HEIGHT / 2 + 0.2, 0]}
+        />
+      )}
     </group>
   );
 }
@@ -316,6 +321,7 @@ export default function HabitatTwin({
   incidents,
   selectedKey,
   mode,
+  pixel = false,
   onSelect,
   onWalkthroughEnd,
 }: {
@@ -323,6 +329,8 @@ export default function HabitatTwin({
   incidents: Incident[];
   selectedKey: string | null;
   mode: TwinMode;
+  /** Retro pixel/poly mode: pixelation buffer + no detailed glTF props. */
+  pixel?: boolean;
   onSelect: (key: string | null) => void;
   onWalkthroughEnd: () => void;
 }) {
@@ -344,6 +352,11 @@ export default function HabitatTwin({
   return (
     <div className="relative h-full w-full">
       <Canvas
+        // Pixel mode renders to a low device-pixel-ratio buffer the browser
+        // upscales nearest-neighbour (image-rendering: pixelated) for the retro
+        // look; realistic mode renders crisp.
+        dpr={pixel ? 0.4 : 1.6}
+        className={pixel ? "[image-rendering:pixelated]" : ""}
         camera={{ position: [8, 2, 8], fov: 42 }}
         frameloop="always"
         onPointerMissed={() => mode === "orbit" && onSelect(null)}
@@ -358,6 +371,7 @@ export default function HabitatTwin({
           selectedKey={selectedKey}
           mode={mode}
           walkFloorIndex={walkFloorIndex}
+          detailed={!pixel}
           onSelect={onSelect}
         />
 

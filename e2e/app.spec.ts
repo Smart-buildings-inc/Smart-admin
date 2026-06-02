@@ -38,6 +38,13 @@ test.describe("ATLAS OS console", () => {
     // The Walk-through button is clickable.
     await walkthrough.click();
     await expect(walkthrough).toBeVisible();
+
+    // Pixel/poly ⟷ realistic render-mode switch is present and toggles.
+    const pixel = page.getByRole("button", { name: "Pixel", exact: true });
+    await expect(pixel).toBeVisible();
+    await expect(pixel).toHaveAttribute("aria-pressed", "false");
+    await pixel.click();
+    await expect(pixel).toHaveAttribute("aria-pressed", "true");
   });
 
   test("incident feed is present", async ({ page }) => {

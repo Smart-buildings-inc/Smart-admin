@@ -44,6 +44,9 @@ export default function Console({
   const [kpis, setKpis] = useState<BuildingKpis>(initialKpis);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [mode, setMode] = useState<TwinMode>("orbit");
+  // Render-mode switch: "Pixel" = retro pixel/poly look; off = crisp detailed
+  // (glTF) rendering. Mirrors the Simulator's single switch.
+  const [pixel, setPixel] = useState(false);
 
   const selectedFloor = useMemo(
     () => floors.find((f) => f.key === selectedKey) ?? null,
@@ -138,6 +141,7 @@ export default function Console({
               incidents={incidents}
               selectedKey={selectedKey}
               mode={mode}
+              pixel={pixel}
               onSelect={setSelectedKey}
               onWalkthroughEnd={() => setMode("orbit")}
             />
@@ -166,6 +170,20 @@ export default function Console({
                   }`}
                 >
                   Walk-through
+                </button>
+              </div>
+              <div className="flex gap-1 rounded-full border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur">
+                <button
+                  type="button"
+                  onClick={() => setPixel((p) => !p)}
+                  aria-pressed={pixel}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                    pixel
+                      ? "bg-white text-ink-950"
+                      : "text-slate-300 hover:text-white"
+                  }`}
+                >
+                  Pixel
                 </button>
               </div>
               <FullscreenButton isFullscreen={expanded} onToggle={toggleExpand} />

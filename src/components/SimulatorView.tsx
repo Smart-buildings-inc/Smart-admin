@@ -87,9 +87,18 @@ export default function SimulatorView({
     cutaway: true,
     autoRotate: true,
     elevatorRunning: true,
-    detailedModels: true,
+    detailedModels: false,
   });
+  // Single render-mode switch: "Pixel" mode = procedural voxel figures +
+  // pixelation; off = crisp detailed glTF models. The two move together.
   const [pixel, setPixel] = useState(true);
+  const togglePixel = useCallback(() => {
+    setPixel((on) => {
+      const next = !on;
+      setOptions((o) => ({ ...o, detailedModels: !next }));
+      return next;
+    });
+  }, []);
 
   // Fullscreen for the simulator stage (native FS + CSS overlay fallback).
   const {
@@ -167,8 +176,7 @@ export default function SimulatorView({
               <div className="flex flex-wrap justify-end gap-1 rounded-2xl border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur">
                 <Toggle label={options.night ? "Night" : "Day"} active={options.night} onClick={() => set({ night: !options.night })} />
                 <Toggle label="Cut-away" active={options.cutaway} onClick={() => set({ cutaway: !options.cutaway })} />
-                <Toggle label="Detail" active={options.detailedModels} onClick={() => set({ detailedModels: !options.detailedModels })} />
-                <Toggle label="Pixel" active={pixel} onClick={() => setPixel((p) => !p)} />
+                <Toggle label="Pixel" active={pixel} onClick={togglePixel} />
                 <Toggle label="Orbit" active={options.autoRotate} onClick={() => set({ autoRotate: !options.autoRotate })} />
                 <Toggle label="Elevator" active={options.elevatorRunning} onClick={() => set({ elevatorRunning: !options.elevatorRunning })} />
               </div>
@@ -248,7 +256,8 @@ export default function SimulatorView({
               working elevator, switchback stairs, rooftop solar + reservoir, and
               residents going about their day. Toggle <span className="text-slate-200">Cut-away</span> for the
               dollhouse view, <span className="text-slate-200">Night</span> to see the windows glow, and{" "}
-              <span className="text-slate-200">Pixel</span> for the full retro branding.
+              <span className="text-slate-200">Pixel</span> for the retro voxel look — switch
+              Pixel off for detailed 3D models.
             </p>
           </div>
         </section>
