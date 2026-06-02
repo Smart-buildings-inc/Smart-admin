@@ -125,6 +125,17 @@ export default function Console({
     return () => window.removeEventListener("keydown", onKey);
   }, [expanded]);
 
+  // Lock body scroll while expanded so the overlay truly owns the whole screen
+  // (the page behind it — header, KPIs, feed — can't be scrolled into view).
+  useEffect(() => {
+    if (!expanded) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [expanded]);
+
   return (
     <main className="mx-auto flex min-h-screen max-w-[1500px] flex-col gap-4 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:p-6">
       {/* Header */}
@@ -162,10 +173,11 @@ export default function Console({
         <section className="flex flex-col gap-4">
           <div
             ref={twinWrapRef}
-            className={`panel relative overflow-hidden bg-ink-950 ${
+            data-testid="twin-stage"
+            className={`relative overflow-hidden bg-ink-950 ${
               expanded
-                ? "fixed inset-0 z-[60] h-[100dvh] w-screen rounded-none border-0"
-                : "h-[460px] lg:h-[560px]"
+                ? "fixed inset-0 z-[70] h-[100dvh] w-[100vw] rounded-none border-0"
+                : "panel h-[460px] lg:h-[560px]"
             }`}
           >
             <HabitatTwin
