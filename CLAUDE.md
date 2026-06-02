@@ -34,6 +34,9 @@ falls back to seed data whenever `DATABASE_URL` is unset (`isDbConfigured` / `ge
 
 - **Pages (server components)** fetch initial data and pass it into client components:
   - `src/app/page.tsx` — main Console (the twin + panels). `force-dynamic`.
+  - `src/app/simulator/page.tsx` — Building Simulator (F12): a live, operating
+    voxel/pixel-art twin of ATLAS-01 (cut-away floors, working elevator,
+    switchback stairs, rooftop solar + reservoir, voxel residents). `force-dynamic`.
   - `src/app/fleet/page.tsx` — Fleet view (F7), multi-building rollup.
   - `src/app/layout.tsx` — root layout; renders the shared `NavBar` above all pages.
 - **Data access** is centralized and DB-optional:
@@ -52,9 +55,13 @@ falls back to seed data whenever `DATABASE_URL` is unset (`isDbConfigured` / `ge
 - **Client `Console`** (`src/components/Console.tsx`) orchestrates the UI: lazy-loads `HabitatTwin`
   (WebGL, `ssr: false`), wires `KpiStrip`, `FloorPanel`, `IncidentFeed`, `BroadcastComposer`,
   manages floor selection + orbit/walk-through twin modes, and polls `/api/incidents` every ~15s.
+- **Client `SimulatorView`** (`src/components/SimulatorView.tsx`) owns the Building Simulator DOM
+  chrome (controls, legend, telemetry, live elevator indicator) and lazy-loads the WebGL scene
+  `BuildingSimulator.tsx` (`ssr: false`) — a procedural voxel building (no Blender/GLTF assets;
+  geometry authored in three.js). Pixelation is a low `dpr` buffer upscaled nearest-neighbour.
 - **Feature labels:** code comments tag features `F1`–`F7` (e.g. F1 twin, F2 floor panel, F3 feed,
-  F4 broadcast, F5 KPI strip, F7 fleet) plus `F11` (sensor ingestion). Grep these labels to locate
-  the code behind a feature.
+  F4 broadcast, F5 KPI strip, F7 fleet) plus `F11` (sensor ingestion) and `F12` (building simulator).
+  Grep these labels to locate the code behind a feature.
 
 ## Conventions
 
