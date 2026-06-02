@@ -6,10 +6,11 @@ import { usePathname } from "next/navigation";
 import { NAV_ITEMS, isActive } from "@/lib/nav";
 import NavIcon from "@/components/NavIcons";
 
-// iOS-style mobile tab bar. Lives pinned to the bottom of the viewport on small
-// screens only (the desktop top NavBar takes over at md+). Frosted, translucent,
-// honors the home-indicator safe area, and every tab carries an explicit hover
-// and a slight press (scale-down) state for that tactile, native feel.
+// iOS-style tab bar, pinned to the bottom of the viewport on every screen size.
+// Frosted, translucent, honors the home-indicator safe area, and every tab
+// carries an explicit hover and a slight press (scale-down) state for that
+// tactile, native feel. On desktop the tabs settle into a centered pill while
+// the bar still spans edge to edge.
 
 export default function BottomNav() {
   const pathname = usePathname() ?? "/";
@@ -17,7 +18,7 @@ export default function BottomNav() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed inset-x-0 bottom-0 z-40 md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40"
     >
       {/* Frosted bar. The pb uses the safe-area inset so tabs sit above the
           iOS home indicator instead of under it. */}

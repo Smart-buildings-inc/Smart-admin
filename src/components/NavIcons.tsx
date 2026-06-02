@@ -35,6 +35,17 @@ export default function NavIcon({ name, active = false, className }: Props) {
     );
   }
 
+  if (name === "download") {
+    // Download / install to device — tray with a down arrow.
+    return (
+      <svg {...common}>
+        <path d="M12 3v11" />
+        <path d="m7.5 10 4.5 4.5 4.5-4.5" fill={active ? "currentColor" : "none"} />
+        <path d="M5 16v2.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V16" />
+      </svg>
+    );
+  }
+
   // Fleet — a cluster of habitat towers.
   return (
     <svg {...common}>
