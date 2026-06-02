@@ -21,6 +21,8 @@ export async function getBuildings(): Promise<Building[]> {
     location: { label: r.locationLabel, lat: r.lat, lng: r.lng },
     status: r.status as BuildingStatus,
     unitCount: r.unitCount,
+    dwellings: r.dwellings ?? undefined,
+    beds: r.beds ?? undefined,
     autonomyPct: r.autonomyPct,
     residents: r.residents,
     openIncidents: r.openIncidents,

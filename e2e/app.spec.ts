@@ -14,11 +14,11 @@ test.describe("ATLAS OS console", () => {
 
     // KPI strip labels (F5).
     for (const label of [
-      "Autonomy",
+      "Energy autonomy",
       "Battery",
       "Solar",
-      "Water reuse",
-      "Food output",
+      "Non-potable reuse",
+      "Food (amenity)",
       "Residents",
       "Open incidents",
     ]) {

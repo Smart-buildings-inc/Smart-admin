@@ -317,7 +317,7 @@ export default function FleetView({
 
               <dl className="grid grid-cols-2 gap-3">
                 <div className="panel panel-pad">
-                  <div className="kpi-label">Autonomy</div>
+                  <div className="kpi-label">Energy autonomy</div>
                   <div
                     className={`kpi-value ${
                       selected.autonomyPct >= 90
@@ -338,9 +338,21 @@ export default function FleetView({
                   <div className="kpi-value">{selected.residents}</div>
                 </div>
                 <div className="panel panel-pad">
-                  <div className="kpi-label">Units</div>
+                  <div className="kpi-label">Floors</div>
                   <div className="kpi-value">{selected.unitCount}</div>
                 </div>
+                {selected.dwellings !== undefined ? (
+                  <div className="panel panel-pad">
+                    <div className="kpi-label">Dwellings</div>
+                    <div className="kpi-value">{selected.dwellings}</div>
+                  </div>
+                ) : null}
+                {selected.beds !== undefined ? (
+                  <div className="panel panel-pad">
+                    <div className="kpi-label">Beds</div>
+                    <div className="kpi-value">{selected.beds}</div>
+                  </div>
+                ) : null}
                 <div className="panel panel-pad">
                   <div className="kpi-label">Open incidents</div>
                   <div

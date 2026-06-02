@@ -438,8 +438,8 @@ export default function LandingPage() {
 // Decorative; hidden from assistive tech via aria-hidden.
 function ConsoleMockup() {
   const kpis: { label: string; value: string; color: string }[] = [
-    { label: "Autonomy", value: "99%", color: "#ffcf4d" },
-    { label: "Water reuse", value: "96%", color: "#3aa0ff" },
+    { label: "Energy autonomy", value: "99%", color: "#ffcf4d" },
+    { label: "Non-potable reuse", value: "96%", color: "#3aa0ff" },
     { label: "Air AQI", value: "99.4", color: "#7fe7e0" },
     { label: "Residents", value: "312", color: "#c0a4ff" },
   ];

@@ -39,7 +39,7 @@ export default function KpiStrip({ kpis }: { kpis: BuildingKpis }) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:flex lg:flex-wrap">
       <Kpi
-        label="Autonomy"
+        label="Energy autonomy"
         value={kpis.autonomyPct}
         suffix="%"
         tone={kpis.autonomyPct >= 90 ? "ok" : kpis.autonomyPct >= 70 ? "warn" : "crit"}
@@ -51,8 +51,8 @@ export default function KpiStrip({ kpis }: { kpis: BuildingKpis }) {
         tone={kpis.batteryPct >= 40 ? "ok" : kpis.batteryPct >= 20 ? "warn" : "crit"}
       />
       <Kpi label="Solar" value={kpis.solarKw} suffix="kW" />
-      <Kpi label="Water reuse" value={kpis.waterReusePct} suffix="%" tone="ok" />
-      <Kpi label="Food output" value={kpis.foodKgDay} suffix="kg/day" />
+      <Kpi label="Non-potable reuse" value={kpis.waterReusePct} suffix="%" tone="ok" />
+      <Kpi label="Food (amenity)" value={kpis.foodKgDay} suffix="kg/day" />
       <Kpi label="Residents" value={kpis.residents} />
       <Kpi
         label="Open incidents"

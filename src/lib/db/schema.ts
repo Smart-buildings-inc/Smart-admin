@@ -89,6 +89,8 @@ export const buildings = pgTable("buildings", {
   lng: doublePrecision("lng").notNull(),
   status: text("status").notNull().default("online"),
   unitCount: integer("unit_count").notNull().default(0),
+  dwellings: integer("dwellings"),
+  beds: integer("beds"),
   autonomyPct: integer("autonomy_pct").notNull().default(0),
   residents: integer("residents").notNull().default(0),
   openIncidents: integer("open_incidents").notNull().default(0),

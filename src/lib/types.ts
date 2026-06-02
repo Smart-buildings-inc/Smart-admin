@@ -25,7 +25,13 @@ export interface FloorMetrics {
   batteryPct?: number;
   /** litres/hour throughput (water floors) */
   waterLph?: number;
-  /** % of greywater reused */
+  /**
+   * % of *non-potable* water demand served by on-site reuse
+   * (greywater/rainwater → toilets/irrigation). This is deliberately scoped to
+   * non-potable end uses: on-site blackwater→potable reuse is not permittable in
+   * Canadian jurisdictions, so the headline KPI must read as non-potable reuse.
+   * See docs/ATLAS-derisking-plan.md §Water.
+   */
   waterReusePct?: number;
   /** kg/day food output (food floors) */
   foodKgDay?: number;
@@ -144,11 +150,23 @@ export interface Building {
     lng: number;
   };
   status: BuildingStatus;
-  /** number of floors/units in the stack */
+  /**
+   * Number of floors in the stack (the physical level count) — NOT the number
+   * of homes. Kept distinct from `dwellings`/`beds` because conflating the two
+   * is the first thing a planner/lender flags. See docs/ATLAS-derisking-plan.md.
+   */
   unitCount: number;
-  /** rollup: % of demand met by on-site generation */
+  /** number of self-contained dwellings (homes) — the count a lender underwrites */
+  dwellings?: number;
+  /** sleeping capacity in beds — distinct from current `residents` (occupancy) */
+  beds?: number;
+  /**
+   * rollup: % of *energy* demand met by on-site generation (energy autonomy).
+   * This is one sub-score of overall resilience, not a blanket "self-sufficiency"
+   * claim — water/food are tracked separately. See docs/ATLAS-derisking-plan.md.
+   */
   autonomyPct: number;
-  /** rollup: total residents housed */
+  /** rollup: total residents currently housed (occupancy, not capacity) */
   residents: number;
   /** rollup: count of open (crit/warn) incidents */
   openIncidents: number;
