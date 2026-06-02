@@ -1,5 +1,6 @@
 import type { Floor, FloorMetrics, Incident } from "@/lib/types";
 import { needColor, severityColor, severityLabel, timeAgo } from "@/lib/ui";
+import { featureModels } from "@/components/twin/floorModels";
 
 // Maps each metric key to a human label + formatter. Only present keys render.
 const METRIC_META: Record<
@@ -41,6 +42,7 @@ export default function FloorPanel({
   }
 
   const color = needColor[floor.need];
+  const feature = featureModels[floor.key];
   const floorIncidents = incidents.filter((i) => i.floorKey === floor.key);
   const metricEntries = METRIC_ORDER.filter(
     (k) => floor.metrics[k] !== undefined,
@@ -93,6 +95,16 @@ export default function FloorPanel({
           </p>
         )}
       </div>
+
+      {feature && (
+        <div className="mt-4 rounded-lg border border-ink-600/50 bg-ink-800/40 px-3 py-2">
+          <div className="kpi-label mb-0.5">Live 3D model</div>
+          <div className="text-sm text-slate-200">{feature.label}</div>
+          <div className="mt-0.5 text-[11px] text-slate-500">
+            {feature.source} · tap the floor to play its animation
+          </div>
+        </div>
+      )}
 
       {floorIncidents.length > 0 && (
         <div className="mt-4">

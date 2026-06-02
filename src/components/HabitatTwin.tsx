@@ -7,6 +7,9 @@ import * as THREE from "three";
 import type { Floor, Incident } from "@/lib/types";
 import { needColor } from "@/lib/ui";
 import { annotationByFloor } from "@/lib/annotations";
+import ProceduralRig from "./twin/ProceduralRig";
+import FeatureModel from "./twin/FeatureModel";
+import { featureModels } from "./twin/floorModels";
 
 export type TwinMode = "orbit" | "walkthrough";
 
@@ -16,7 +19,18 @@ const FLOOR_W = 3.4;
 const FLOOR_D = 3.4;
 const STEP = FLOOR_HEIGHT + FLOOR_GAP;
 
-interface SlabProps {
+// A floor is a thin glass base plate with detailed equipment standing on top.
+const PLATE_H = 0.14;
+const INTERIOR_H = FLOOR_HEIGHT - PLATE_H; // headroom for the rig
+const INTERIOR_MARGIN = 0.4; // keep equipment off the glass walls
+const PLATFORM_TOP = -FLOOR_HEIGHT / 2 + PLATE_H; // local y of the plate's top
+
+// Shared, reused once on the client — the translucent floor envelope outline.
+const CELL_EDGES = new THREE.EdgesGeometry(
+  new THREE.BoxGeometry(FLOOR_W, FLOOR_HEIGHT, FLOOR_D),
+);
+
+interface FloorUnitProps {
   floor: Floor;
   index: number;
   selected: boolean;
@@ -25,22 +39,24 @@ interface SlabProps {
   onSelect: (key: string) => void;
 }
 
-function FloorSlab({
+function FloorUnit({
   floor,
   index,
   selected,
   hasIncident,
   showAnnotation,
   onSelect,
-}: SlabProps) {
-  const meshRef = useRef<THREE.Mesh>(null);
+}: FloorUnitProps) {
+  const plateRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
   const y = index * STEP;
   const base = needColor[floor.need];
   const annotation = annotationByFloor.get(floor.key);
+  const feature = featureModels[floor.key];
+  const active = selected || showAnnotation;
 
   useFrame((state) => {
-    const mat = meshRef.current?.material as THREE.MeshStandardMaterial | undefined;
+    const mat = plateRef.current?.material as THREE.MeshStandardMaterial | undefined;
     if (!mat) return;
     let intensity = selected ? 0.55 : hovered ? 0.4 : 0.12;
     if (hasIncident) {
@@ -52,35 +68,71 @@ function FloorSlab({
   });
 
   return (
-    <group position={[0, y, 0]}>
+    <group
+      position={[0, y, 0]}
+      onClick={(e: ThreeEvent<MouseEvent>) => {
+        e.stopPropagation();
+        onSelect(floor.key);
+      }}
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        setHovered(true);
+        document.body.style.cursor = "pointer";
+      }}
+      onPointerOut={() => {
+        setHovered(false);
+        document.body.style.cursor = "auto";
+      }}
+    >
+      {/* Glass floor envelope — the stacked-tower silhouette. */}
+      <lineSegments geometry={CELL_EDGES}>
+        <lineBasicMaterial
+          color={base}
+          transparent
+          opacity={selected || hovered ? 0.55 : 0.28}
+        />
+      </lineSegments>
+
+      {/* Base plate (the slab itself). */}
       <mesh
-        ref={meshRef}
-        onClick={(e: ThreeEvent<MouseEvent>) => {
-          e.stopPropagation();
-          onSelect(floor.key);
-        }}
-        onPointerOver={(e) => {
-          e.stopPropagation();
-          setHovered(true);
-          document.body.style.cursor = "pointer";
-        }}
-        onPointerOut={() => {
-          setHovered(false);
-          document.body.style.cursor = "auto";
-        }}
-        scale={selected || hovered ? 1.04 : 1}
+        ref={plateRef}
+        position={[0, -FLOOR_HEIGHT / 2 + PLATE_H / 2, 0]}
+        scale={hovered ? 1.01 : 1}
       >
-        <boxGeometry args={[FLOOR_W, FLOOR_HEIGHT, FLOOR_D]} />
+        <boxGeometry args={[FLOOR_W, PLATE_H, FLOOR_D]} />
         <meshStandardMaterial
           color={base}
           emissive={hasIncident ? "#ff5d5d" : base}
           emissiveIntensity={0.12}
-          metalness={0.2}
-          roughness={0.45}
+          metalness={0.35}
+          roughness={0.4}
           transparent
-          opacity={0.92}
+          opacity={0.95}
         />
       </mesh>
+
+      {/* Detailed, always-animated equipment themed by the floor's need. */}
+      <group position={[0, PLATFORM_TOP, 0]}>
+        <ProceduralRig
+          need={floor.need}
+          color={base}
+          active={active}
+          hasIncident={hasIncident}
+          width={FLOOR_W - INTERIOR_MARGIN}
+          depth={FLOOR_D - INTERIOR_MARGIN}
+          height={INTERIOR_H}
+          seed={index}
+        />
+
+        {/* Real animated GLB feature model on select floors (click to play). */}
+        {feature && (
+          <FeatureModel
+            model={feature}
+            active={active}
+            onPress={() => onSelect(floor.key)}
+          />
+        )}
+      </group>
 
       {/* Hover/select label */}
       {(hovered || selected) && !showAnnotation && (
@@ -96,6 +148,7 @@ function FloorSlab({
               style={{ backgroundColor: base }}
             />
             {floor.name}
+            {feature && <span className="ml-1.5 text-[10px] text-slate-400">▶ tap to animate</span>}
           </div>
         </Html>
       )}
@@ -203,22 +256,49 @@ function WalkthroughCamera({
   return null;
 }
 
-/** Mounts a WebXR "Enter AR" button bound to the live renderer. */
-function ARLauncher({ containerRef }: { containerRef: React.RefObject<HTMLDivElement> }) {
+/**
+ * Mounts a WebXR "Enter AR" button bound to the live renderer, and shrinks the
+ * habitat to a tabletop model while an AR session is active so the whole tower
+ * sits comfortably in front of the user.
+ */
+function ARLauncher({
+  containerRef,
+  habitatRef,
+}: {
+  containerRef: React.RefObject<HTMLDivElement>;
+  habitatRef: React.RefObject<THREE.Group>;
+}) {
   const { gl } = useThree();
 
   useEffect(() => {
     let button: HTMLElement | null = null;
     let cancelled = false;
 
+    const onStart = () => {
+      const g = habitatRef.current;
+      if (!g) return;
+      g.scale.setScalar(0.12);
+      g.position.set(0, -0.15, -0.8); // tabletop, just ahead of the viewer
+    };
+    const onEnd = () => {
+      const g = habitatRef.current;
+      if (!g) return;
+      g.scale.setScalar(1);
+      g.position.set(0, 0, 0);
+    };
+
     (async () => {
       try {
         const { ARButton } = await import("three/examples/jsm/webxr/ARButton.js");
         if (cancelled || !containerRef.current) return;
         gl.xr.enabled = true;
-        button = ARButton.createButton(gl);
+        button = ARButton.createButton(gl, {
+          optionalFeatures: ["local-floor", "bounded-floor", "hand-tracking"],
+        });
         button.classList.add("atlas-ar-button");
         containerRef.current.appendChild(button);
+        gl.xr.addEventListener("sessionstart", onStart);
+        gl.xr.addEventListener("sessionend", onEnd);
       } catch {
         // WebXR unavailable — the parent shows guidance instead.
       }
@@ -226,10 +306,12 @@ function ARLauncher({ containerRef }: { containerRef: React.RefObject<HTMLDivEle
 
     return () => {
       cancelled = true;
+      gl.xr.removeEventListener("sessionstart", onStart);
+      gl.xr.removeEventListener("sessionend", onEnd);
       if (button && button.parentElement) button.parentElement.removeChild(button);
       gl.xr.enabled = false;
     };
-  }, [gl, containerRef]);
+  }, [gl, containerRef, habitatRef]);
 
   return null;
 }
@@ -264,7 +346,7 @@ function Tower({
   return (
     <group ref={groupRef} position={[0, -totalHeight / 2, 0]}>
       {floors.map((floor, i) => (
-        <FloorSlab
+        <FloorUnit
           key={floor.key}
           floor={floor}
           index={i}
@@ -294,6 +376,7 @@ export default function HabitatTwin({
   onWalkthroughEnd: () => void;
 }) {
   const arContainerRef = useRef<HTMLDivElement>(null);
+  const habitatRef = useRef<THREE.Group>(null);
   const [walkFloorIndex, setWalkFloorIndex] = useState(-1);
   const totalHeight = floors.length * STEP;
 
@@ -313,20 +396,25 @@ export default function HabitatTwin({
       <Canvas
         camera={{ position: [8, 2, 8], fov: 42 }}
         frameloop="always"
+        shadows
         onPointerMissed={() => mode === "orbit" && onSelect(null)}
       >
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[6, 10, 6]} intensity={1.1} />
+        <ambientLight intensity={0.55} />
+        <hemisphereLight args={["#bcd8ff", "#0b121a", 0.5]} />
+        <directionalLight position={[6, 12, 6]} intensity={1.15} castShadow />
         <directionalLight position={[-6, -4, -6]} intensity={0.3} color="#4ea8ff" />
 
-        <Tower
-          floors={floors}
-          incidentFloorKeys={incidentFloorKeys}
-          selectedKey={selectedKey}
-          mode={mode}
-          walkFloorIndex={walkFloorIndex}
-          onSelect={onSelect}
-        />
+        {/* The whole habitat — AR shrinks this group to tabletop scale. */}
+        <group ref={habitatRef}>
+          <Tower
+            floors={floors}
+            incidentFloorKeys={incidentFloorKeys}
+            selectedKey={selectedKey}
+            mode={mode}
+            walkFloorIndex={walkFloorIndex}
+            onSelect={onSelect}
+          />
+        </group>
 
         {mode === "orbit" && (
           <OrbitControls
@@ -345,7 +433,7 @@ export default function HabitatTwin({
           onComplete={onWalkthroughEnd}
         />
 
-        <ARLauncher containerRef={arContainerRef} />
+        <ARLauncher containerRef={arContainerRef} habitatRef={habitatRef} />
       </Canvas>
 
       <div className="pointer-events-none absolute left-4 top-4 text-xs text-slate-400">
@@ -353,7 +441,7 @@ export default function HabitatTwin({
         <div>
           {mode === "walkthrough"
             ? "Descending — rooftop pool to the underground core…"
-            : "Orbit to inspect · tap a floor for telemetry"}
+            : "Orbit to inspect · tap a floor to play its animation"}
         </div>
       </div>
 
