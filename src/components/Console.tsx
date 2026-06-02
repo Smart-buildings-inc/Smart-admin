@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useFullscreen } from "@/lib/useFullscreen";
 import type {
   Broadcast,
   BuildingKpis,
@@ -43,9 +42,6 @@ export default function Console({
   const [kpis, setKpis] = useState<BuildingKpis>(initialKpis);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [mode, setMode] = useState<TwinMode>("orbit");
-  const stageRef = useRef<HTMLDivElement>(null);
-  const { active: isFullscreen, cssFallback, toggle: toggleFullscreen } =
-    useFullscreen(stageRef);
 
   const selectedFloor = useMemo(
     () => floors.find((f) => f.key === selectedKey) ?? null,
@@ -86,8 +82,62 @@ export default function Console({
     setMode("walkthrough");
   }, []);
 
+  // --- Fullscreen for the twin/walk-through ---
+  // Native Fullscreen API on desktop; a CSS full-viewport overlay as a fallback
+  // for iOS Safari (which doesn't allow element fullscreen). Esc exits both.
+  const twinWrapRef = useRef<HTMLDivElement>(null);
+  const [expanded, setExpanded] = useState(false);
+
+  const toggleExpand = useCallback(() => {
+    const el = twinWrapRef.current;
+    if (!el) return;
+    const willExpand = !expanded;
+    setExpanded(willExpand);
+    try {
+      if (willExpand) {
+        if (el.requestFullscreen && !document.fullscreenElement) {
+          void el.requestFullscreen().catch(() => {});
+        }
+      } else if (document.fullscreenElement) {
+        void document.exitFullscreen().catch(() => {});
+      }
+    } catch {
+      /* CSS overlay still covers the viewport if native FS is unavailable */
+    }
+  }, [expanded]);
+
+  // Sync state when the user leaves native fullscreen (e.g. Esc / OS gesture).
+  useEffect(() => {
+    const onFsChange = () => {
+      if (!document.fullscreenElement) setExpanded(false);
+    };
+    document.addEventListener("fullscreenchange", onFsChange);
+    return () => document.removeEventListener("fullscreenchange", onFsChange);
+  }, []);
+
+  // Esc exits the CSS-only overlay path (iOS), where no native FS session runs.
+  useEffect(() => {
+    if (!expanded) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setExpanded(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [expanded]);
+
+  // Lock body scroll while expanded so the overlay truly owns the whole screen
+  // (the page behind it — header, KPIs, feed — can't be scrolled into view).
+  useEffect(() => {
+    if (!expanded) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [expanded]);
+
   return (
-    <main className="mx-auto flex min-h-screen max-w-[1500px] flex-col gap-4 p-4 lg:p-6">
+    <main className="mx-auto flex min-h-screen max-w-[1500px] flex-col gap-4 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:p-6">
       {/* Header */}
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
@@ -99,28 +149,20 @@ export default function Console({
             <span className="important">This is the future of housing.</span>
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <a
-            href="/fleet"
-            className="inline-flex items-center gap-1.5 rounded-full border border-ink-600/70 bg-ink-900/60 px-3 py-1 text-xs font-semibold text-slate-200 transition-colors hover:bg-ink-800 hover:text-white"
-          >
-            Fleet view →
-          </a>
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs ${
+            dbConnected
+              ? "bg-signal-ok/15 text-signal-ok"
+              : "bg-ink-700 text-slate-400"
+          }`}
+        >
           <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs ${
-              dbConnected
-                ? "bg-signal-ok/15 text-signal-ok"
-                : "bg-ink-700 text-slate-400"
+            className={`h-1.5 w-1.5 rounded-full ${
+              dbConnected ? "bg-signal-ok" : "bg-slate-500"
             }`}
-          >
-            <span
-              className={`h-1.5 w-1.5 rounded-full ${
-                dbConnected ? "bg-signal-ok" : "bg-slate-500"
-              }`}
-            />
-            {dbConnected ? "Database connected" : "Seed data (local-first)"}
-          </span>
-        </div>
+          />
+          {dbConnected ? "Database connected" : "Seed data (local-first)"}
+        </span>
       </header>
 
       {/* KPI strip (F5) */}
@@ -130,9 +172,12 @@ export default function Console({
       <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-[1.6fr_1fr]">
         <section className="flex flex-col gap-4">
           <div
-            ref={stageRef}
-            className={`twin-stage panel relative h-[460px] overflow-hidden lg:h-[560px] ${
-              cssFallback ? "twin-stage--max" : ""
+            ref={twinWrapRef}
+            data-testid="twin-stage"
+            className={`relative overflow-hidden bg-ink-950 ${
+              expanded
+                ? "fixed inset-0 z-[70] h-[100dvh] w-[100vw] rounded-none border-0"
+                : "panel h-[460px] lg:h-[560px]"
             }`}
           >
             <HabitatTwin
@@ -144,7 +189,7 @@ export default function Console({
               onWalkthroughEnd={() => setMode("orbit")}
             />
 
-            {/* Twin controls — segmented mode switch + fullscreen toggle */}
+            {/* Controls — iOS-style segmented mode buttons + fullscreen toggle */}
             <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
               <div className="flex gap-1 rounded-full border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur">
                 <button
@@ -172,19 +217,18 @@ export default function Console({
               </div>
               <button
                 type="button"
-                onClick={toggleFullscreen}
-                aria-pressed={isFullscreen}
-                aria-label={isFullscreen ? "Exit full screen" : "Enter full screen"}
-                title={isFullscreen ? "Exit full screen" : "Full screen"}
-                className="grid h-8 w-8 place-items-center rounded-full border border-ink-600/70 bg-ink-900/80 text-slate-200 backdrop-blur transition-colors hover:bg-ink-800 hover:text-white"
+                onClick={toggleExpand}
+                aria-label={expanded ? "Exit fullscreen" : "Enter fullscreen"}
+                title={expanded ? "Exit fullscreen (Esc)" : "Fullscreen"}
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-ink-600/70 bg-ink-900/80 text-slate-200 backdrop-blur transition-colors hover:bg-ink-800 hover:text-white"
               >
-                {isFullscreen ? (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M9 3v6H3M15 3v6h6M9 21v-6H3M15 21v-6h6" />
+                {expanded ? (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 9H4M9 9V4M9 9 4 4M15 9h5M15 9V4m0 5 5-5M9 15H4m5 0v5m0-5-5 5m11-5h5m-5 0v5m0-5 5 5" />
                   </svg>
                 ) : (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6" />
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M8 4H4v4M16 4h4v4M16 20h4v-4M8 20H4v-4" />
                   </svg>
                 )}
               </button>

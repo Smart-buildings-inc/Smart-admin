@@ -20,7 +20,7 @@ function Kpi({
           ? "text-signal-ok"
           : "text-white";
   return (
-    <div className="panel panel-pad min-w-[8.5rem] flex-1">
+    <div className="panel panel-pad min-w-0 flex-1 lg:min-w-[8.5rem]">
       <div className="kpi-label">{label}</div>
       <div className={`kpi-value ${toneClass}`}>
         {value}
@@ -37,7 +37,7 @@ function Kpi({
 // F5 — Building KPI strip.
 export default function KpiStrip({ kpis }: { kpis: BuildingKpis }) {
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:flex lg:flex-wrap">
       <Kpi
         label="Autonomy"
         value={kpis.autonomyPct}

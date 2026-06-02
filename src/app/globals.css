@@ -122,26 +122,6 @@ body {
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45) !important;
 }
 
-/* Habitat-twin fullscreen stage — fill the screen and drop the rounded frame.
-   Covers the native Fullscreen API (standard + WebKit) and the CSS fallback
-   used on platforms without element fullscreen (e.g. iPhone Safari). */
-.twin-stage:fullscreen,
-.twin-stage:-webkit-full-screen {
-  width: 100vw !important;
-  height: 100vh !important;
-  max-height: none !important;
-  border-radius: 0 !important;
-}
-.twin-stage--max {
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 60 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  max-height: none !important;
-  border-radius: 0 !important;
-}
-
 /* Thin scrollbars for the feeds. */
 .scroll-thin {
   scrollbar-width: thin;

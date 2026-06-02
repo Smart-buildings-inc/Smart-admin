@@ -1,0 +1,52 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ATLAS OS">
+  <defs>
+    <!-- Per-face brushed-metal sheen, lit from the upper-left -->
+    <linearGradient id="fTop" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0%" stop-color="#f3f6f9"/>
+      <stop offset="100%" stop-color="#d2d8de"/>
+    </linearGradient>
+    <linearGradient id="fLeft" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c4cbd2"/>
+      <stop offset="100%" stop-color="#9aa2ab"/>
+    </linearGradient>
+    <linearGradient id="fRight" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#b4bcc4"/>
+      <stop offset="100%" stop-color="#8b939d"/>
+    </linearGradient>
+    <radialGradient id="tile" cx="36%" cy="30%" r="90%">
+      <stop offset="0%" stop-color="#13171c"/>
+      <stop offset="100%" stop-color="#06080b"/>
+    </radialGradient>
+  </defs>
+
+  <!-- App-icon tile -->
+  <rect x="6" y="6" width="500" height="500" rx="96" fill="url(#tile)"/>
+  <rect x="6.5" y="6.5" width="499" height="499" rx="95.5" fill="none" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1.5"/>
+
+  <!-- Soft contact shadow under the cube -->
+  <ellipse cx="256" cy="470" rx="150" ry="26" fill="#000000" opacity="0.45"/>
+
+  <!-- Cube faces -->
+  <polygon points="256,48 436.1,152 256,256 75.9,152" fill="url(#fTop)" stroke="#5b636c" stroke-width="2" stroke-linejoin="round"/>
+  <polygon points="75.9,152 256,256 256,464 75.9,360" fill="url(#fLeft)" stroke="#5b636c" stroke-width="2" stroke-linejoin="round"/>
+  <polygon points="256,256 436.1,152 436.1,360 256,464" fill="url(#fRight)" stroke="#5b636c" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Raised letters: dark shadow copy + bright top copy, on each face plane -->
+  <!-- A (top) -->
+  <g transform="matrix(1.8013,1.04,-1.8013,1.04,256,48)" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <g transform="translate(1.5,3)" stroke="#000000" stroke-opacity="0.28" stroke-width="14">
+      <path d="M30 82 L50 20 L70 82 M38 60 L62 60"/>
+    </g>
+    <path d="M30 82 L50 20 L70 82 M38 60 L62 60" stroke="#f7f9fb" stroke-width="14"/>
+  </g>
+  <!-- O (left) -->
+  <g transform="matrix(1.8013,1.04,0,2.08,75.9,152)" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <rect x="26" y="24" width="48" height="56" rx="15" transform="translate(1.5,3)" stroke="#000000" stroke-opacity="0.28" stroke-width="14"/>
+    <rect x="26" y="24" width="48" height="56" rx="15" stroke="#e8edf1" stroke-width="14"/>
+  </g>
+  <!-- S (right) -->
+  <g transform="matrix(1.8013,-1.04,0,2.08,256,256)" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M68 34 C68 22 32 22 32 40 C32 54 68 52 68 68 C68 86 32 86 32 72" transform="translate(1.5,3)" stroke="#000000" stroke-opacity="0.28" stroke-width="14"/>
+    <path d="M68 34 C68 22 32 22 32 40 C32 54 68 52 68 68 C68 86 32 86 32 72" stroke="#dde3e8" stroke-width="14"/>
+  </g>
+</svg>

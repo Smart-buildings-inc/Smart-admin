@@ -1,0 +1,34 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ATLAS OS">
+  <defs>
+    <linearGradient id="t" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0%" stop-color="#f4f7fa"/>
+      <stop offset="100%" stop-color="#d4dae0"/>
+    </linearGradient>
+    <linearGradient id="l" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c2c9d1"/>
+      <stop offset="100%" stop-color="#97a0a9"/>
+    </linearGradient>
+    <linearGradient id="r" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#b1b9c2"/>
+      <stop offset="100%" stop-color="#878f99"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="1" y="1" width="62" height="62" rx="14" fill="#0a0d11"/>
+
+  <!-- faces -->
+  <polygon points="32,6 54.5,19 32,32 9.5,19" fill="url(#t)" stroke="#586068" stroke-width="0.6" stroke-linejoin="round"/>
+  <polygon points="9.5,19 32,32 32,58 9.5,45" fill="url(#l)" stroke="#586068" stroke-width="0.6" stroke-linejoin="round"/>
+  <polygon points="32,32 54.5,19 54.5,45 32,58" fill="url(#r)" stroke="#586068" stroke-width="0.6" stroke-linejoin="round"/>
+
+  <!-- letters (bright, raised) -->
+  <g transform="matrix(0.2252,0.13,-0.2252,0.13,32,6)" stroke="#f8fafc" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M30 80 L50 22 L70 80 M38 60 L62 60"/>
+  </g>
+  <g transform="matrix(0.2252,0.13,0,0.26,9.5,19)" stroke="#eaeff3" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <rect x="27" y="25" width="46" height="54" rx="15"/>
+  </g>
+  <g transform="matrix(0.2252,-0.13,0,0.26,32,32)" stroke="#dfe5ea" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M67 34 C67 23 33 23 33 40 C33 53 67 51 67 67 C67 84 33 84 33 71"/>
+  </g>
+</svg>
