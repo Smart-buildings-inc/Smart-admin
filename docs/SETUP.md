@@ -63,20 +63,33 @@ floors, incidents, and broadcasts persist.
 
 ### Which database
 
-Any **serverless-compatible Postgres** works, because the driver speaks the Neon
-HTTP protocol:
+The app is wired for **Neon specifically**. `src/lib/db/index.ts` uses the
+`drizzle-orm/neon-http` adapter with the `neon()` function from
+`@neondatabase/serverless` — this is the Neon serverless HTTP driver, and it
+requires a **Neon** database endpoint. A plain Postgres TCP connection string
+(such as a standard Supabase pooler URL) will **not** work with this driver
+as-is.
 
-- **Neon** — the canonical choice. Create a project at <https://neon.tech> and
-  copy the connection string.
-- **Supabase Postgres** — also works. Use the **connection / pooler URL** from the
-  Supabase dashboard (Project → Settings → Database → Connection string /
-  connection pooling), not just the project URL.
+To enable persistence:
+
+1. Create a project at <https://neon.tech>.
+2. Copy the Neon connection string and set it as `DATABASE_URL`.
+3. Run `npm run db:push` to create the tables, then `npm run db:seed` to load
+   the ATLAS-01 data.
 
 Set it in your `.env`:
 
 ```bash
 DATABASE_URL="postgresql://user:password@host/dbname?sslmode=require"
 ```
+
+> **Note — using Supabase or another plain Postgres:** the `neon-http` driver
+> only speaks the Neon HTTP protocol, so a standard Supabase / TCP Postgres URL
+> will not work out of the box. To use Supabase or any non-Neon Postgres, switch
+> the Drizzle driver in `src/lib/db/index.ts` from `drizzle-orm/neon-http` to
+> either `drizzle-orm/postgres-js` (with the `postgres` package) or
+> `drizzle-orm/node-postgres` (with the `pg` package), then set `DATABASE_URL`
+> to that instance's connection string.
 
 ### Database commands
 
@@ -130,9 +143,15 @@ A [`render.yaml`](../render.yaml) Blueprint is included.
 
 ### Vercel (optional)
 
-Vercel is supported but **optional — no project is linked yet**. It's a standard
-Next.js 14 app, so it deploys one-click on Vercel. Add `DATABASE_URL` in the
-Vercel project's environment variables if persistence is wanted.
+A [`vercel.json`](../vercel.json) (`framework: nextjs`) is included in the repo
+root, so it's a standard Next.js 14 app that deploys one-click on Vercel.
+
+- To enable Vercel, connect the GitHub repo in the Vercel dashboard (under the
+  team **"Elijah's projects"**) for native Git auto-deploy.
+- Set `DATABASE_URL` in the Vercel project's environment variables if
+  persistence is wanted.
+- Netlify and Vercel can run **in parallel** — connecting one does not disable
+  the other; both will auto-deploy from `main`.
 
 ---
 
@@ -148,6 +167,23 @@ on every **push** and **pull request**. It has two jobs that run **in parallel**
   3000, so this job only needs the Chromium download.
 
 Both jobs use Node 20 with npm caching.
+
+---
+
+## Automations
+
+Beyond CI, the repo ships a few scheduled / hands-off automations:
+
+- **Dependency updates** — [`.github/dependabot.yml`](../.github/dependabot.yml)
+  opens **weekly** dependency-update PRs for both the **npm** ecosystem and
+  **github-actions**, keeping packages and workflow actions current.
+- **Nightly E2E health check** —
+  [`.github/workflows/nightly-e2e.yml`](../.github/workflows/nightly-e2e.yml)
+  runs the Playwright suite on a schedule (**07:00 UTC daily**) and is also
+  **manually dispatchable** (`workflow_dispatch`) from the Actions tab.
+- **Native Git deploys** — Netlify and Vercel's native Git integrations
+  auto-deploy on merge to `main`. No extra secrets or pipeline steps are needed;
+  each provider builds straight from the connected repo.
 
 ---
 
