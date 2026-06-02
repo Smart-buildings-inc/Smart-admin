@@ -18,6 +18,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/simulator", label: "Simulator" },
   { href: "/fleet", label: "Fleet" },
   { href: "/landing", label: "Overview" },
+  { href: "/brand", label: "Brand" },
   { href: "/sitemap", label: "Site Map" },
 ];
 
