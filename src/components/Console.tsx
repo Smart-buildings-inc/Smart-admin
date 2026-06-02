@@ -1,7 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useFullscreen } from "@/lib/useFullscreen";
 import type {
   Broadcast,
   BuildingKpis,
@@ -42,6 +43,9 @@ export default function Console({
   const [kpis, setKpis] = useState<BuildingKpis>(initialKpis);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [mode, setMode] = useState<TwinMode>("orbit");
+  const stageRef = useRef<HTMLDivElement>(null);
+  const { active: isFullscreen, cssFallback, toggle: toggleFullscreen } =
+    useFullscreen(stageRef);
 
   const selectedFloor = useMemo(
     () => floors.find((f) => f.key === selectedKey) ?? null,
@@ -125,7 +129,12 @@ export default function Console({
       {/* Main grid: twin (F1) + floor panel (F2) | feed (F3) + broadcast (F4) */}
       <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-[1.6fr_1fr]">
         <section className="flex flex-col gap-4">
-          <div className="panel relative h-[460px] overflow-hidden lg:h-[560px]">
+          <div
+            ref={stageRef}
+            className={`twin-stage panel relative h-[460px] overflow-hidden lg:h-[560px] ${
+              cssFallback ? "twin-stage--max" : ""
+            }`}
+          >
             <HabitatTwin
               floors={floors}
               incidents={incidents}
@@ -135,29 +144,49 @@ export default function Console({
               onWalkthroughEnd={() => setMode("orbit")}
             />
 
-            {/* Mode controls — iOS-style segmented buttons */}
-            <div className="absolute right-4 top-4 z-10 flex gap-1 rounded-full border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur">
+            {/* Twin controls — segmented mode switch + fullscreen toggle */}
+            <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
+              <div className="flex gap-1 rounded-full border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur">
+                <button
+                  type="button"
+                  onClick={() => setMode("orbit")}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                    mode === "orbit"
+                      ? "bg-white text-ink-950"
+                      : "text-slate-300 hover:text-white"
+                  }`}
+                >
+                  Orbit
+                </button>
+                <button
+                  type="button"
+                  onClick={startWalkthrough}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                    mode === "walkthrough"
+                      ? "bg-white text-ink-950"
+                      : "text-slate-300 hover:text-white"
+                  }`}
+                >
+                  Walk-through
+                </button>
+              </div>
               <button
                 type="button"
-                onClick={() => setMode("orbit")}
-                className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-                  mode === "orbit"
-                    ? "bg-white text-ink-950"
-                    : "text-slate-300 hover:text-white"
-                }`}
+                onClick={toggleFullscreen}
+                aria-pressed={isFullscreen}
+                aria-label={isFullscreen ? "Exit full screen" : "Enter full screen"}
+                title={isFullscreen ? "Exit full screen" : "Full screen"}
+                className="grid h-8 w-8 place-items-center rounded-full border border-ink-600/70 bg-ink-900/80 text-slate-200 backdrop-blur transition-colors hover:bg-ink-800 hover:text-white"
               >
-                Orbit
-              </button>
-              <button
-                type="button"
-                onClick={startWalkthrough}
-                className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-                  mode === "walkthrough"
-                    ? "bg-white text-ink-950"
-                    : "text-slate-300 hover:text-white"
-                }`}
-              >
-                Walk-through
+                {isFullscreen ? (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M9 3v6H3M15 3v6h6M9 21v-6H3M15 21v-6h6" />
+                  </svg>
+                ) : (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6" />
+                  </svg>
+                )}
               </button>
             </div>
           </div>
