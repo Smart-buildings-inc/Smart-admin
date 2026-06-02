@@ -89,6 +89,7 @@ export default function SimulatorView({
     elevatorRunning: true,
   });
   const [pixel, setPixel] = useState(true);
+  const [ascii, setAscii] = useState(false);
 
   // Fullscreen for the simulator stage (native FS + CSS overlay fallback).
   const {
@@ -151,6 +152,7 @@ export default function SimulatorView({
               selectedKey={selectedKey}
               options={options}
               pixel={pixel}
+              ascii={ascii}
               onSelect={setSelectedKey}
               onElevatorArrive={setElevatorFloor}
             />
@@ -167,6 +169,7 @@ export default function SimulatorView({
                 <Toggle label={options.night ? "Night" : "Day"} active={options.night} onClick={() => set({ night: !options.night })} />
                 <Toggle label="Cut-away" active={options.cutaway} onClick={() => set({ cutaway: !options.cutaway })} />
                 <Toggle label="Pixel" active={pixel} onClick={() => setPixel((p) => !p)} />
+                <Toggle label="ASCII" active={ascii} onClick={() => setAscii((a) => !a)} />
                 <Toggle label="Orbit" active={options.autoRotate} onClick={() => set({ autoRotate: !options.autoRotate })} />
                 <Toggle label="Elevator" active={options.elevatorRunning} onClick={() => set({ elevatorRunning: !options.elevatorRunning })} />
               </div>
@@ -245,8 +248,9 @@ export default function SimulatorView({
               A procedurally-built voxel twin of ATLAS‑01 rendered in three.js — a
               working elevator, switchback stairs, rooftop solar + reservoir, and
               residents going about their day. Toggle <span className="text-slate-200">Cut-away</span> for the
-              dollhouse view, <span className="text-slate-200">Night</span> to see the windows glow, and{" "}
-              <span className="text-slate-200">Pixel</span> for the full retro branding.
+              dollhouse view, <span className="text-slate-200">Night</span> to see the windows glow,{" "}
+              <span className="text-slate-200">Pixel</span> for the full retro branding, and{" "}
+              <span className="text-slate-200">ASCII</span> for the signature glyph render.
             </p>
           </div>
         </section>

@@ -44,6 +44,7 @@ export default function Console({
   const [kpis, setKpis] = useState<BuildingKpis>(initialKpis);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [mode, setMode] = useState<TwinMode>("orbit");
+  const [ascii, setAscii] = useState(false);
 
   const selectedFloor = useMemo(
     () => floors.find((f) => f.key === selectedKey) ?? null,
@@ -138,6 +139,7 @@ export default function Console({
               incidents={incidents}
               selectedKey={selectedKey}
               mode={mode}
+              ascii={ascii}
               onSelect={setSelectedKey}
               onWalkthroughEnd={() => setMode("orbit")}
             />
@@ -166,6 +168,20 @@ export default function Console({
                   }`}
                 >
                   Walk-through
+                </button>
+              </div>
+              <div className="flex rounded-full border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur">
+                <button
+                  type="button"
+                  onClick={() => setAscii((a) => !a)}
+                  aria-pressed={ascii}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                    ascii
+                      ? "bg-white text-ink-950"
+                      : "text-slate-300 hover:text-white"
+                  }`}
+                >
+                  ASCII
                 </button>
               </div>
               <FullscreenButton isFullscreen={expanded} onToggle={toggleExpand} />

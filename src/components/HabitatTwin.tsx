@@ -7,6 +7,7 @@ import * as THREE from "three";
 import type { Floor, Incident } from "@/lib/types";
 import { needColor } from "@/lib/ui";
 import { annotationByFloor } from "@/lib/annotations";
+import AsciiRenderer from "@/components/AsciiRenderer";
 
 export type TwinMode = "orbit" | "walkthrough";
 
@@ -283,6 +284,7 @@ export default function HabitatTwin({
   incidents,
   selectedKey,
   mode,
+  ascii = false,
   onSelect,
   onWalkthroughEnd,
 }: {
@@ -290,6 +292,7 @@ export default function HabitatTwin({
   incidents: Incident[];
   selectedKey: string | null;
   mode: TwinMode;
+  ascii?: boolean;
   onSelect: (key: string | null) => void;
   onWalkthroughEnd: () => void;
 }) {
@@ -346,6 +349,9 @@ export default function HabitatTwin({
         />
 
         <ARLauncher containerRef={arContainerRef} />
+
+        {/* Signature ASCII pass over the live twin. */}
+        {ascii && <AsciiRenderer color resolution={0.2} />}
       </Canvas>
 
       <div className="pointer-events-none absolute left-4 top-4 text-xs text-slate-400">
