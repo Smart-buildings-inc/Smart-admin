@@ -83,6 +83,26 @@ src/
     db/{schema,index,seed,seed-data}.ts
 ```
 
+## Brand assets
+
+The chrome-on-black habitat emblem (planet, orbital rings, skyline, Wi-Fi,
+circuit traces) is authored as scalable SVG, with raster fallbacks baked from
+it:
+
+- `public/logo.svg` — full-detail emblem for marketing / large surfaces.
+- `src/app/icon.svg` — simplified mark, tuned to stay legible at 16–32 px; used
+  for the favicon and the NavBar brand. Next.js auto-links `icon.svg`,
+  `favicon.ico`, and `apple-icon.png` from `src/app`.
+- `public/icon-192.png`, `public/icon-512.png` — PWA / manifest icons.
+- `public/og.png` — 1200×630 Open Graph / social card.
+
+Raster files are committed, so the app ships with **no image-processing
+dependency**. Regenerate them after editing either SVG:
+
+```bash
+npm i --no-save sharp png-to-ico && node scripts/gen-icons.mjs
+```
+
 ## Deploy
 
 The app runs the full Next.js server (API routes + optional Postgres), and is

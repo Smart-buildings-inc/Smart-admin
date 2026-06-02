@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -54,12 +55,16 @@ export default function NavBar() {
           className="flex items-center gap-2.5 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-signal-info"
           aria-label="ATLAS OS home"
         >
-          <span
-            className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-signal-info/30 to-need-air/30 text-sm font-black text-white ring-1 ring-inset ring-white/15"
+          <Image
+            src="/icon.svg"
+            alt=""
+            width={36}
+            height={36}
+            priority
+            unoptimized
             aria-hidden
-          >
-            A
-          </span>
+            className="h-8 w-8 lg:h-9 lg:w-9"
+          />
           <span className="display text-base font-extrabold tracking-tight text-white lg:text-lg">
             ATLAS&nbsp;OS
           </span>
