@@ -67,6 +67,10 @@ falls back to seed data whenever `DATABASE_URL` is unset (`isDbConfigured` / `ge
 
 - Dark, iOS-flavored ops-console UI; mobile-first responsive layout (safe-area insets, collapsible
   `NavBar` drawer on mobile, single-column → grid at `lg`).
+- **Light + dark mode is mandatory for all UI** (see the standing rule in the Working agreement).
+  Theme is set via `data-theme` on `<html>` (default `dark`, toggle lives in the `NavBar`); the
+  `ink.*` surface scale is CSS-variable-driven and flips under `[data-theme="light"]` in
+  `globals.css`. Compose from `ink.*` / `signal.*` / `need.*` tokens so new UI re-themes for free.
 - Reuse the CSS primitives in `src/app/globals.css`: `.panel`, `.panel-pad`, `.kpi-label`,
   `.kpi-value`, plus `.display`, `.important`, `.pulse`, `.float`, `.annotation`, `.scroll-thin`.
 - Floor metrics are sparse (`FloorMetrics` is all-optional) — each floor reports only what it has;
@@ -103,3 +107,16 @@ Durable conventions for this repository — follow them every session:
   it as the app grows.
 - **Verify before pushing.** Run `npm run typecheck`, `npm run lint`, and the
   relevant `npm run test:e2e` so pushes to `main` stay green.
+- **Every UI ships light _and_ dark — no exceptions.** This is a hard rule for
+  every AI model and sub-agent working in this repo: any page, component, or
+  view you add or change MUST look correct in both the light and dark themes.
+  Theming is driven by `data-theme` on `<html>` (default `dark`); the `ink.*`
+  surface scale is tokenized as CSS variables in `src/app/globals.css` and
+  flipped under `[data-theme="light"]`. Build new surfaces from the `ink.*`
+  tokens (and `signal.*` / `need.*` accents, which are shared across both
+  themes) so they re-theme for free — avoid hard-coded `bg-white`, raw
+  `slate-*`, or literal hex for surfaces/text. If a one-off color is
+  unavoidable, add the matching `[data-theme="light"]` override in
+  `globals.css`. Always toggle the NavBar theme switch and confirm BOTH themes
+  before pushing. (3D/WebGL scenes may keep their own atmosphere, but all
+  surrounding DOM chrome must still re-theme.)
