@@ -61,15 +61,17 @@ export const MODELS: Record<ModelSlot, ModelAsset> = {
     author: "—",
     source: "—",
   },
-  // Additive crown on top of the Habitat Twin slab tower. Disabled until a
-  // curated asset is dropped in.
+  // A detailed mascot perched atop the Habitat Twin slab tower — gives the
+  // Console twin's realistic mode something detailed to show. Reuses the CC0
+  // robot so no extra binary is needed.
   twinCrown: {
-    path: "/models/twin-crown.glb",
-    enabled: false,
-    targetHeight: 0.8,
-    license: "—",
-    author: "—",
-    source: "—",
+    path: "/models/robot.glb",
+    enabled: true,
+    targetHeight: 1.3,
+    license: "CC0 1.0",
+    author: "Tomás Laulhé (Quaternius); modifications by Don McCurdy",
+    source:
+      "https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf/RobotExpressive",
   },
 };
 

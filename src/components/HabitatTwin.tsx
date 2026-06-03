@@ -304,13 +304,10 @@ function Tower({
           onSelect={onSelect}
         />
       ))}
-      {/* optional detailed crown atop the tower — only in realistic (non-pixel)
-          mode; additive and off until an asset is set */}
+      {/* detailed mascot beside the stack (realistic / non-pixel mode only) —
+          mid-height and toward the camera so it sits in the default frame */}
       {detailed && (
-        <GltfProp
-          slot="twinCrown"
-          position={[0, (floors.length - 1) * STEP + FLOOR_HEIGHT / 2 + 0.2, 0]}
-        />
+        <GltfProp slot="twinCrown" position={[2.9, totalHeight / 2, 2.9]} />
       )}
     </group>
   );

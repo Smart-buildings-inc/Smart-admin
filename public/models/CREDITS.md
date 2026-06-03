@@ -6,7 +6,7 @@ and **CC-BY** (attribution required — list it here) assets.
 
 | File        | Used for        | License | Author                                              | Source |
 |-------------|-----------------|---------|-----------------------------------------------------|--------|
-| `robot.glb` | Simulator residents (slot `resident`) | CC0 1.0 | Tomás Laulhé ([Quaternius](https://quaternius.com/)); modifications by Don McCurdy | three.js examples — [RobotExpressive](https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf/RobotExpressive) |
+| `robot.glb` | Simulator residents (`resident`) + Habitat Twin mascot (`twinCrown`) | CC0 1.0 | Tomás Laulhé ([Quaternius](https://quaternius.com/)); modifications by Don McCurdy | three.js examples — [RobotExpressive](https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf/RobotExpressive) |
 
 ## Adding more assets
 
