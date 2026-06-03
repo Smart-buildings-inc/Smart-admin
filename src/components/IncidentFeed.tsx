@@ -55,7 +55,7 @@ export default function IncidentFeed({
               <button
                 type="button"
                 onClick={() => onSelectFloor(inc.floorKey)}
-                className={`flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-ink-800/60 ${
+                className={`flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-ink-800/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-signal-info ${
                   active ? "bg-ink-800/80" : ""
                 }`}
               >
@@ -71,6 +71,7 @@ export default function IncidentFeed({
                     weight="duotone"
                     className="h-4 w-4"
                   />
+                  <span className="sr-only">{severityLabel[inc.severity]}: </span>
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm text-slate-100">

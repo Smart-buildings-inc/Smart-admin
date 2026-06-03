@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 export default function SolutionsIndex() {
   return (
-    <main className="relative overflow-hidden px-4 pt-14 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:pt-20 lg:px-6 lg:py-20">
+    <main id="main" className="relative overflow-hidden px-4 pt-14 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:pt-20 lg:px-6 lg:py-20">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div className="grid-backdrop absolute inset-0" />
         <div className="absolute inset-0 flex items-start justify-center">

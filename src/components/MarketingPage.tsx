@@ -19,6 +19,7 @@ export default function MarketingPage({ audience }: { audience: Audience }) {
 
   return (
     <main
+      id="main"
       style={{ ["--accent" as string]: a.accent }}
       className="relative overflow-hidden pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-0"
     >

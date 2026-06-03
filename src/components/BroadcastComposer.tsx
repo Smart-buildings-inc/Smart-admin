@@ -56,12 +56,16 @@ export default function BroadcastComposer({
         />
         Broadcast to residents
       </h2>
+      <label htmlFor="broadcast-message" className="sr-only">
+        Broadcast message
+      </label>
       <textarea
+        id="broadcast-message"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         placeholder="Compose a notification for residents…"
         rows={3}
-        className="w-full resize-none rounded-lg border border-ink-600/60 bg-ink-800/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-signal-info focus:outline-none"
+        className="w-full resize-none rounded-lg border border-ink-600/60 bg-ink-800/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-signal-info focus:outline-none focus-visible:ring-2 focus-visible:ring-signal-info/60"
       />
       <div className="mt-2 flex items-center gap-2">
         <label className="relative min-w-0 flex-1">
@@ -95,7 +99,13 @@ export default function BroadcastComposer({
           {sending ? "Sending…" : "Send"}
         </button>
       </div>
-      {status && <p className="mt-2 text-xs text-slate-400">{status}</p>}
+      <p
+        role="status"
+        aria-live="polite"
+        className="mt-2 text-xs text-slate-400 empty:mt-0"
+      >
+        {status}
+      </p>
     </div>
   );
 }

@@ -1,7 +1,15 @@
+import type { Metadata } from "next";
 import SimulatorView from "@/components/SimulatorView";
 import { getFloors, getIncidents, isDbConfigured } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Building Simulator · ATLAS OS",
+  description:
+    "A live, operating voxel twin of ATLAS-01 — the full floor stack with working dual elevators, switchback stairs, rooftop solar and a basement reservoir.",
+  alternates: { canonical: "/simulator" },
+};
 
 // F12 — Building Simulator. A live, operating voxel twin of ATLAS-01: the full
 // floor stack with working elevator, staircase, rooftop systems and residents.

@@ -70,6 +70,12 @@ export default function RootLayout({
           MobileTabBar — body padding-bottom is ineffective here because
           html/body use height:100%. */}
       <body className="min-h-screen">
+        <a
+          href="#main"
+          className="sr-only z-[100] rounded-lg bg-signal-info px-4 py-2 text-sm font-semibold text-ink-950 focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+        >
+          Skip to main content
+        </a>
         <SplashScreen />
         <NavBar />
         {children}

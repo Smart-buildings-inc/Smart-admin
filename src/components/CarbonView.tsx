@@ -190,7 +190,7 @@ export default function CarbonView({ carbon }: { carbon: BuildingCarbon }) {
   const netToneClass = netTone(carbon.netOperationalTco2ePerYr);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-[1500px] flex-col gap-6 p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-[max(1.5rem,env(safe-area-inset-bottom))] lg:p-6">
+    <main id="main" className="mx-auto flex min-h-screen max-w-[1500px] flex-col gap-6 p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-[max(1.5rem,env(safe-area-inset-bottom))] lg:p-6">
       {/* ── 1. Header ── */}
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
