@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "verify": "npm run typecheck && npm run lint && npm run build && npm run test:e2e",
     "test:e2e": "playwright test",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
@@ -16,6 +17,7 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.9.5",
+    "@phosphor-icons/react": "^2.1.10",
     "@react-three/drei": "^9.114.0",
     "@react-three/fiber": "^8.17.10",
     "drizzle-orm": "^0.33.0",

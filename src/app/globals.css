@@ -25,6 +25,120 @@ body {
     radial-gradient(700px 500px at -10% 110%, rgba(93, 220, 122, 0.06), transparent);
 }
 
+:root.theme-light {
+  color-scheme: light;
+}
+
+:root.theme-light body {
+  color: #1e293b;
+  background-color: #f8fafc;
+  background-image:
+    radial-gradient(900px 600px at 80% -10%, rgba(78, 168, 255, 0.14), transparent),
+    radial-gradient(700px 500px at -10% 110%, rgba(93, 220, 122, 0.12), transparent);
+}
+
+:root.theme-light .gradient-text-soft {
+  background-image: linear-gradient(
+    100deg,
+    #0f172a 0%,
+    #2563eb 28%,
+    #0f766e 50%,
+    #7c3aed 72%,
+    #be123c 88%,
+    #0f172a 100%
+  );
+}
+
+:root.theme-light .border-ink-600\/50,
+:root.theme-light .border-ink-600\/60,
+:root.theme-light .border-ink-600\/70 {
+  border-color: rgba(203, 213, 225, 0.86);
+}
+
+:root.theme-light .from-ink-950 {
+  --tw-gradient-from: rgb(248 250 252 / 0.98) var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(248 250 252 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+:root.theme-light .to-ink-950,
+:root.theme-light .to-ink-950\/60 {
+  --tw-gradient-to: rgb(241 245 249 / 0.84) var(--tw-gradient-to-position);
+}
+
+:root.theme-light .bg-ink-950,
+:root.theme-light .bg-ink-950\/60,
+:root.theme-light .bg-ink-950\/70,
+:root.theme-light .bg-ink-950\/80 {
+  background-color: rgba(248, 250, 252, 0.94);
+}
+
+:root.theme-light .bg-ink-900,
+:root.theme-light .bg-ink-900\/50,
+:root.theme-light .bg-ink-900\/60,
+:root.theme-light .bg-ink-900\/70,
+:root.theme-light .bg-ink-900\/80,
+:root.theme-light .bg-ink-900\/95 {
+  background-color: rgba(255, 255, 255, 0.88);
+}
+
+:root.theme-light .bg-ink-800\/40,
+:root.theme-light .bg-ink-800\/50,
+:root.theme-light .bg-ink-800\/60,
+:root.theme-light .bg-ink-800\/70,
+:root.theme-light .bg-ink-800\/80 {
+  background-color: rgba(241, 245, 249, 0.9);
+}
+
+:root.theme-light .bg-ink-700,
+:root.theme-light .bg-ink-700\/50,
+:root.theme-light .bg-ink-700\/80 {
+  background-color: rgba(226, 232, 240, 0.92);
+}
+
+:root.theme-light .hover\:bg-ink-800:hover,
+:root.theme-light .hover\:bg-ink-800\/60:hover,
+:root.theme-light .hover\:bg-ink-800\/70:hover,
+:root.theme-light .hover\:bg-ink-700:hover,
+:root.theme-light .hover\:bg-ink-700\/50:hover,
+:root.theme-light .active\:bg-ink-800:active {
+  background-color: rgba(226, 232, 240, 0.92);
+}
+
+:root.theme-light .text-white,
+:root.theme-light .text-slate-100,
+:root.theme-light .text-slate-200 {
+  color: #0f172a;
+}
+
+:root.theme-light .text-slate-300 {
+  color: #334155;
+}
+
+:root.theme-light .text-slate-400 {
+  color: #475569;
+}
+
+:root.theme-light .text-slate-500,
+:root.theme-light .text-slate-600 {
+  color: #64748b;
+}
+
+:root.theme-light .hover\:text-white:hover,
+:root.theme-light .active\:text-white:active {
+  color: #0f172a;
+}
+
+:root.theme-light .hover\:text-slate-200:hover {
+  color: #334155;
+}
+
+:root.theme-light .theme-toggle-button[aria-pressed="true"] {
+  border-color: rgba(78, 168, 255, 0.54);
+  background-color: rgba(219, 234, 254, 0.92);
+  color: #0f172a;
+}
+
 /* Bold SF Pro italic for the things that matter — Apple-style emphasis. */
 .important {
   font-family: var(--font-sf);
@@ -112,6 +226,110 @@ body {
 }
 @media (prefers-reduced-motion: reduce) {
   .aurora-spin {
+    animation: none;
+  }
+}
+
+/* Loading splash ---------------------------------------------------------- */
+
+.splash-backdrop {
+  background-color: #070b10;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.025) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(11, 18, 26, 0.98), rgba(7, 11, 16, 0.98));
+  background-size: 44px 44px, 44px 44px, auto;
+}
+
+@keyframes splash-stack-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes splash-ring-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes splash-brand-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 8px 18px rgba(78, 168, 255, 0.06));
+  }
+  50% {
+    transform: scale(1.006);
+    filter: drop-shadow(0 10px 20px rgba(127, 231, 224, 0.1));
+  }
+}
+
+@keyframes splash-progress-fill {
+  from {
+    transform: scaleX(0.12);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.splash-stack {
+  animation: splash-stack-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.splash-ring {
+  position: relative;
+  isolation: isolate;
+}
+
+.splash-ring::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  z-index: -1;
+  border-radius: 1.45rem;
+  padding: 1px;
+  background: conic-gradient(
+    from 0deg,
+    rgba(78, 168, 255, 0),
+    rgba(78, 168, 255, 0.28),
+    rgba(127, 231, 224, 0.24),
+    rgba(93, 220, 122, 0.18),
+    rgba(192, 164, 255, 0.24),
+    rgba(255, 143, 177, 0.18),
+    rgba(78, 168, 255, 0)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.42;
+  animation: splash-ring-spin 7.5s linear infinite;
+}
+
+.splash-brand {
+  animation: splash-brand-breathe 1.8s ease-in-out infinite;
+}
+
+.splash-progress > span {
+  background: linear-gradient(90deg, #4ea8ff, #7fe7e0, #5ddc7a, #ff8fb1);
+  opacity: 0.42;
+  transform-origin: left center;
+  animation: splash-progress-fill 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .splash-stack,
+  .splash-ring::before,
+  .splash-brand,
+  .splash-progress > span {
     animation: none;
   }
 }
@@ -413,6 +631,51 @@ body {
     0 0 0 1px rgba(127, 231, 224, 0.06) inset;
 }
 
+/* Scroll-reveal: sections ease up + fade in the first time they enter view.
+   Driven by components/Reveal.tsx toggling `.in-view`. JS-on by design (the app
+   already requires it); reduced-motion shows everything immediately. */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.reveal.in-view {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Accent underline that sweeps in beneath the audience-page headline word. */
+@keyframes atlas-beam {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+.beam {
+  transform-origin: left center;
+  animation: atlas-beam 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .beam {
+    animation: none;
+    transform: none;
+  }
+}
+
 /* Slow drift for ambient particles/orbs in the hero. */
 @keyframes atlas-drift {
   0%,
@@ -429,5 +692,154 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .drift {
     animation: none;
+  }
+}
+
+/* Layered marketing imagery --------------------------------------------- */
+
+.marketing-parallax {
+  --parallax-back: 0px;
+  --parallax-mid: 0px;
+  --parallax-front: 0px;
+  --parallax-float: 0px;
+  min-width: 0;
+  width: 100%;
+}
+
+.marketing-parallax__viewport {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  min-height: 300px;
+  aspect-ratio: 16 / 7.2;
+  border-radius: 24px;
+  border: 1px solid rgba(34, 50, 63, 0.72);
+  background: #05080d;
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.52),
+    0 0 0 1px color-mix(in srgb, var(--accent, #7fe7e0) 12%, transparent) inset;
+}
+
+.marketing-parallax--compact .marketing-parallax__viewport {
+  min-height: 250px;
+  aspect-ratio: 16 / 6.6;
+}
+
+.marketing-parallax__image {
+  pointer-events: none;
+  user-select: none;
+  will-change: transform;
+}
+
+.marketing-parallax__backdrop {
+  z-index: 0;
+  object-fit: cover;
+  opacity: 0.52;
+  transform: translate3d(0, var(--parallax-back), 0) scale(1.13);
+  filter: blur(10px) saturate(0.96) contrast(0.92) brightness(0.74);
+}
+
+.marketing-parallax__twin {
+  z-index: 2;
+  object-fit: contain;
+  object-position: 50% 52%;
+  opacity: 0.9;
+  mix-blend-mode: screen;
+  transform: translate3d(0, var(--parallax-mid), 0) scale(0.92);
+  filter: saturate(1.28) contrast(1.16) brightness(1.08) drop-shadow(0 0 24px rgba(127, 231, 224, 0.18));
+}
+
+.marketing-parallax__foreground {
+  z-index: 4;
+  object-fit: cover;
+  object-position: 50% 100%;
+  opacity: 0.94;
+  mix-blend-mode: screen;
+  transform: translate3d(0, var(--parallax-front), 0) scale(1.1);
+  filter: saturate(1.22) contrast(1.12) brightness(1.08);
+  -webkit-mask-image: linear-gradient(
+    to top,
+    #000 0%,
+    #000 34%,
+    rgba(0, 0, 0, 0.68) 48%,
+    transparent 77%
+  );
+  mask-image: linear-gradient(
+    to top,
+    #000 0%,
+    #000 34%,
+    rgba(0, 0, 0, 0.68) 48%,
+    transparent 77%
+  );
+}
+
+.marketing-parallax__veil,
+.marketing-parallax__grid,
+.marketing-parallax__edge {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.marketing-parallax__veil {
+  z-index: 3;
+  background:
+    linear-gradient(to bottom, rgba(7, 11, 16, 0.16), transparent 26%, rgba(7, 11, 16, 0.2)),
+    radial-gradient(80% 90% at 50% 30%, transparent 30%, rgba(7, 11, 16, 0.5));
+}
+
+.marketing-parallax__grid {
+  z-index: 5;
+  opacity: 0.18;
+  transform: translate3d(0, var(--parallax-float), 0);
+  background-image:
+    linear-gradient(rgba(127, 231, 224, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(127, 231, 224, 0.1) 1px, transparent 1px);
+  background-size: 72px 72px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, #000 20%, transparent 76%);
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, #000 20%, transparent 76%);
+}
+
+.marketing-parallax__edge {
+  z-index: 6;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    inset 0 -90px 90px rgba(7, 11, 16, 0.72),
+    inset 0 90px 90px rgba(7, 11, 16, 0.62);
+}
+
+@media (max-width: 640px) {
+  .marketing-parallax__viewport,
+  .marketing-parallax--compact .marketing-parallax__viewport {
+    min-height: 0;
+    aspect-ratio: 20 / 19;
+    border-radius: 18px;
+  }
+
+  .marketing-parallax__backdrop {
+    object-position: 50% 50%;
+    opacity: 0.48;
+    filter: blur(8px) saturate(0.96) contrast(0.92) brightness(0.74);
+    transform: translate3d(0, var(--parallax-back), 0) scale(1.26);
+  }
+
+  .marketing-parallax__twin {
+    opacity: 0.92;
+    transform: translate3d(0, var(--parallax-mid), 0) scale(1.08);
+  }
+
+  .marketing-parallax__foreground {
+    opacity: 0.88;
+    transform: translate3d(0, var(--parallax-front), 0) scale(1.22);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marketing-parallax__image,
+  .marketing-parallax__grid {
+    transform: none;
+    will-change: auto;
   }
 }

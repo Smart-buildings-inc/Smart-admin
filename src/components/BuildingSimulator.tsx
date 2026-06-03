@@ -13,14 +13,25 @@
 // This file is the WebGL layer only; SimulatorView.tsx owns the DOM chrome
 // (header, controls, legend, telemetry) and feeds options/selection in.
 
-import { useMemo, useRef, useState } from "react";
+import { Suspense, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
-import { OrbitControls, Html } from "@react-three/drei";
+import { OrbitControls, Html, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import type { Floor, Incident, Need } from "@/lib/types";
 import { needColor } from "@/lib/ui";
 import AsciiRenderer from "@/components/AsciiRenderer";
 import GltfBuilding from "@/components/GltfBuilding";
+import { getModel } from "@/lib/models";
+import {
+  GltfProp,
+  ModelErrorBoundary,
+  preloadModel,
+  useNormalizedClone,
+} from "@/components/three/gltf";
+
+const RESIDENT = getModel("resident");
+// Warm the resident asset so detailed residents stream in without pop-in.
+preloadModel("resident");
 
 type Vec3 = [number, number, number];
 
@@ -40,6 +51,8 @@ export interface SimOptions {
   cutaway: boolean;
   autoRotate: boolean;
   elevatorRunning: boolean;
+  /** Use detailed glTF residents (else the flat-shaded voxel figures). */
+  detailedModels: boolean;
   /**
    * Which building model to render: the procedural "voxel" twin (default) or a
    * Blender-authored "gltf" hero asset. The gltf path falls back to voxel when
@@ -181,6 +194,84 @@ function VoxPerson({
   );
 }
 
+// A detailed, rigged glTF resident (RobotExpressive, CC0). Each instance gets
+// its own skeleton clone + animation mixer so they move independently. Paces
+// along the floor like VoxPerson and plays a walk/idle clip.
+function RobotResident({
+  position,
+  pace = 0,
+  height = RESIDENT.targetHeight,
+  rotationY = 0,
+}: {
+  position: Vec3;
+  pace?: number;
+  height?: number;
+  rotationY?: number;
+}) {
+  const { scene } = useGLTF(RESIDENT.path);
+  const obj = useNormalizedClone(scene, height);
+  const group = useRef<THREE.Group>(null);
+  const phase = useMemo(() => position[0] + position[2], [position]);
+
+  // Cheap, reliable life: a gentle bob, plus pacing along the floor. (We render
+  // the bind pose rather than skeletal animation — see useNormalizedClone.)
+  useFrame((s) => {
+    if (!group.current) return;
+    const t = s.clock.elapsedTime;
+    group.current.position.y = position[1] + Math.abs(Math.sin(t * 2 + phase)) * 0.04;
+    if (pace > 0) {
+      group.current.position.x = position[0] + Math.sin(t * 0.6 + phase) * pace;
+      group.current.rotation.y =
+        (Math.cos(t * 0.6 + phase) > 0 ? Math.PI * 0.5 : -Math.PI * 0.5) + rotationY;
+    }
+  });
+
+  return (
+    <group ref={group} position={position} rotation={[0, rotationY, 0]}>
+      <primitive object={obj} />
+    </group>
+  );
+}
+
+// Chooses a detailed resident when enabled, otherwise the voxel figure. The
+// voxel figure is also the Suspense/error fallback, so residents always render.
+// `height` lets a placement (e.g. the plaza greeter) render a larger figure.
+function SimPerson({
+  position,
+  color,
+  pace = 0,
+  detailed,
+  height = RESIDENT.targetHeight,
+  rotationY,
+}: {
+  position: Vec3;
+  color: string;
+  pace?: number;
+  detailed: boolean;
+  height?: number;
+  rotationY?: number;
+}) {
+  const voxScale = height / 0.6; // voxel figure is ~0.6 units tall
+  const fallback = (
+    <group position={position} scale={voxScale}>
+      <VoxPerson position={[0, 0, 0]} color={color} pace={pace / voxScale} />
+    </group>
+  );
+  if (!detailed || !RESIDENT.enabled) return fallback;
+  return (
+    <ModelErrorBoundary fallback={fallback}>
+      <Suspense fallback={fallback}>
+        <RobotResident
+          position={position}
+          pace={pace}
+          height={height}
+          rotationY={rotationY}
+        />
+      </Suspense>
+    </ModelErrorBoundary>
+  );
+}
+
 // --------------------------------------------------------------------------
 // Per-need interior recipes. Each renders furniture/equipment for one floor,
 // authored relative to the floor's slab top (y = 0) within the living zone
@@ -190,10 +281,12 @@ function FloorInterior({
   floor,
   accent,
   night,
+  detailed,
 }: {
   floor: Floor;
   accent: string;
   night: boolean;
+  detailed: boolean;
 }) {
   switch (floor.need) {
     case "water":
@@ -395,8 +488,8 @@ function FloorInterior({
             </group>
           ))}
           {/* a couple of residents at home */}
-          <VoxPerson position={[-1.0, 0, -1.2]} color={accent} pace={0.25} />
-          <VoxPerson position={[0.4, 0, 1.4]} color="#7fe7e0" pace={0.2} />
+          <SimPerson position={[-1.0, 0, -1.2]} color={accent} pace={0.25} detailed={detailed} />
+          <SimPerson position={[0.4, 0, 1.4]} color="#7fe7e0" pace={0.2} detailed={detailed} />
         </group>
       );
     }
@@ -419,8 +512,8 @@ function FloorInterior({
           <PulseVox position={[0, 1.0, -2.55]} size={[0.16, 0.5, 0.05]} color="#ff5d5d" base={0.6} amp={0.3} speed={1} />
           {/* reception desk */}
           <Vox position={[0.6, 0.4, 1.4]} size={[2.0, 0.1, 0.7]} color="#26323d" />
-          <VoxPerson position={[-0.6, 0, 1.0]} color={accent} pace={0.2} />
-          <VoxPerson position={[1.2, 0, 0.6]} color="#c0a4ff" pace={0.3} />
+          <SimPerson position={[-0.6, 0, 1.0]} color={accent} pace={0.2} detailed={detailed} />
+          <SimPerson position={[1.2, 0, 0.6]} color="#c0a4ff" pace={0.3} detailed={detailed} />
         </group>
       );
     case "restoration":
@@ -438,7 +531,7 @@ function FloorInterior({
           {[-2.0, 2.0].map((x) => (
             <Vox key={x} position={[x, 0.3, -2.2]} size={[0.5, 0.5, 0.5]} color="#3aa56a" />
           ))}
-          <VoxPerson position={[-1.9, 0.3, -0.7]} color="#ffd9a0" />
+          <SimPerson position={[-1.9, 0.3, -0.7]} color="#ffd9a0" detailed={detailed} />
         </group>
       );
     default:
@@ -516,6 +609,7 @@ function FloorBlock({
   hasIncident,
   night,
   cutaway,
+  detailed,
   onSelect,
 }: {
   floor: Floor;
@@ -524,6 +618,7 @@ function FloorBlock({
   hasIncident: boolean;
   night: boolean;
   cutaway: boolean;
+  detailed: boolean;
   onSelect: (key: string) => void;
 }) {
   const baseY = index * STEP;
@@ -596,7 +691,7 @@ function FloorBlock({
       )}
 
       {/* interior */}
-      <FloorInterior floor={floor} accent={accent} night={night} />
+      <FloorInterior floor={floor} accent={accent} night={night} detailed={detailed} />
 
       {/* invisible (opacity-0) selector spanning the floor volume */}
       <Vox
@@ -644,10 +739,12 @@ const CORE_Z2 = CORE_Z + 1.8; // second shaft Z offset
 function Elevator({
   stops,
   running,
+  detailed,
   onArrive,
 }: {
   stops: number[];
   running: boolean;
+  detailed: boolean;
   onArrive: (floorIndex: number) => void;
 }) {
   const car = useRef<THREE.Group>(null);
@@ -703,7 +800,7 @@ function Elevator({
         {/* doors */}
         <Vox position={[-0.3, 0, 0.58]} size={[0.55, CAR_H * 0.92, 0.06]} color="#4ea8ff" opacity={0.85} />
         <Vox position={[0.3, 0, 0.58]} size={[0.55, CAR_H * 0.92, 0.06]} color="#4ea8ff" opacity={0.85} />
-        <VoxPerson position={[0, -CAR_H / 2 + 0.02, -0.1]} color="#c0a4ff" />
+        <SimPerson position={[0, -CAR_H / 2 + 0.02, -0.1]} color="#c0a4ff" detailed={detailed} />
       </group>
     </group>
   );
@@ -813,6 +910,8 @@ function Rooftop({ y, night }: { y: number; night: boolean }) {
       {/* comms mast */}
       <Vox position={[2.4, 1.4, 1.6]} size={[0.1, 2.0, 0.1]} color="#2c3a47" />
       <PulseVox position={[2.4, 2.45, 1.6]} size={[0.18, 0.18, 0.18]} color="#ff5d5d" base={0.5} amp={0.5} speed={3} />
+      {/* optional detailed rooftop prop (additive; off until an asset is set) */}
+      <GltfProp slot="rooftopProp" position={[-1.6, 0.16, 0]} />
     </group>
   );
 }
@@ -860,13 +959,37 @@ function Tower({
           hasIncident={incidentFloorKeys.has(floor.key)}
           night={options.night}
           cutaway={options.cutaway}
+          detailed={options.detailedModels}
           onSelect={onSelect}
         />
       ))}
 
+      {/* A detailed "greeter" robot on the plaza out front — large and
+          unobstructed so the real 3D model reads at a glance (detailed mode). */}
+      {options.detailedModels && (
+        <group>
+          {/* dedicated key light so the greeter reads against the dark plaza */}
+          <pointLight position={[5, 5, 9]} intensity={2.2} distance={22} decay={2} color="#fff3da" />
+          {/* a detailed "greeter" robot on the plaza out front — large and
+              unobstructed so the real 3D model reads at a glance */}
+          <SimPerson
+            position={[3.4, -SLAB_T, 7.5]}
+            color="#7fe7e0"
+            detailed
+            height={3.2}
+            rotationY={-0.5}
+          />
+        </group>
+      )}
+
       <Staircase floorCount={floors.length} />
       {/* Elevator A — animated primary car */}
-      <Elevator stops={stops} running={options.elevatorRunning} onArrive={onElevatorArrive} />
+      <Elevator
+        stops={stops}
+        running={options.elevatorRunning}
+        detailed={options.detailedModels}
+        onArrive={onElevatorArrive}
+      />
       {/* Elevator B — second shaft (redundancy/accessibility, ATLAS-derisking-plan.md §5) */}
       <ElevatorB stops={stops} />
       <Rooftop y={totalHeight} night={options.night} />

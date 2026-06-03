@@ -78,6 +78,7 @@ principle that the cloud app is an optimization, never a dependency.
 ```bash
 npm install
 npm run dev          # http://localhost:3000 — runs on seed data, no DB needed
+npm run verify       # typecheck + lint + build + desktop/tablet/mobile e2e
 ```
 
 ### Optional: connect a database

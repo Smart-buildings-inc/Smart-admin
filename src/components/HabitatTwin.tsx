@@ -9,6 +9,7 @@ import { needColor } from "@/lib/ui";
 import { annotationByFloor } from "@/lib/annotations";
 import AsciiRenderer from "@/components/AsciiRenderer";
 import { createChamferedBoxGeometry } from "@/lib/geometry";
+import HumanCharacter from "@/components/three/HumanCharacter";
 
 export type TwinMode = "orbit" | "walkthrough";
 
@@ -17,6 +18,72 @@ const FLOOR_GAP = 0.12;
 const FLOOR_W = 3.4;
 const FLOOR_D = 3.4;
 const STEP = FLOOR_HEIGHT + FLOOR_GAP;
+
+// --- Responsive camera framing -------------------------------------------
+// The camera FOV is a *vertical* angle. On a portrait phone the aspect ratio
+// is < 1, which collapses the horizontal field of view and makes the tower
+// look heavily zoomed-in and cropped. computeFit() widens the vertical FOV to
+// preserve the desktop horizontal framing, and — once FOV hits a sane cap —
+// dollies the camera back to cover whatever horizontal shortfall remains.
+const BASE_ASPECT = 1.6; // framing tuned for this (desktop) aspect
+const BASE_FOV = 42; // matches the <Canvas camera fov>
+const MAX_FOV = 55; // cap to avoid wide-angle distortion
+const MAX_SCALE = 2.1; // cap how far we dolly the camera back
+
+function computeFit(aspect: number): { fov: number; scale: number } {
+  if (!Number.isFinite(aspect) || aspect <= 0 || aspect >= BASE_ASPECT) {
+    return { fov: BASE_FOV, scale: 1 };
+  }
+  const baseV = THREE.MathUtils.degToRad(BASE_FOV);
+  // Horizontal half-angle we want to keep constant across aspect ratios.
+  const desiredHHalf = Math.atan(Math.tan(baseV / 2) * BASE_ASPECT);
+  const vNeeded = THREE.MathUtils.radToDeg(
+    2 * Math.atan(Math.tan(desiredHHalf) / aspect),
+  );
+  const fov = Math.min(vNeeded, MAX_FOV);
+  const cappedV = THREE.MathUtils.degToRad(fov);
+  const achievedHHalf = Math.atan(Math.tan(cappedV / 2) * aspect);
+  const scale = Math.min(
+    Math.max(Math.tan(desiredHHalf) / Math.tan(achievedHHalf), 1),
+    MAX_SCALE,
+  );
+  return { fov, scale };
+}
+
+/** Keeps the perspective FOV (and, in orbit, the camera distance) framed for
+ *  the current viewport aspect so phones aren't zoomed-in. */
+function ResponsiveCamera({ mode }: { mode: TwinMode }) {
+  const { camera, size } = useThree();
+  useEffect(() => {
+    const cam = camera as THREE.PerspectiveCamera;
+    const { fov, scale } = computeFit(size.width / size.height);
+    cam.fov = fov;
+    cam.updateProjectionMatrix();
+    if (mode === "orbit") {
+      const baseDist = Math.sqrt(8 * 8 + 2 * 2 + 8 * 8);
+      const dir =
+        cam.position.lengthSq() > 1e-4
+          ? cam.position.clone().normalize()
+          : new THREE.Vector3(8, 2, 8).normalize();
+      cam.position.copy(dir.multiplyScalar(baseDist * scale));
+    }
+  }, [camera, size, mode]);
+  return null;
+}
+
+/** OrbitControls with distance limits scaled for the viewport aspect. */
+function OrbitRig() {
+  const { size } = useThree();
+  const { scale } = computeFit(size.width / size.height);
+  return (
+    <OrbitControls
+      enablePan={false}
+      minDistance={6 * scale}
+      maxDistance={18 * scale}
+      maxPolarAngle={Math.PI / 1.9}
+    />
+  );
+}
 
 // Poly-modelled floor plate: filleted vertical corners + a flat chamfer along
 // the top/bottom edges so each slab catches a rim of light like a fabricated
@@ -175,7 +242,7 @@ function WalkthroughCamera({
   onFloorChange: (index: number) => void;
   onComplete: () => void;
 }) {
-  const { camera } = useThree();
+  const { camera, size } = useThree();
   const tRef = useRef(0);
   const lastFloorRef = useRef(-1);
 
@@ -199,7 +266,10 @@ function WalkthroughCamera({
     const y = THREE.MathUtils.lerp(topY + 1.5, bottomY, t);
     // Spiral inward as we descend.
     const angle = t * Math.PI * 1.5;
-    const radius = THREE.MathUtils.lerp(7.5, 5, t);
+    // Pull the orbit radius out on narrow (portrait) viewports so the tower
+    // stays fully framed instead of zoomed-in.
+    const { scale } = computeFit(size.width / size.height);
+    const radius = THREE.MathUtils.lerp(7.5, 5, t) * scale;
     camera.position.set(
       Math.sin(angle) * radius,
       y,
@@ -260,6 +330,7 @@ function Tower({
   selectedKey,
   mode,
   walkFloorIndex,
+  detailed,
   onSelect,
 }: {
   floors: Floor[];
@@ -267,6 +338,7 @@ function Tower({
   selectedKey: string | null;
   mode: TwinMode;
   walkFloorIndex: number;
+  detailed: boolean;
   onSelect: (key: string) => void;
 }) {
   const groupRef = useRef<THREE.Group>(null);
@@ -299,6 +371,17 @@ function Tower({
           onSelect={onSelect}
         />
       ))}
+      {/* detailed human guide beside the stack (realistic / non-pixel mode only)
+          — mid-height and toward the camera so it sits in the default frame */}
+      {detailed && (
+        <HumanCharacter
+          position={[2.9, totalHeight / 2, 2.9]}
+          color="#7fe7e0"
+          height={1.3}
+          rotationY={-0.72}
+          variant="engineer"
+        />
+      )}
     </group>
   );
 }
@@ -308,6 +391,7 @@ export default function HabitatTwin({
   incidents,
   selectedKey,
   mode,
+  pixel = false,
   ascii = false,
   onSelect,
   onWalkthroughEnd,
@@ -316,6 +400,8 @@ export default function HabitatTwin({
   incidents: Incident[];
   selectedKey: string | null;
   mode: TwinMode;
+  /** Retro pixel/poly mode: pixelation buffer + no detailed glTF props. */
+  pixel?: boolean;
   ascii?: boolean;
   onSelect: (key: string | null) => void;
   onWalkthroughEnd: () => void;
@@ -338,6 +424,11 @@ export default function HabitatTwin({
   return (
     <div className="relative h-full w-full">
       <Canvas
+        // Pixel mode renders to a low device-pixel-ratio buffer the browser
+        // upscales nearest-neighbour (image-rendering: pixelated) for the retro
+        // look; realistic mode renders crisp.
+        dpr={pixel ? 0.4 : 1.6}
+        className={pixel ? "[image-rendering:pixelated]" : ""}
         camera={{ position: [8, 2, 8], fov: 42 }}
         frameloop="always"
         onPointerMissed={() => mode === "orbit" && onSelect(null)}
@@ -352,17 +443,13 @@ export default function HabitatTwin({
           selectedKey={selectedKey}
           mode={mode}
           walkFloorIndex={walkFloorIndex}
+          detailed={!pixel}
           onSelect={onSelect}
         />
 
-        {mode === "orbit" && (
-          <OrbitControls
-            enablePan={false}
-            minDistance={6}
-            maxDistance={18}
-            maxPolarAngle={Math.PI / 1.9}
-          />
-        )}
+        <ResponsiveCamera mode={mode} />
+
+        {mode === "orbit" && <OrbitRig />}
 
         <WalkthroughCamera
           active={mode === "walkthrough"}

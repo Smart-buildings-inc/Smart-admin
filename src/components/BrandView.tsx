@@ -12,6 +12,8 @@ import {
   TYPE_RAMP,
   VOICE,
 } from "@/lib/brand";
+import { PARALLAX_SCENES } from "@/lib/marketingParallax";
+import MarketingParallax from "@/components/MarketingParallax";
 
 // Brand identity / living style-guide page body. Renders every brand token from
 // `@/lib/brand` (the single source of truth shared with the downloadable kit at
@@ -81,6 +83,13 @@ export default function BrandView() {
             <span aria-hidden>↓</span> Download brand kit (.zip)
           </a>
         </div>
+        <MarketingParallax
+          accent="#c0a4ff"
+          compact
+          className="pt-3"
+          label="ATLAS OS brand system layered habitat visual"
+          layers={PARALLAX_SCENES.brand}
+        />
       </section>
 
       {/* 2 — Logo / mark ---------------------------------------------------- */}

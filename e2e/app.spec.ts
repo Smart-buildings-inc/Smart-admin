@@ -2,6 +2,22 @@ import { test, expect } from "@playwright/test";
 
 // P0 — Console home page renders the core operator UI.
 test.describe("ATLAS OS console", () => {
+  test("splash screen animates on initial load and clears to console", async ({
+    page,
+  }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+
+    const splash = page.getByTestId("app-splash");
+    await expect(splash).toBeVisible();
+    await expect(splash.locator("svg")).toBeVisible();
+    await expect(splash).toHaveAttribute("aria-label", "Loading ATLAS OS");
+    await expect(splash).toBeHidden({ timeout: 4000 });
+
+    await expect(
+      page.getByRole("heading", { level: 1, name: /ATLAS\s*OS/ }),
+    ).toBeVisible();
+  });
+
   test("home page loads with header, KPI strip, seed chip and twin controls", async ({
     page,
   }) => {
@@ -39,6 +55,13 @@ test.describe("ATLAS OS console", () => {
     // The Walk-through button is clickable.
     await walkthrough.click();
     await expect(walkthrough).toBeVisible();
+
+    // Pixel/poly ⟷ realistic render-mode switch is present and toggles.
+    const pixel = page.getByRole("button", { name: "Pixel", exact: true });
+    await expect(pixel).toBeVisible();
+    await expect(pixel).toHaveAttribute("aria-pressed", "false");
+    await pixel.click();
+    await expect(pixel).toHaveAttribute("aria-pressed", "true");
   });
 
   test("incident feed is present", async ({ page }) => {
@@ -92,5 +115,41 @@ test.describe("ATLAS OS console", () => {
     } else {
       await expect(tabBar).toBeHidden();
     }
+  });
+
+  test("top navbar exposes and persists the light mode switch", async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem("atlas-theme", "dark");
+    });
+    await page.goto("/");
+
+    const themeToggle = page.getByTestId("theme-toggle");
+    await expect(themeToggle).toBeVisible();
+    await expect(themeToggle).toHaveAttribute("aria-pressed", "false");
+    await expect(themeToggle).toHaveAttribute("aria-label", "Switch to light mode");
+
+    const width = page.viewportSize()?.width ?? 0;
+    if (width < 768) {
+      await expect(
+        page.getByRole("button", { name: "Open menu" }),
+      ).toBeVisible();
+    }
+
+    await themeToggle.click();
+
+    await expect(themeToggle).toHaveAttribute("aria-pressed", "true");
+    await expect(themeToggle).toHaveAttribute("aria-label", "Switch to dark mode");
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          document.documentElement.classList.contains("theme-light"),
+        ),
+      )
+      .toBe(true);
+    await expect
+      .poll(() => page.evaluate(() => window.localStorage.getItem("atlas-theme")))
+      .toBe("light");
   });
 });

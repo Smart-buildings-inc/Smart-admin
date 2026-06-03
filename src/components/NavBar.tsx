@@ -12,6 +12,9 @@ import ProgressiveBlur from "@/components/ProgressiveBlur";
 // route is highlighted via the current pathname.
 
 type NavItem = { href: string; label: string };
+type ThemeMode = "dark" | "light";
+
+const THEME_STORAGE_KEY = "atlas-theme";
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Console" },
@@ -19,6 +22,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/fleet", label: "Fleet" },
   { href: "/portfolio", label: "Portfolio" },
   { href: "/landing", label: "Overview" },
+  { href: "/for", label: "Solutions" },
   { href: "/brand", label: "Brand" },
   { href: "/sitemap", label: "Site Map" },
 ];
@@ -28,9 +32,87 @@ function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+function isThemeMode(value: string | null): value is ThemeMode {
+  return value === "dark" || value === "light";
+}
+
+function applyTheme(theme: ThemeMode) {
+  const root = document.documentElement;
+  root.classList.toggle("theme-light", theme === "light");
+  root.style.colorScheme = theme;
+}
+
+function ThemeToggleButton({
+  theme,
+  onToggle,
+}: {
+  theme: ThemeMode;
+  onToggle: () => void;
+}) {
+  const label = theme === "dark" ? "Switch to light mode" : "Switch to dark mode";
+
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-label={label}
+      aria-pressed={theme === "light"}
+      title={label}
+      data-testid="theme-toggle"
+      className="theme-toggle-button relative grid h-10 w-10 place-items-center rounded-lg border border-ink-600/70 bg-ink-900/60 text-slate-200 transition-colors hover:bg-ink-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-info"
+    >
+      <span className="sr-only">{label}</span>
+      {theme === "dark" ? (
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          className="h-5 w-5"
+          aria-hidden
+        >
+          <path
+            d="M12 4V2m0 20v-2m6.36-14.36 1.42-1.42M4.22 19.78l1.42-1.42M20 12h2M2 12h2m14.36 6.36 1.42 1.42M4.22 4.22l1.42 1.42"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeWidth="1.8"
+          />
+          <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.8" />
+        </svg>
+      ) : (
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          className="h-5 w-5"
+          aria-hidden
+        >
+          <path
+            d="M20.25 14.15A8.2 8.2 0 0 1 9.85 3.75 8.2 8.2 0 1 0 20.25 14.15Z"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.8"
+          />
+        </svg>
+      )}
+    </button>
+  );
+}
+
 export default function NavBar() {
   const pathname = usePathname() ?? "/";
   const [open, setOpen] = useState(false);
+  const [theme, setTheme] = useState<ThemeMode>("dark");
+
+  useEffect(() => {
+    const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
+    const preferredTheme = window.matchMedia("(prefers-color-scheme: light)")
+      .matches
+      ? "light"
+      : "dark";
+    const nextTheme = isThemeMode(storedTheme) ? storedTheme : preferredTheme;
+
+    setTheme(nextTheme);
+    applyTheme(nextTheme);
+  }, []);
 
   // Close the drawer on route change.
   useEffect(() => {
@@ -51,6 +133,15 @@ export default function NavBar() {
       document.body.style.overflow = prev;
     };
   }, [open]);
+
+  const toggleTheme = () => {
+    setTheme((current) => {
+      const next = current === "dark" ? "light" : "dark";
+      applyTheme(next);
+      window.localStorage.setItem(THEME_STORAGE_KEY, next);
+      return next;
+    });
+  };
 
   return (
     <nav className="sticky top-0 z-40 border-b border-ink-600/50 bg-gradient-to-b from-ink-950 to-ink-950/60 backdrop-blur">
@@ -88,34 +179,38 @@ export default function NavBar() {
           })}
         </div>
 
-        {/* Mobile hamburger */}
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-label={open ? "Close menu" : "Open menu"}
-          aria-expanded={open}
-          aria-controls="mobile-nav"
-          className="relative grid h-10 w-10 place-items-center rounded-lg border border-ink-600/70 bg-ink-900/60 text-slate-200 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-signal-info focus-visible:outline-none md:hidden"
-        >
-          <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
-          <span aria-hidden className="relative block h-4 w-5">
-            <span
-              className={`absolute left-0 block h-0.5 w-5 rounded-full bg-current transition-transform duration-300 ${
-                open ? "top-1/2 -translate-y-1/2 rotate-45" : "top-0"
-              }`}
-            />
-            <span
-              className={`absolute left-0 top-1/2 block h-0.5 w-5 -translate-y-1/2 rounded-full bg-current transition-opacity duration-200 ${
-                open ? "opacity-0" : "opacity-100"
-              }`}
-            />
-            <span
-              className={`absolute left-0 block h-0.5 w-5 rounded-full bg-current transition-transform duration-300 ${
-                open ? "top-1/2 -translate-y-1/2 -rotate-45" : "bottom-0"
-              }`}
-            />
-          </span>
-        </button>
+        <div className="ml-auto flex items-center gap-2">
+          <ThemeToggleButton theme={theme} onToggle={toggleTheme} />
+
+          {/* Mobile hamburger */}
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            aria-controls="mobile-nav"
+            className="relative grid h-10 w-10 place-items-center rounded-lg border border-ink-600/70 bg-ink-900/60 text-slate-200 transition-colors hover:bg-ink-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-info md:hidden"
+          >
+            <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
+            <span aria-hidden className="relative block h-4 w-5">
+              <span
+                className={`absolute left-0 block h-0.5 w-5 rounded-full bg-current transition-transform duration-300 ${
+                  open ? "top-1/2 -translate-y-1/2 rotate-45" : "top-0"
+                }`}
+              />
+              <span
+                className={`absolute left-0 top-1/2 block h-0.5 w-5 -translate-y-1/2 rounded-full bg-current transition-opacity duration-200 ${
+                  open ? "opacity-0" : "opacity-100"
+                }`}
+              />
+              <span
+                className={`absolute left-0 block h-0.5 w-5 rounded-full bg-current transition-transform duration-300 ${
+                  open ? "top-1/2 -translate-y-1/2 -rotate-45" : "bottom-0"
+                }`}
+              />
+            </span>
+          </button>
+        </div>
       </div>
 
       {/* Progressive blur beneath the bar: the frosted blur ramps gradually

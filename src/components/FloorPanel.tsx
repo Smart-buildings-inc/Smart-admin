@@ -8,23 +8,37 @@ import {
   useScopeLabel,
 } from "@/lib/ui";
 import PresenceBadge from "@/components/PresenceBadge";
+import type { Icon } from "@phosphor-icons/react";
+import {
+  BatteryCharging,
+  Cloud,
+  Drop,
+  Fan,
+  Gauge,
+  HouseLine,
+  Leaf,
+  Lightning,
+  ThermometerSimple,
+  UsersThree,
+  WarningCircle,
+} from "@phosphor-icons/react";
 
 // Maps each metric key to a human label + formatter. Only present keys render.
 const METRIC_META: Record<
   keyof FloorMetrics,
-  { label: string; fmt: (v: number) => string }
+  { label: string; fmt: (v: number) => string; Icon: Icon }
 > = {
-  energyKw: { label: "Generation", fmt: (v) => `${v} kW` },
-  loadKw: { label: "Load", fmt: (v) => `${v} kW` },
-  batteryPct: { label: "Battery", fmt: (v) => `${v}%` },
-  waterLph: { label: "Water flow", fmt: (v) => `${v} L/h` },
-  waterReusePct: { label: "Non-potable reuse", fmt: (v) => `${v}%` },
-  foodKgDay: { label: "Food (amenity)", fmt: (v) => `${v} kg/day` },
-  occupancy: { label: "Occupancy", fmt: (v) => `${v} present` },
-  tempC: { label: "Temperature", fmt: (v) => `${v} °C` },
-  humidityPct: { label: "Humidity", fmt: (v) => `${v}%` },
-  co2Ppm: { label: "CO₂", fmt: (v) => `${v} ppm` },
-  pm25: { label: "PM2.5", fmt: (v) => `${v} µg/m³` },
+  energyKw: { label: "Generation", fmt: (v) => `${v} kW`, Icon: Lightning },
+  loadKw: { label: "Load", fmt: (v) => `${v} kW`, Icon: Gauge },
+  batteryPct: { label: "Battery", fmt: (v) => `${v}%`, Icon: BatteryCharging },
+  waterLph: { label: "Water flow", fmt: (v) => `${v} L/h`, Icon: Drop },
+  waterReusePct: { label: "Non-potable reuse", fmt: (v) => `${v}%`, Icon: Drop },
+  foodKgDay: { label: "Food (amenity)", fmt: (v) => `${v} kg/day`, Icon: Leaf },
+  occupancy: { label: "Occupancy", fmt: (v) => `${v} present`, Icon: UsersThree },
+  tempC: { label: "Temperature", fmt: (v) => `${v} °C`, Icon: ThermometerSimple },
+  humidityPct: { label: "Humidity", fmt: (v) => `${v}%`, Icon: Cloud },
+  co2Ppm: { label: "CO₂", fmt: (v) => `${v} ppm`, Icon: Fan },
+  pm25: { label: "PM2.5", fmt: (v) => `${v} µg/m³`, Icon: Fan },
 };
 
 const METRIC_ORDER = Object.keys(METRIC_META) as (keyof FloorMetrics)[];
@@ -41,8 +55,15 @@ export default function FloorPanel({
 }) {
   if (!floor) {
     return (
-      <div className="panel panel-pad h-full">
-        <div className="kpi-label mb-1">Floor telemetry</div>
+      <div className="panel panel-pad">
+        <div className="mb-1 flex items-center gap-2">
+          <HouseLine
+            aria-hidden
+            weight="duotone"
+            className="h-4 w-4 text-slate-500"
+          />
+          <div className="kpi-label">Floor telemetry</div>
+        </div>
         <p className="text-sm text-slate-400">
           Select a floor on the twin to inspect its live metrics.
         </p>
@@ -57,7 +78,7 @@ export default function FloorPanel({
   );
 
   return (
-    <div className="panel panel-pad h-full overflow-y-auto scroll-thin">
+    <div className="panel panel-pad">
       <div className="mb-3 flex items-start justify-between gap-2">
         <div>
           <div className="flex items-center gap-2">
@@ -105,9 +126,18 @@ export default function FloorPanel({
               key={key}
               className="rounded-lg border border-ink-600/50 bg-ink-800/50 px-3 py-2"
             >
-              <div className="kpi-label">{meta.label}</div>
-              <div className="font-mono text-sm font-semibold text-white">
-                {meta.fmt(value)}
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="kpi-label">{meta.label}</div>
+                  <div className="font-mono text-sm font-semibold text-white">
+                    {meta.fmt(value)}
+                  </div>
+                </div>
+                <meta.Icon
+                  aria-hidden
+                  weight="duotone"
+                  className="mt-0.5 h-4 w-4 shrink-0 text-slate-500 opacity-70"
+                />
               </div>
             </div>
           );
@@ -164,6 +194,11 @@ export default function FloorPanel({
       {floorIncidents.length > 0 && (
         <div className="mt-4">
           <div className="kpi-label mb-1.5">
+            <WarningCircle
+              aria-hidden
+              weight="duotone"
+              className="mr-1 inline h-3.5 w-3.5 text-slate-500"
+            />
             Active on this floor · {floorIncidents.length}
           </div>
           <ul className="space-y-1.5">
