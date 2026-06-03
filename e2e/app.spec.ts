@@ -117,6 +117,33 @@ test.describe("ATLAS OS console", () => {
     }
   });
 
+  // The GitHub repo link shows off the source. On desktop it's an icon button
+  // in the top-right cluster; on mobile it lives inside the hamburger drawer.
+  test("top navbar exposes a GitHub repo link per viewport", async ({ page }) => {
+    // The navbar is global (rendered in layout.tsx), so any route works — use a
+    // lightweight page rather than the WebGL-heavy console home.
+    await page.goto("/sitemap");
+    const repoUrl = "https://github.com/Smart-buildings-inc/Smart-admin";
+    const width = page.viewportSize()?.width ?? 0;
+
+    if (width < 768) {
+      // Mobile: link is inside the drawer, revealed by the hamburger.
+      await page.getByRole("button", { name: "Open menu" }).click();
+      const mobileLink = page.getByRole("link", { name: "GitHub" });
+      await expect(mobileLink).toBeVisible();
+      await expect(mobileLink).toHaveAttribute("href", repoUrl);
+      await expect(mobileLink).toHaveAttribute("target", "_blank");
+    } else {
+      // Desktop/tablet: icon button in the header is visible directly.
+      const ghLink = page.getByTestId("github-link");
+      await expect(ghLink).toBeVisible();
+      await expect(ghLink).toHaveAttribute("href", repoUrl);
+      await expect(ghLink).toHaveAttribute("target", "_blank");
+      await expect(ghLink).toHaveAttribute("rel", /noopener/);
+      await expect(ghLink).toHaveAttribute("aria-label", "View source on GitHub");
+    }
+  });
+
   test("top navbar exposes and persists the light mode switch", async ({
     page,
   }) => {
