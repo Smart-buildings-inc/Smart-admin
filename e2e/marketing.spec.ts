@@ -21,4 +21,34 @@ test.describe("ATLAS OS marketing parallax", () => {
       expect(box?.height ?? 0).toBeGreaterThan(220);
     });
   }
+
+  test("parallax image layers keep intentional depth styling", async ({
+    page,
+  }) => {
+    await page.goto("/landing");
+
+    const depth = await page.getByTestId("marketing-parallax").evaluate((el) => {
+      const layer = (selector: string) => {
+        const node = el.querySelector(selector);
+        if (!node) throw new Error(`Missing layer: ${selector}`);
+        const style = window.getComputedStyle(node);
+        return {
+          filter: style.filter,
+          opacity: Number.parseFloat(style.opacity),
+          zIndex: Number.parseInt(style.zIndex, 10),
+        };
+      };
+
+      return {
+        back: layer(".marketing-parallax__backdrop"),
+        front: layer(".marketing-parallax__foreground"),
+        mid: layer(".marketing-parallax__twin"),
+      };
+    });
+
+    expect(depth.back.filter).toContain("blur");
+    expect(depth.back.opacity).toBeLessThan(depth.front.opacity);
+    expect(depth.back.zIndex).toBeLessThan(depth.mid.zIndex);
+    expect(depth.front.zIndex).toBeGreaterThan(depth.mid.zIndex);
+  });
 });

@@ -39,10 +39,10 @@ export default function MarketingParallax({
         Math.max(0, (window.innerHeight - rect.top) / total),
       );
       const centered = progress - 0.5;
-      el.style.setProperty("--parallax-back", `${centered * -38}px`);
-      el.style.setProperty("--parallax-mid", `${centered * 64}px`);
-      el.style.setProperty("--parallax-front", `${centered * -88}px`);
-      el.style.setProperty("--parallax-float", `${centered * 16}px`);
+      el.style.setProperty("--parallax-back", `${centered * -24}px`);
+      el.style.setProperty("--parallax-mid", `${centered * 58}px`);
+      el.style.setProperty("--parallax-front", `${centered * -118}px`);
+      el.style.setProperty("--parallax-float", `${centered * 12}px`);
     };
 
     const schedule = () => {
