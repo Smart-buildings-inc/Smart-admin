@@ -6,6 +6,14 @@ test("broadcast send shows success and mirrors into the incident feed", async ({
 }) => {
   await page.goto("/");
 
+  // The loading splash is a full-viewport z-[100] overlay that owns pointer
+  // events for ~650ms after load; wait for it to detach before interacting so
+  // the Send click can't be intercepted (was flaky on slower Mobile/Tablet).
+  await page
+    .getByTestId("app-splash")
+    .waitFor({ state: "detached", timeout: 10_000 })
+    .catch(() => {});
+
   // Unique marker so we can find this exact broadcast in the feed afterwards.
   const marker = `E2E broadcast ${Date.now()}`;
 
