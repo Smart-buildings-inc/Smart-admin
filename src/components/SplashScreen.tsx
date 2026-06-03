@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import LogoLoader from "@/components/LogoLoader";
 
-const MIN_SPLASH_MS = 900;
-const EXIT_ANIMATION_MS = 520;
+const MIN_SPLASH_MS = 650;
+const EXIT_ANIMATION_MS = 420;
 
 export default function SplashScreen() {
   const [visible, setVisible] = useState(true);
@@ -35,7 +35,7 @@ export default function SplashScreen() {
       data-testid="app-splash"
       role="status"
       aria-label="Loading ATLAS OS"
-      className={`splash-backdrop fixed inset-0 z-[100] grid place-items-center px-6 transition-opacity duration-500 ${
+      className={`splash-backdrop fixed inset-0 z-[100] grid place-items-center px-6 transition-opacity duration-400 ${
         leaving ? "pointer-events-none opacity-0" : "opacity-100"
       }`}
     >

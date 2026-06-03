@@ -235,8 +235,8 @@ body {
 .splash-backdrop {
   background-color: #070b10;
   background-image:
-    linear-gradient(rgba(148, 163, 184, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 163, 184, 0.04) 1px, transparent 1px),
+    linear-gradient(rgba(148, 163, 184, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.025) 1px, transparent 1px),
     linear-gradient(180deg, rgba(11, 18, 26, 0.98), rgba(7, 11, 16, 0.98));
   background-size: 44px 44px, 44px 44px, auto;
 }
@@ -244,7 +244,7 @@ body {
 @keyframes splash-stack-in {
   from {
     opacity: 0;
-    transform: translateY(10px) scale(0.96);
+    transform: translateY(4px) scale(0.98);
   }
   to {
     opacity: 1;
@@ -262,11 +262,11 @@ body {
   0%,
   100% {
     transform: scale(1);
-    filter: drop-shadow(0 12px 24px rgba(78, 168, 255, 0.1));
+    filter: drop-shadow(0 8px 18px rgba(78, 168, 255, 0.06));
   }
   50% {
-    transform: scale(1.014);
-    filter: drop-shadow(0 14px 28px rgba(127, 231, 224, 0.16));
+    transform: scale(1.006);
+    filter: drop-shadow(0 10px 20px rgba(127, 231, 224, 0.1));
   }
 }
 
@@ -280,7 +280,7 @@ body {
 }
 
 .splash-stack {
-  animation: splash-stack-in 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: splash-stack-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .splash-ring {
@@ -291,18 +291,18 @@ body {
 .splash-ring::before {
   content: "";
   position: absolute;
-  inset: -7px;
+  inset: -4px;
   z-index: -1;
   border-radius: 1.45rem;
   padding: 1px;
   background: conic-gradient(
     from 0deg,
     rgba(78, 168, 255, 0),
-    rgba(78, 168, 255, 0.5),
-    rgba(127, 231, 224, 0.42),
-    rgba(93, 220, 122, 0.36),
-    rgba(192, 164, 255, 0.42),
-    rgba(255, 143, 177, 0.36),
+    rgba(78, 168, 255, 0.28),
+    rgba(127, 231, 224, 0.24),
+    rgba(93, 220, 122, 0.18),
+    rgba(192, 164, 255, 0.24),
+    rgba(255, 143, 177, 0.18),
     rgba(78, 168, 255, 0)
   );
   -webkit-mask:
@@ -310,8 +310,8 @@ body {
     linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  opacity: 0.72;
-  animation: splash-ring-spin 4.2s linear infinite;
+  opacity: 0.42;
+  animation: splash-ring-spin 7.5s linear infinite;
 }
 
 .splash-brand {
@@ -320,7 +320,7 @@ body {
 
 .splash-progress > span {
   background: linear-gradient(90deg, #4ea8ff, #7fe7e0, #5ddc7a, #ff8fb1);
-  opacity: 0.68;
+  opacity: 0.42;
   transform-origin: left center;
   animation: splash-progress-fill 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
