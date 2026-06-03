@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { Building, BuildingStatus } from "@/lib/types";
+import { PARALLAX_SCENES } from "@/lib/marketingParallax";
 import MarketingParallax from "@/components/MarketingParallax";
 
 // F7 — Fleet view. A zoomed-out, stylized map of every ATLAS building across
@@ -149,6 +150,7 @@ export default function FleetView({
         accent="#5ddc7a"
         compact
         label="ATLAS fleet habitat network visual"
+        layers={PARALLAX_SCENES.fleet}
       />
 
       {/* Fleet KPI summary strip */}

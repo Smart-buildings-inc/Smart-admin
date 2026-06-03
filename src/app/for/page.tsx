@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import MarketingParallax from "@/components/MarketingParallax";
 import { AUDIENCES } from "@/lib/audiences";
+import { PARALLAX_SCENES } from "@/lib/marketingParallax";
 
 // Solutions index — the hub for the seven audience marketing pages. Reuses the
 // landing primitives; each card owns its audience accent and rises in.
@@ -39,6 +40,7 @@ export default function SolutionsIndex() {
           compact
           className="mt-10"
           label="ATLAS OS solution layers across habitat, twin, and infrastructure"
+          layers={PARALLAX_SCENES.solutions}
         />
 
         <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

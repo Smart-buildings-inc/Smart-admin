@@ -2,23 +2,23 @@
 
 import Image from "next/image";
 import { useEffect, useRef } from "react";
-
-const LAYERS = {
-  backdrop: "/marketing/atlas-parallax-backdrop.jpg",
-  twin: "/marketing/atlas-parallax-twin.jpg",
-  foreground: "/marketing/atlas-parallax-foreground.jpg",
-};
+import {
+  PARALLAX_SCENES,
+  type MarketingParallaxLayers,
+} from "@/lib/marketingParallax";
 
 export default function MarketingParallax({
   accent = "#7fe7e0",
   className = "",
   compact = false,
   label = "ATLAS habitat layered visual",
+  layers = PARALLAX_SCENES.atlas,
 }: {
   accent?: string;
   className?: string;
   compact?: boolean;
   label?: string;
+  layers?: MarketingParallaxLayers;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -74,7 +74,7 @@ export default function MarketingParallax({
         className="marketing-parallax__viewport"
       >
         <Image
-          src={LAYERS.backdrop}
+          src={layers.backdrop}
           alt=""
           fill
           unoptimized
@@ -82,7 +82,7 @@ export default function MarketingParallax({
           className="marketing-parallax__image marketing-parallax__backdrop"
         />
         <Image
-          src={LAYERS.twin}
+          src={layers.twin}
           alt=""
           fill
           unoptimized
@@ -90,7 +90,7 @@ export default function MarketingParallax({
           className="marketing-parallax__image marketing-parallax__twin"
         />
         <Image
-          src={LAYERS.foreground}
+          src={layers.foreground}
           alt=""
           fill
           unoptimized

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Audience } from "@/lib/audiences";
 import { AUDIENCES } from "@/lib/audiences";
+import { PARALLAX_SCENES } from "@/lib/marketingParallax";
 import AsciiSignature from "@/components/AsciiSignature";
 import MarketingParallax from "@/components/MarketingParallax";
 import Reveal from "@/components/Reveal";
@@ -98,6 +99,7 @@ export default function MarketingPage({ audience }: { audience: Audience }) {
           compact
           className="mx-auto mt-12 max-w-5xl"
           label={`${a.nav} ATLAS habitat skyline, twin, and infrastructure layers`}
+          layers={PARALLAX_SCENES.solutions}
         />
 
         {/* Stat strip — staggered rise-in. */}

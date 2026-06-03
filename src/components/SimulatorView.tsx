@@ -10,6 +10,7 @@ import { useCallback, useMemo, useState } from "react";
 import type { Floor, FloorMetrics, Incident } from "@/lib/types";
 import type { SimOptions } from "@/components/BuildingSimulator";
 import { needColor } from "@/lib/ui";
+import { PARALLAX_SCENES } from "@/lib/marketingParallax";
 import FullscreenLink from "@/components/FullscreenLink";
 import MarketingParallax from "@/components/MarketingParallax";
 
@@ -143,6 +144,7 @@ export default function SimulatorView({
         accent="#ffcf4d"
         compact
         label="ATLAS simulator habitat systems visual"
+        layers={PARALLAX_SCENES.simulator}
       />
 
       <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-[1.7fr_1fr]">

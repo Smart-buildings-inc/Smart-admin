@@ -51,4 +51,33 @@ test.describe("ATLAS OS marketing parallax", () => {
     expect(depth.back.zIndex).toBeLessThan(depth.mid.zIndex);
     expect(depth.front.zIndex).toBeGreaterThan(depth.mid.zIndex);
   });
+
+  for (const { route, image } of [
+    { route: "/landing", image: "atlas" },
+    { route: "/for", image: "solutions" },
+    { route: "/for/operators", image: "solutions" },
+    { route: "/brand", image: "brand" },
+    { route: "/fleet", image: "fleet" },
+    { route: "/simulator", image: "simulator" },
+  ]) {
+    test(`${route} uses its page-specific parallax imagery`, async ({
+      page,
+    }) => {
+      await page.goto(route);
+
+      const srcs = await page.getByTestId("marketing-parallax").evaluate((el) =>
+        Array.from(el.querySelectorAll("img")).map((img) =>
+          img.getAttribute("src"),
+        ),
+      );
+
+      expect(srcs).toEqual(
+        expect.arrayContaining([
+          `/marketing/${image}-parallax-backdrop.jpg`,
+          `/marketing/${image}-parallax-twin.jpg`,
+          `/marketing/${image}-parallax-foreground.jpg`,
+        ]),
+      );
+    });
+  }
 });
