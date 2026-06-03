@@ -11,6 +11,7 @@ import type { Floor, FloorMetrics, Incident } from "@/lib/types";
 import type { SimOptions } from "@/components/BuildingSimulator";
 import { needColor } from "@/lib/ui";
 import FullscreenLink from "@/components/FullscreenLink";
+import MarketingParallax from "@/components/MarketingParallax";
 
 const BuildingSimulator = dynamic(() => import("@/components/BuildingSimulator"), {
   ssr: false,
@@ -86,12 +87,13 @@ export default function SimulatorView({
     cutaway: true,
     autoRotate: true,
     elevatorRunning: true,
-    detailedModels: true,
+    detailedModels: false,
   });
   // Single render-mode switch: "Pixel" mode = procedural voxel figures +
   // pixelation; off = crisp detailed glTF models. The two move together.
-  // Defaults to realistic so the detailed models are visible on load.
-  const [pixel, setPixel] = useState(false);
+  // Defaults to Pixel so first paint stays light (cloning the full set of
+  // detailed residents on load janks navigation); the detailed look is one tap.
+  const [pixel, setPixel] = useState(true);
   const togglePixel = useCallback(() => {
     setPixel((on) => {
       const next = !on;
@@ -99,6 +101,7 @@ export default function SimulatorView({
       return next;
     });
   }, []);
+  const [ascii, setAscii] = useState(false);
 
   const set = useCallback(
     (patch: Partial<SimOptions>) => setOptions((o) => ({ ...o, ...patch })),
@@ -136,12 +139,18 @@ export default function SimulatorView({
         </span>
       </header>
 
+      <MarketingParallax
+        accent="#ffcf4d"
+        compact
+        label="ATLAS simulator habitat systems visual"
+      />
+
       <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-[1.7fr_1fr]">
         {/* Stage */}
         <section className="flex flex-col gap-4">
           <div
             data-testid="sim-stage"
-            className="panel relative h-[1040px] overflow-hidden bg-ink-950 lg:h-[660px]"
+            className="panel relative h-[1040px] overflow-hidden bg-ink-950 lg:h-[820px]"
           >
             <BuildingSimulator
               floors={floors}
@@ -149,12 +158,13 @@ export default function SimulatorView({
               selectedKey={selectedKey}
               options={options}
               pixel={pixel}
+              ascii={ascii}
               onSelect={setSelectedKey}
               onElevatorArrive={setElevatorFloor}
             />
 
             {/* Title chip */}
-            <div className="pointer-events-none absolute left-4 top-4 text-xs text-slate-400">
+            <div className="pointer-events-none absolute left-4 top-4 hidden text-xs text-slate-400 sm:block">
               <div className="display text-sm text-slate-200">ATLAS‑01 · Live Twin</div>
               <div>Orbit to inspect · tap a floor for telemetry</div>
             </div>
@@ -165,6 +175,7 @@ export default function SimulatorView({
                 <Toggle label={options.night ? "Night" : "Day"} active={options.night} onClick={() => set({ night: !options.night })} />
                 <Toggle label="Cut-away" active={options.cutaway} onClick={() => set({ cutaway: !options.cutaway })} />
                 <Toggle label="Pixel" active={pixel} onClick={togglePixel} />
+                <Toggle label="ASCII" active={ascii} onClick={() => setAscii((a) => !a)} />
                 <Toggle label="Orbit" active={options.autoRotate} onClick={() => set({ autoRotate: !options.autoRotate })} />
                 <Toggle label="Elevator" active={options.elevatorRunning} onClick={() => set({ elevatorRunning: !options.elevatorRunning })} />
               </div>
@@ -243,9 +254,10 @@ export default function SimulatorView({
               A procedurally-built voxel twin of ATLAS‑01 rendered in three.js — a
               working elevator, switchback stairs, rooftop solar + reservoir, and
               residents going about their day. Toggle <span className="text-slate-200">Cut-away</span> for the
-              dollhouse view, <span className="text-slate-200">Night</span> to see the windows glow, and{" "}
-              <span className="text-slate-200">Pixel</span> for the retro voxel look — switch
-              Pixel off for detailed 3D models.
+              dollhouse view, <span className="text-slate-200">Night</span> to see the windows glow,{" "}
+              <span className="text-slate-200">Pixel</span> for the retro voxel look (switch it off
+              for detailed 3D models), and <span className="text-slate-200">ASCII</span> for the
+              signature glyph render.
             </p>
           </div>
         </section>

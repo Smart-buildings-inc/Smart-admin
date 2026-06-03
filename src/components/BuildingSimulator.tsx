@@ -19,6 +19,7 @@ import { OrbitControls, Html, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import type { Floor, Incident, Need } from "@/lib/types";
 import { needColor } from "@/lib/ui";
+import AsciiRenderer from "@/components/AsciiRenderer";
 import { getModel } from "@/lib/models";
 import {
   GltfProp,
@@ -934,6 +935,7 @@ export default function BuildingSimulator({
   selectedKey,
   options,
   pixel,
+  ascii,
   onSelect,
   onElevatorArrive,
 }: {
@@ -942,6 +944,7 @@ export default function BuildingSimulator({
   selectedKey: string | null;
   options: SimOptions;
   pixel: boolean;
+  ascii: boolean;
   onSelect: (key: string | null) => void;
   onElevatorArrive: (floorIndex: number) => void;
 }) {
@@ -968,8 +971,8 @@ export default function BuildingSimulator({
       // upscales with nearest-neighbour. R3F updates the renderer's pixel ratio
       // reactively from `dpr` — no Canvas remount (which would recreate the
       // WebGL context) needed.
-      dpr={pixel ? 0.4 : 1.6}
-      className={pixel ? "[image-rendering:pixelated]" : ""}
+      dpr={ascii ? 1 : pixel ? 0.4 : 1.6}
+      className={pixel && !ascii ? "[image-rendering:pixelated]" : ""}
       gl={{ antialias: true }}
       // 3/4 view from the open (cut-away) front-right so interiors, the
       // elevator core and the stair core all read; pulled back to frame the
@@ -1003,6 +1006,9 @@ export default function BuildingSimulator({
         maxDistance={48}
         maxPolarAngle={Math.PI / 1.95}
       />
+
+      {/* Signature ASCII pass — the voxel tower resampled into live glyphs. */}
+      {ascii && <AsciiRenderer color resolution={0.16} characters=" .:-=+*#%@" />}
     </Canvas>
   );
 }

@@ -72,12 +72,14 @@ export default function FullscreenSimulator({
     cutaway: true,
     autoRotate: true,
     elevatorRunning: true,
-    detailedModels: true,
+    detailedModels: false,
   });
   // Single render-mode switch: "Pixel" = procedural voxel figures + pixelation;
-  // off = crisp detailed glTF models. The two move together.
-  // Defaults to realistic so the detailed models are visible on load.
-  const [pixel, setPixel] = useState(false);
+  // off = crisp detailed glTF models. The two move together. Defaults to Pixel
+  // here (and in the simulator) so first paint stays light — cloning the full
+  // set of detailed residents on load janks navigation; the detailed look is
+  // one tap away.
+  const [pixel, setPixel] = useState(true);
   const togglePixel = useCallback(() => {
     setPixel((on) => {
       const next = !on;
@@ -85,6 +87,7 @@ export default function FullscreenSimulator({
       return next;
     });
   }, []);
+  const [ascii, setAscii] = useState(false);
 
   const set = useCallback(
     (patch: Partial<SimOptions>) => setOptions((o) => ({ ...o, ...patch })),
@@ -133,6 +136,7 @@ export default function FullscreenSimulator({
         selectedKey={selectedKey}
         options={options}
         pixel={pixel}
+        ascii={ascii}
         onSelect={setSelectedKey}
         onElevatorArrive={setElevatorFloor}
       />
@@ -162,6 +166,7 @@ export default function FullscreenSimulator({
           <Toggle label={options.night ? "Night" : "Day"} active={options.night} onClick={() => set({ night: !options.night })} />
           <Toggle label="Cut-away" active={options.cutaway} onClick={() => set({ cutaway: !options.cutaway })} />
           <Toggle label="Pixel" active={pixel} onClick={togglePixel} />
+          <Toggle label="ASCII" active={ascii} onClick={() => setAscii((a) => !a)} />
           <Toggle label="Orbit" active={options.autoRotate} onClick={() => set({ autoRotate: !options.autoRotate })} />
           <Toggle label="Elevator" active={options.elevatorRunning} onClick={() => set({ elevatorRunning: !options.elevatorRunning })} />
         </div>

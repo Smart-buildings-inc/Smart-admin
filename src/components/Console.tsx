@@ -46,6 +46,7 @@ export default function Console({
   // Render-mode switch: "Pixel" = retro pixel/poly look; off = crisp detailed
   // (glTF) rendering. Mirrors the Simulator's single switch.
   const [pixel, setPixel] = useState(false);
+  const [ascii, setAscii] = useState(false);
 
   const selectedFloor = useMemo(
     () => floors.find((f) => f.key === selectedKey) ?? null,
@@ -123,7 +124,7 @@ export default function Console({
         <section className="flex flex-col gap-4">
           <div
             data-testid="twin-stage"
-            className="panel relative h-[920px] overflow-hidden bg-ink-950 lg:h-[560px]"
+            className="panel relative h-[920px] overflow-hidden bg-ink-950 lg:h-[760px]"
           >
             <HabitatTwin
               floors={floors}
@@ -131,6 +132,7 @@ export default function Console({
               selectedKey={selectedKey}
               mode={mode}
               pixel={pixel}
+              ascii={ascii}
               onSelect={setSelectedKey}
               onWalkthroughEnd={() => setMode("orbit")}
             />
@@ -173,6 +175,18 @@ export default function Console({
                   }`}
                 >
                   Pixel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAscii((a) => !a)}
+                  aria-pressed={ascii}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                    ascii
+                      ? "bg-white text-ink-950"
+                      : "text-slate-300 hover:text-white"
+                  }`}
+                >
+                  ASCII
                 </button>
               </div>
               <FullscreenLink />

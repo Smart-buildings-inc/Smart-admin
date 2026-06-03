@@ -28,13 +28,17 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
     {
+      name: "Tablet Chrome",
+      use: { ...devices["Galaxy Tab S9"] },
+    },
+    {
       name: "Mobile Chrome",
       use: { ...devices["Pixel 5"] },
     },
   ],
 
   webServer: {
-    command: "npm run build && npm run start",
+    command: "npm run build && npx next start -H 127.0.0.1 -p 3000",
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
