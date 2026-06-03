@@ -101,11 +101,13 @@ test.describe("ATLAS OS building simulator", () => {
 
   test("simulator is reachable from the nav bar", async ({ page }) => {
     await page.goto("/");
-    // On mobile use the bottom tab bar (MobileTabBar); on desktop the inline top nav.
+    // On mobile use the bottom tab bar (MobileTabBar); on desktop the inline top
+    // nav. ".first()" disambiguates from the site footer, which also links to
+    // /simulator (the top nav precedes the footer in the DOM).
     const bottom = page.getByRole("navigation", { name: "Primary" });
     const link = (await bottom.isVisible())
-      ? bottom.getByRole("link", { name: "Simulator" })
-      : page.getByRole("link", { name: "Simulator" });
+      ? bottom.getByRole("link", { name: "Simulator" }).first()
+      : page.getByRole("link", { name: "Simulator" }).first();
     await link.click();
     await expect(page).toHaveURL(/\/simulator$/);
   });
