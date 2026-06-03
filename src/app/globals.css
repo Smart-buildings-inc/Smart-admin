@@ -25,6 +25,120 @@ body {
     radial-gradient(700px 500px at -10% 110%, rgba(93, 220, 122, 0.06), transparent);
 }
 
+:root.theme-light {
+  color-scheme: light;
+}
+
+:root.theme-light body {
+  color: #1e293b;
+  background-color: #f8fafc;
+  background-image:
+    radial-gradient(900px 600px at 80% -10%, rgba(78, 168, 255, 0.14), transparent),
+    radial-gradient(700px 500px at -10% 110%, rgba(93, 220, 122, 0.12), transparent);
+}
+
+:root.theme-light .gradient-text-soft {
+  background-image: linear-gradient(
+    100deg,
+    #0f172a 0%,
+    #2563eb 28%,
+    #0f766e 50%,
+    #7c3aed 72%,
+    #be123c 88%,
+    #0f172a 100%
+  );
+}
+
+:root.theme-light .border-ink-600\/50,
+:root.theme-light .border-ink-600\/60,
+:root.theme-light .border-ink-600\/70 {
+  border-color: rgba(203, 213, 225, 0.86);
+}
+
+:root.theme-light .from-ink-950 {
+  --tw-gradient-from: rgb(248 250 252 / 0.98) var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(248 250 252 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+:root.theme-light .to-ink-950,
+:root.theme-light .to-ink-950\/60 {
+  --tw-gradient-to: rgb(241 245 249 / 0.84) var(--tw-gradient-to-position);
+}
+
+:root.theme-light .bg-ink-950,
+:root.theme-light .bg-ink-950\/60,
+:root.theme-light .bg-ink-950\/70,
+:root.theme-light .bg-ink-950\/80 {
+  background-color: rgba(248, 250, 252, 0.94);
+}
+
+:root.theme-light .bg-ink-900,
+:root.theme-light .bg-ink-900\/50,
+:root.theme-light .bg-ink-900\/60,
+:root.theme-light .bg-ink-900\/70,
+:root.theme-light .bg-ink-900\/80,
+:root.theme-light .bg-ink-900\/95 {
+  background-color: rgba(255, 255, 255, 0.88);
+}
+
+:root.theme-light .bg-ink-800\/40,
+:root.theme-light .bg-ink-800\/50,
+:root.theme-light .bg-ink-800\/60,
+:root.theme-light .bg-ink-800\/70,
+:root.theme-light .bg-ink-800\/80 {
+  background-color: rgba(241, 245, 249, 0.9);
+}
+
+:root.theme-light .bg-ink-700,
+:root.theme-light .bg-ink-700\/50,
+:root.theme-light .bg-ink-700\/80 {
+  background-color: rgba(226, 232, 240, 0.92);
+}
+
+:root.theme-light .hover\:bg-ink-800:hover,
+:root.theme-light .hover\:bg-ink-800\/60:hover,
+:root.theme-light .hover\:bg-ink-800\/70:hover,
+:root.theme-light .hover\:bg-ink-700:hover,
+:root.theme-light .hover\:bg-ink-700\/50:hover,
+:root.theme-light .active\:bg-ink-800:active {
+  background-color: rgba(226, 232, 240, 0.92);
+}
+
+:root.theme-light .text-white,
+:root.theme-light .text-slate-100,
+:root.theme-light .text-slate-200 {
+  color: #0f172a;
+}
+
+:root.theme-light .text-slate-300 {
+  color: #334155;
+}
+
+:root.theme-light .text-slate-400 {
+  color: #475569;
+}
+
+:root.theme-light .text-slate-500,
+:root.theme-light .text-slate-600 {
+  color: #64748b;
+}
+
+:root.theme-light .hover\:text-white:hover,
+:root.theme-light .active\:text-white:active {
+  color: #0f172a;
+}
+
+:root.theme-light .hover\:text-slate-200:hover {
+  color: #334155;
+}
+
+:root.theme-light .theme-toggle-button[aria-pressed="true"] {
+  border-color: rgba(78, 168, 255, 0.54);
+  background-color: rgba(219, 234, 254, 0.92);
+  color: #0f172a;
+}
+
 /* Bold SF Pro italic for the things that matter — Apple-style emphasis. */
 .important {
   font-family: var(--font-sf);

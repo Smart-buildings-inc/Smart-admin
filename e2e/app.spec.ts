@@ -99,4 +99,40 @@ test.describe("ATLAS OS console", () => {
       await expect(tabBar).toBeHidden();
     }
   });
+
+  test("top navbar exposes and persists the light mode switch", async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem("atlas-theme", "dark");
+    });
+    await page.goto("/");
+
+    const themeToggle = page.getByTestId("theme-toggle");
+    await expect(themeToggle).toBeVisible();
+    await expect(themeToggle).toHaveAttribute("aria-pressed", "false");
+    await expect(themeToggle).toHaveAttribute("aria-label", "Switch to light mode");
+
+    const width = page.viewportSize()?.width ?? 0;
+    if (width < 768) {
+      await expect(
+        page.getByRole("button", { name: "Open menu" }),
+      ).toBeVisible();
+    }
+
+    await themeToggle.click();
+
+    await expect(themeToggle).toHaveAttribute("aria-pressed", "true");
+    await expect(themeToggle).toHaveAttribute("aria-label", "Switch to dark mode");
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          document.documentElement.classList.contains("theme-light"),
+        ),
+      )
+      .toBe(true);
+    await expect
+      .poll(() => page.evaluate(() => window.localStorage.getItem("atlas-theme")))
+      .toBe("light");
+  });
 });
