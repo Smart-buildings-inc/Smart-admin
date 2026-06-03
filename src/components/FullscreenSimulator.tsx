@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Floor, Incident } from "@/lib/types";
 import type { SimOptions } from "@/components/BuildingSimulator";
+import { defaultTwinModel } from "@/components/GltfBuilding";
 import { needColor } from "@/lib/ui";
 
 const BuildingSimulator = dynamic(() => import("@/components/BuildingSimulator"), {
@@ -72,6 +73,7 @@ export default function FullscreenSimulator({
     cutaway: true,
     autoRotate: true,
     elevatorRunning: true,
+    source: defaultTwinModel(),
   });
   const [pixel, setPixel] = useState(true);
   const [ascii, setAscii] = useState(false);
@@ -156,6 +158,7 @@ export default function FullscreenSimulator({
           <Toggle label="ASCII" active={ascii} onClick={() => setAscii((a) => !a)} />
           <Toggle label="Orbit" active={options.autoRotate} onClick={() => set({ autoRotate: !options.autoRotate })} />
           <Toggle label="Elevator" active={options.elevatorRunning} onClick={() => set({ elevatorRunning: !options.elevatorRunning })} />
+          <Toggle label="Hero" active={options.source === "gltf"} onClick={() => set({ source: options.source === "gltf" ? "voxel" : "gltf" })} />
         </div>
       </div>
 

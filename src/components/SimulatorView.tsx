@@ -11,6 +11,7 @@ import type { Floor, FloorMetrics, Incident } from "@/lib/types";
 import type { SimOptions } from "@/components/BuildingSimulator";
 import { needColor, occupancyGroupLabel, useScopeLabel } from "@/lib/ui";
 import FullscreenLink from "@/components/FullscreenLink";
+import { defaultTwinModel } from "@/components/GltfBuilding";
 
 const BuildingSimulator = dynamic(() => import("@/components/BuildingSimulator"), {
   ssr: false,
@@ -86,6 +87,7 @@ export default function SimulatorView({
     cutaway: true,
     autoRotate: true,
     elevatorRunning: true,
+    source: defaultTwinModel(),
   });
   const [pixel, setPixel] = useState(true);
   const [ascii, setAscii] = useState(false);
@@ -159,6 +161,7 @@ export default function SimulatorView({
                 <Toggle label="ASCII" active={ascii} onClick={() => setAscii((a) => !a)} />
                 <Toggle label="Orbit" active={options.autoRotate} onClick={() => set({ autoRotate: !options.autoRotate })} />
                 <Toggle label="Elevator" active={options.elevatorRunning} onClick={() => set({ elevatorRunning: !options.elevatorRunning })} />
+                <Toggle label="Hero" active={options.source === "gltf"} onClick={() => set({ source: options.source === "gltf" ? "voxel" : "gltf" })} />
               </div>
               <FullscreenLink />
             </div>

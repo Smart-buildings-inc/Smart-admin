@@ -20,6 +20,7 @@ import * as THREE from "three";
 import type { Floor, Incident, Need } from "@/lib/types";
 import { needColor } from "@/lib/ui";
 import AsciiRenderer from "@/components/AsciiRenderer";
+import GltfBuilding from "@/components/GltfBuilding";
 
 type Vec3 = [number, number, number];
 
@@ -39,6 +40,12 @@ export interface SimOptions {
   cutaway: boolean;
   autoRotate: boolean;
   elevatorRunning: boolean;
+  /**
+   * Which building model to render: the procedural "voxel" twin (default) or a
+   * Blender-authored "gltf" hero asset. The gltf path falls back to voxel when
+   * no asset is installed. See docs/ATLAS-blender-model-spec.md.
+   */
+  source?: "voxel" | "gltf";
 }
 
 // --------------------------------------------------------------------------
@@ -931,14 +938,25 @@ export default function BuildingSimulator({
       <directionalLight position={[12, 20, 10]} intensity={options.night ? 0.35 : 1.1} color={options.night ? "#9fb8ff" : "#fff3da"} />
       <directionalLight position={[-10, 6, -8]} intensity={0.3} color="#4ea8ff" />
 
-      <Tower
-        floors={floors}
-        incidentFloorKeys={incidentFloorKeys}
-        selectedKey={selectedKey}
-        options={options}
-        onSelect={onSelect}
-        onElevatorArrive={onElevatorArrive}
-      />
+      {(() => {
+        // The voxel twin is the default and the fallback for the optional glTF
+        // hero model (which renders only when a /models/atlas-01.glb exists).
+        const voxelTower = (
+          <Tower
+            floors={floors}
+            incidentFloorKeys={incidentFloorKeys}
+            selectedKey={selectedKey}
+            options={options}
+            onSelect={onSelect}
+            onElevatorArrive={onElevatorArrive}
+          />
+        );
+        return (options.source ?? "voxel") === "gltf" ? (
+          <GltfBuilding fallback={voxelTower} />
+        ) : (
+          voxelTower
+        );
+      })()}
 
       <OrbitControls
         target={target}
