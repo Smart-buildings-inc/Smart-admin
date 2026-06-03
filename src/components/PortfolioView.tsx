@@ -8,7 +8,17 @@ import type {
   ProgramStatus,
   ApprovalGate,
   GateStatus,
+  ProForma,
 } from "@/lib/finance";
+import { proForma as defaultProForma } from "@/lib/finance";
+
+// ── Currency formatter ─────────────────────────────────────────────────────
+// Compact display: ≥1 M → "$X.XM", ≥1 000 → "$XXXk", else "$XXX"
+function fmt(n: number): string {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `$${Math.round(n / 1_000)}k`;
+  return `$${n}`;
+}
 
 // ── Label / color helpers ──────────────────────────────────────────────────
 
@@ -238,16 +248,258 @@ function GateCard({ gate, index }: { gate: ApprovalGate; index: number }) {
   );
 }
 
+// ── Pro Forma sub-components ───────────────────────────────────────────────
+
+function KpiCard({
+  label,
+  value,
+  sub,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+}) {
+  return (
+    <div className="panel panel-pad flex flex-col gap-1 min-w-0">
+      <div className="kpi-label">{label}</div>
+      <div className="kpi-value text-white text-xl">{value}</div>
+      {sub && <div className="text-[10px] text-slate-500">{sub}</div>}
+    </div>
+  );
+}
+
+// Inline SVG bar chart for capexStack
+function CapexBarChart({ stack }: { stack: ProForma["capexStack"] }) {
+  const W = 400;
+  const H = 140;
+  const PAD = { top: 12, right: 8, bottom: 44, left: 56 };
+  const chartW = W - PAD.left - PAD.right;
+  const chartH = H - PAD.top - PAD.bottom;
+
+  const maxAmt = Math.max(...stack.map((s) => s.amount));
+  const barW = Math.floor((chartW - (stack.length - 1) * 8) / stack.length);
+
+  // accent colours cycling through the need palette
+  const FILLS = [
+    "#6366f1", // indigo — shell
+    "#0ea5e9", // sky — MEP
+    "#10b981", // emerald — ESS + water
+    "#f59e0b", // amber — fit-out
+  ];
+
+  return (
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      width="100%"
+      style={{ maxWidth: W, display: "block" }}
+      aria-label="Capex stack bar chart"
+    >
+      {/* Y-axis gridlines */}
+      {[0, 0.25, 0.5, 0.75, 1].map((frac) => {
+        const y = PAD.top + chartH - frac * chartH;
+        return (
+          <g key={frac}>
+            <line
+              x1={PAD.left}
+              y1={y}
+              x2={PAD.left + chartW}
+              y2={y}
+              stroke="#334155"
+              strokeWidth={1}
+              strokeDasharray={frac === 0 ? "0" : "4 3"}
+            />
+            <text
+              x={PAD.left - 6}
+              y={y + 4}
+              textAnchor="end"
+              fontSize={9}
+              fill="#64748b"
+            >
+              {fmt(maxAmt * frac)}
+            </text>
+          </g>
+        );
+      })}
+
+      {/* Bars */}
+      {stack.map((item, i) => {
+        const barH = (item.amount / maxAmt) * chartH;
+        const x = PAD.left + i * (barW + 8);
+        const y = PAD.top + chartH - barH;
+        const midX = x + barW / 2;
+        return (
+          <g key={item.label}>
+            <rect
+              x={x}
+              y={y}
+              width={barW}
+              height={barH}
+              fill={FILLS[i % FILLS.length]}
+              fillOpacity={0.85}
+              rx={3}
+            />
+            {/* Amount label above bar */}
+            <text
+              x={midX}
+              y={y - 4}
+              textAnchor="middle"
+              fontSize={9}
+              fill="#cbd5e1"
+              fontWeight="600"
+            >
+              {fmt(item.amount)}
+            </text>
+            {/* Category label below axis, wrapped at space */}
+            {item.label.split(" ").map((word, wi) => (
+              <text
+                key={wi}
+                x={midX}
+                y={PAD.top + chartH + 13 + wi * 11}
+                textAnchor="middle"
+                fontSize={9}
+                fill="#94a3b8"
+              >
+                {word}
+              </text>
+            ))}
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+// Inline SVG area + line chart for ARR ramp
+function ArrRampChart({ ramp }: { ramp: ProForma["arrRamp"] }) {
+  const W = 340;
+  const H = 130;
+  const PAD = { top: 16, right: 16, bottom: 28, left: 56 };
+  const chartW = W - PAD.left - PAD.right;
+  const chartH = H - PAD.top - PAD.bottom;
+
+  const maxArr = Math.max(...ramp.map((r) => r.arr));
+  const minYear = ramp[0].year;
+  const maxYear = ramp[ramp.length - 1].year;
+
+  function px(year: number, arr: number): [number, number] {
+    const x =
+      PAD.left + ((year - minYear) / (maxYear - minYear)) * chartW;
+    const y = PAD.top + chartH - (arr / maxArr) * chartH;
+    return [x, y];
+  }
+
+  const pts = ramp.map((r) => px(r.year, r.arr));
+
+  // polyline points string
+  const lineStr = pts.map(([x, y]) => `${x},${y}`).join(" ");
+
+  // area path (close below)
+  const areaPath =
+    `M ${pts[0][0]},${PAD.top + chartH} ` +
+    pts.map(([x, y]) => `L ${x},${y}`).join(" ") +
+    ` L ${pts[pts.length - 1][0]},${PAD.top + chartH} Z`;
+
+  return (
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      width="100%"
+      style={{ maxWidth: W, display: "block" }}
+      aria-label="OpCo ARR ramp line chart"
+    >
+      <defs>
+        <linearGradient id="arrGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#6366f1" stopOpacity={0.35} />
+          <stop offset="100%" stopColor="#6366f1" stopOpacity={0.02} />
+        </linearGradient>
+      </defs>
+
+      {/* Y gridlines */}
+      {[0, 0.5, 1].map((frac) => {
+        const y = PAD.top + chartH - frac * chartH;
+        return (
+          <g key={frac}>
+            <line
+              x1={PAD.left}
+              y1={y}
+              x2={PAD.left + chartW}
+              y2={y}
+              stroke="#334155"
+              strokeWidth={1}
+              strokeDasharray={frac === 0 ? "0" : "4 3"}
+            />
+            <text
+              x={PAD.left - 6}
+              y={y + 4}
+              textAnchor="end"
+              fontSize={9}
+              fill="#64748b"
+            >
+              {fmt(maxArr * frac)}
+            </text>
+          </g>
+        );
+      })}
+
+      {/* Area fill */}
+      <path d={areaPath} fill="url(#arrGrad)" />
+
+      {/* Line */}
+      <polyline
+        points={lineStr}
+        fill="none"
+        stroke="#818cf8"
+        strokeWidth={2}
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+
+      {/* Data points + labels */}
+      {ramp.map((r, i) => {
+        const [x, y] = pts[i];
+        return (
+          <g key={r.year}>
+            <circle cx={x} cy={y} r={3.5} fill="#818cf8" />
+            <text
+              x={x}
+              y={PAD.top + chartH + 14}
+              textAnchor="middle"
+              fontSize={9}
+              fill="#94a3b8"
+            >
+              Yr {r.year}
+            </text>
+            {/* Value label above point, only for first and last */}
+            {(i === 0 || i === ramp.length - 1) && (
+              <text
+                x={x}
+                y={y - 6}
+                textAnchor={i === 0 ? "start" : "end"}
+                fontSize={9}
+                fill="#c7d2fe"
+                fontWeight="600"
+              >
+                {fmt(r.arr)}
+              </text>
+            )}
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 // ── Main view ──────────────────────────────────────────────────────────────
 
 export default function PortfolioView({
   entities,
   fundingPrograms,
   approvalGates,
+  proForma = defaultProForma,
 }: {
   entities: Entity[];
   fundingPrograms: FundingProgram[];
   approvalGates: ApprovalGate[];
+  proForma?: ProForma;
 }) {
   // Group programs by entity kind for display
   const opcoPrograms = fundingPrograms.filter((p) => p.appliesTo === "opco");
@@ -365,6 +617,104 @@ export default function PortfolioView({
             <GateCard key={gate.id} gate={gate} index={i} />
           ))}
         </div>
+      </section>
+
+      {/* ── 5. Pro Forma ── */}
+      <section
+        aria-labelledby="proforma-heading"
+        className="flex flex-col gap-6"
+      >
+        <div>
+          <h2
+            id="proforma-heading"
+            className="display text-xl text-white"
+          >
+            Pro Forma — Illustrative Economics
+          </h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Planning-aid numbers only —{" "}
+            <span className="important">not an offering or financial advice</span>.
+            Assumptions: {proForma.dwellings} market dwellings,{" "}
+            {fmt(proForma.capexPerDoor)}/door all-in, CMHC MLI Select{" "}
+            {proForma.mliSelectLtvPct}% LTV, Toronto net rents.
+          </p>
+        </div>
+
+        {/* KPI card row */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
+          <KpiCard
+            label="Total capex"
+            value={fmt(proForma.totalCapex)}
+            sub={`${proForma.dwellings} dwellings × ${fmt(proForma.capexPerDoor)}/door`}
+          />
+          <KpiCard
+            label={`Loan (MLI ${proForma.mliSelectLtvPct}% LTV)`}
+            value={fmt(proForma.loanAmount)}
+            sub="CMHC MLI Select"
+          />
+          <KpiCard
+            label="Equity required"
+            value={fmt(proForma.equity)}
+            sub={`${(100 - proForma.mliSelectLtvPct)}% of capex`}
+          />
+          <KpiCard
+            label="Annual NOI"
+            value={fmt(proForma.annualNoi)}
+            sub="$2 200/mo net rent × 64"
+          />
+          <KpiCard
+            label="Opex savings / yr"
+            value={fmt(proForma.opexSavingsAnnual)}
+            sub="Reuse + islanding DR"
+          />
+          <KpiCard
+            label="OpCo ARR yr 5"
+            value={fmt(proForma.arrYear5)}
+            sub="40 bldgs @ $60k avg"
+          />
+          <KpiCard
+            label="Blended 10-yr return"
+            value={`${proForma.tenYearReturnX}×`}
+            sub="OpCo + PropCo MOIC"
+          />
+        </div>
+
+        {/* Charts row */}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {/* Capex stack bar chart */}
+          <div className="panel panel-pad flex flex-col gap-3">
+            <div>
+              <div className="kpi-label">Capex stack</div>
+              <p className="mt-0.5 text-xs text-slate-500">
+                {fmt(proForma.totalCapex)} total — breakdown by category
+              </p>
+            </div>
+            <CapexBarChart stack={proForma.capexStack} />
+          </div>
+
+          {/* ARR ramp area/line chart */}
+          <div className="panel panel-pad flex flex-col gap-3">
+            <div>
+              <div className="kpi-label">OpCo ARR ramp</div>
+              <p className="mt-0.5 text-xs text-slate-500">
+                SaaS revenue — PropCo anchor + third-party buildings (yr 1–5)
+              </p>
+            </div>
+            <ArrRampChart ramp={proForma.arrRamp} />
+          </div>
+        </div>
+
+        {/* Assumptions note */}
+        <p className="text-[11px] leading-relaxed text-slate-600">
+          Assumptions: Toronto mid-rise all-in construction cost $420k/door;
+          CMHC MLI Select 95% LTV (energy + accessibility points, no
+          affordability covenant required); net effective rent $2 200/mo/unit;
+          opex savings $80k non-potable reuse + $40k IESO demand-response
+          credit; OpCo licence $60k/yr arm&apos;s-length; ARR ramp 3 → 40
+          buildings over 5 years at avg $60k/building/yr; blended 10-yr MOIC
+          2.8× reflects PropCo equity appreciation + OpCo SaaS exit,
+          illustrative only.
+        </p>
       </section>
 
       <footer className="pb-2 text-center text-xs text-slate-600">

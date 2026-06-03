@@ -53,6 +53,14 @@ export const SITE_ROUTES: SiteRoute[] = [
     priority: 0.7,
   },
   {
+    path: "/carbon",
+    title: "Carbon",
+    description:
+      "Operational + embodied carbon per floor and building, tied to green funding programs.",
+    changeFrequency: "weekly",
+    priority: 0.6,
+  },
+  {
     path: "/landing",
     title: "Overview",
     description:

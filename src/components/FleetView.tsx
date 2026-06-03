@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { Building, BuildingStatus, EcaStatus } from "@/lib/types";
+import { computeFleetRollup } from "@/lib/fleet-rollup";
 import { PARALLAX_SCENES } from "@/lib/marketingParallax";
 import MarketingParallax from "@/components/MarketingParallax";
 
@@ -146,6 +147,9 @@ export default function FleetView({
     };
   }, [buildings]);
 
+  // Portfolio health rollup — pure computation over the buildings prop (no fetch).
+  const rollup = useMemo(() => computeFleetRollup(buildings), [buildings]);
+
   return (
     <main className="mx-auto flex min-h-screen max-w-[1500px] flex-col gap-4 p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-[max(1rem,env(safe-area-inset-bottom))] lg:p-6">
       {/* Header */}
@@ -211,6 +215,50 @@ export default function FleetView({
                 : "crit"
           }
         />
+      </div>
+
+      {/* Portfolio health rollup strip */}
+      <div className="flex flex-col gap-2">
+        <h2 className="kpi-label text-[0.625rem] uppercase tracking-[0.14em] text-slate-500">
+          Portfolio health
+        </h2>
+        <div className="flex flex-wrap gap-3">
+          <FleetKpi
+            label="Dwellings"
+            value={rollup.totalDwellings}
+          />
+          <FleetKpi
+            label="Beds"
+            value={rollup.totalBeds}
+          />
+          <FleetKpi
+            label="Compliance"
+            value={rollup.compliancePct}
+            suffix="%"
+            tone={
+              rollup.compliancePct >= 80
+                ? "ok"
+                : rollup.compliancePct >= 60
+                  ? "warn"
+                  : "crit"
+            }
+          />
+          <FleetKpi
+            label="Grid-tied"
+            value={`${rollup.gridTied}/${rollup.buildings}`}
+          />
+          <FleetKpi
+            label="ECA approved"
+            value={`${rollup.ecaApproved}/${rollup.buildings}`}
+            tone={
+              rollup.ecaApproved === rollup.buildings
+                ? "ok"
+                : rollup.ecaApproved > 0
+                  ? "warn"
+                  : "crit"
+            }
+          />
+        </div>
       </div>
 
       {/* Map + detail */}

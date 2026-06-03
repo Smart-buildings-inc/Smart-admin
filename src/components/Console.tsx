@@ -9,6 +9,7 @@ import type {
   FloorPresence,
   Incident,
 } from "@/lib/types";
+import type { Recommendation } from "@/lib/advisor";
 import type { TwinMode } from "@/components/HabitatTwin";
 import {
   CubeFocus,
@@ -20,6 +21,7 @@ import KpiStrip from "@/components/KpiStrip";
 import FloorPanel from "@/components/FloorPanel";
 import IncidentFeed from "@/components/IncidentFeed";
 import BroadcastComposer from "@/components/BroadcastComposer";
+import AdvisorPanel from "@/components/AdvisorPanel";
 import FullscreenLink from "@/components/FullscreenLink";
 import LogoLoader from "@/components/LogoLoader";
 
@@ -88,6 +90,8 @@ export default function Console({
   const [ascii, setAscii] = useState(false);
   // F-RuView: keyed presence map (floorKey → FloorPresence). Empty until first fetch.
   const [presence, setPresence] = useState<Record<string, FloorPresence>>({});
+  // F-Advisor: ranked operational recommendations (heuristic or AI).
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
 
   const selectedFloor = useMemo(
     () => floors.find((f) => f.key === selectedKey) ?? null,
@@ -129,6 +133,20 @@ export default function Console({
       })
       .catch(() => {
         /* keep last-known presence on transient failure */
+      });
+
+    // F-Advisor: fetch advisor recommendations separately so a failure here
+    // never disrupts incidents, floors, or presence.
+    fetch("/api/advisor", { cache: "no-store" })
+      .then(async (res) => {
+        if (!res.ok) return;
+        const { recommendations: recs } = (await res.json()) as {
+          recommendations: Recommendation[];
+        };
+        setRecommendations(recs);
+      })
+      .catch(() => {
+        /* keep last-known recommendations on transient failure */
       });
   }, []);
 
@@ -252,6 +270,10 @@ export default function Console({
               }}
               selectedKey={selectedKey}
             />
+          </div>
+          {/* F-Advisor: AI Ops Advisor panel — additive, below the incident feed */}
+          <div className="min-h-[200px]">
+            <AdvisorPanel recommendations={recommendations} />
           </div>
           <BroadcastComposer floors={floors} onSent={refresh} />
         </section>
