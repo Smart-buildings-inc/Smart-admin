@@ -6,7 +6,11 @@ import { absoluteUrl, getBaseUrl } from "@/lib/routes";
 // correct the instant a real domain is connected.
 export const dynamic = "force-dynamic";
 
-export default function robots(): MetadataRoute.Robots {
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const [sitemap, host] = await Promise.all([
+    absoluteUrl("/sitemap.xml"),
+    getBaseUrl(),
+  ]);
   return {
     rules: {
       userAgent: "*",
@@ -14,7 +18,7 @@ export default function robots(): MetadataRoute.Robots {
       // API endpoints are data, not pages — keep them out of the index.
       disallow: "/api/",
     },
-    sitemap: absoluteUrl("/sitemap.xml"),
-    host: getBaseUrl(),
+    sitemap,
+    host,
   };
 }

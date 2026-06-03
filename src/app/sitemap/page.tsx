@@ -11,8 +11,8 @@ export const metadata: Metadata = {
   description: "An index of every section of the ATLAS OS habitat operations console.",
 };
 
-export default function SiteMapPage() {
-  const baseUrl = getBaseUrl();
+export default async function SiteMapPage() {
+  const baseUrl = await getBaseUrl();
 
   return (
     <main id="main" className="mx-auto max-w-[1100px] px-4 pt-8 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-8 lg:px-6 lg:py-12">

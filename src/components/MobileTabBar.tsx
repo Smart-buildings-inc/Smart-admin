@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactElement } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ProgressiveBlur from "@/components/ProgressiveBlur";
@@ -8,7 +9,7 @@ import ProgressiveBlur from "@/components/ProgressiveBlur";
 // hamburger drawer — both stay available on phones. Hidden at md+ where the
 // inline desktop links in NavBar take over. Honors the bottom safe-area inset.
 
-type Tab = { href: string; label: string; icon: (active: boolean) => JSX.Element };
+type Tab = { href: string; label: string; icon: (active: boolean) => ReactElement };
 
 function isActive(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";

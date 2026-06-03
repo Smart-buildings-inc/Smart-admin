@@ -6,13 +6,15 @@ import { SITE_ROUTES, absoluteUrl } from "@/lib/routes";
 // rewrites every entry automatically — no rebuild required.
 export const dynamic = "force-dynamic";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date();
 
-  return SITE_ROUTES.map((route) => ({
-    url: absoluteUrl(route.path),
-    lastModified,
-    changeFrequency: route.changeFrequency,
-    priority: route.priority,
-  }));
+  return Promise.all(
+    SITE_ROUTES.map(async (route) => ({
+      url: await absoluteUrl(route.path),
+      lastModified,
+      changeFrequency: route.changeFrequency,
+      priority: route.priority,
+    })),
+  );
 }

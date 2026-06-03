@@ -164,7 +164,7 @@ function trimTrailingSlash(url: string): string {
  *      connected custom domain is honored immediately, with zero config.
  *   4. http://localhost:3000 — local dev fallback.
  */
-export function getBaseUrl(): string {
+export async function getBaseUrl(): Promise<string> {
   const explicit = process.env.NEXT_PUBLIC_SITE_URL;
   if (explicit) return trimTrailingSlash(explicit);
 
@@ -174,8 +174,9 @@ export function getBaseUrl(): string {
 
   // Fall back to the live request host. Wrapped in try/catch because headers()
   // is only available within a request scope (it throws during static prerender).
+  // `headers()` is async as of Next 15.
   try {
-    const h = headers();
+    const h = await headers();
     const host = h.get("x-forwarded-host") ?? h.get("host");
     if (host) {
       const proto =
@@ -191,7 +192,7 @@ export function getBaseUrl(): string {
 }
 
 /** Build a fully-qualified absolute URL for a given route path. */
-export function absoluteUrl(path: string): string {
-  const base = getBaseUrl();
+export async function absoluteUrl(path: string): Promise<string> {
+  const base = await getBaseUrl();
   return path === "/" ? `${base}/` : `${base}${path}`;
 }

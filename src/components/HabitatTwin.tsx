@@ -294,7 +294,7 @@ function WalkthroughCamera({
 }
 
 /** Mounts a WebXR "Enter AR" button bound to the live renderer. */
-function ARLauncher({ containerRef }: { containerRef: React.RefObject<HTMLDivElement> }) {
+function ARLauncher({ containerRef }: { containerRef: React.RefObject<HTMLDivElement | null> }) {
   const { gl } = useThree();
 
   useEffect(() => {
