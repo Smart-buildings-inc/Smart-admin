@@ -5,6 +5,7 @@
   "description": "ATLAS OS — the Habitat Twin. Building operations platform for self-sufficient ATLAS habitats.",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "npm run docs:build",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -13,7 +14,8 @@
     "test:e2e": "playwright test",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
-    "db:seed": "tsx src/lib/db/seed.ts"
+    "db:seed": "tsx src/lib/db/seed.ts",
+    "docs:build": "tsx scripts/generate-doc-pdfs.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.9.5",
@@ -21,7 +23,9 @@
     "@react-three/drei": "^9.114.0",
     "@react-three/fiber": "^8.17.10",
     "drizzle-orm": "^0.33.0",
+    "marked": "^12.0.2",
     "next": "^14.2.35",
+    "pdfkit": "^0.18.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "three": "^0.169.0"
@@ -29,6 +33,7 @@
   "devDependencies": {
     "@playwright/test": "^1.48.0",
     "@types/node": "^20.16.11",
+    "@types/pdfkit": "^0.17.6",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.0",
     "@types/three": "^0.169.0",

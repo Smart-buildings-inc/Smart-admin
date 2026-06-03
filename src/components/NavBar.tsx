@@ -39,6 +39,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/landing", label: "Overview" },
   { href: "/for", label: "Solutions" },
   { href: "/brand", label: "Brand" },
+  { href: "/documents", label: "Documents" },
   { href: "/sitemap", label: "Site Map" },
 ];
 

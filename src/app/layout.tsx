@@ -3,6 +3,7 @@ import "./globals.css";
 import NavBar from "@/components/NavBar";
 import MobileTabBar from "@/components/MobileTabBar";
 import SplashScreen from "@/components/SplashScreen";
+import SiteFooter from "@/components/SiteFooter";
 
 const DESCRIPTION =
   "Building operations platform for self-sufficient ATLAS habitats. Live per-floor telemetry, incident triage, and resident broadcast over an interactive 3D digital twin.";
@@ -73,6 +74,7 @@ export default function RootLayout({
         <SplashScreen />
         <NavBar />
         {children}
+        <SiteFooter />
         <MobileTabBar />
       </body>
     </html>

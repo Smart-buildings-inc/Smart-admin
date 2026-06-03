@@ -141,6 +141,46 @@ export const SITE_ROUTES: SiteRoute[] = [
     priority: 0.5,
   },
   {
+    path: "/documents",
+    title: "Documents",
+    description:
+      "The ATLAS OS document library — business, technical, and legal papers in one in-page PDF reader, each downloadable as PDF.",
+    changeFrequency: "monthly",
+    priority: 0.6,
+  },
+  {
+    path: "/legal",
+    title: "Legal & Compliance",
+    description:
+      "ATLAS OS legal documents — Privacy Policy, Terms of Service, and Data Processing Addendum, as web pages and PDFs.",
+    changeFrequency: "monthly",
+    priority: 0.5,
+  },
+  {
+    path: "/legal/privacy",
+    title: "Privacy Policy",
+    description:
+      "How ATLAS OS handles personal information — PIPEDA, provincial privacy law, and PHIPA where health data is involved.",
+    changeFrequency: "monthly",
+    priority: 0.4,
+  },
+  {
+    path: "/legal/terms",
+    title: "Terms of Service",
+    description:
+      "The terms governing access to and use of the ATLAS OS platform and connected habitat services.",
+    changeFrequency: "monthly",
+    priority: 0.4,
+  },
+  {
+    path: "/legal/dpa",
+    title: "Data Processing Addendum",
+    description:
+      "Controller/processor terms for personal data processed on behalf of operators and residents.",
+    changeFrequency: "monthly",
+    priority: 0.4,
+  },
+  {
     path: "/sitemap",
     title: "Site Map",
     description: "This page — an index of every section of ATLAS OS.",

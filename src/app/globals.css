@@ -895,3 +895,171 @@ body {
     will-change: auto;
   }
 }
+
+/* ── Legal / document prose ────────────────────────────────────────────────
+   Styling for server-rendered markdown HTML on /legal/* pages (.doc-prose).
+   Dark by default; light-mode overrides mirror the utility overrides above so
+   the legal pages track the global theme toggle. */
+.doc-prose {
+  color: #cbd5e1; /* slate-300 */
+  font-size: 0.95rem;
+  line-height: 1.7;
+  max-width: 72ch;
+}
+.doc-prose > :first-child {
+  margin-top: 0;
+}
+.doc-prose h2 {
+  margin: 1.8em 0 0.6em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #f1f5f9; /* slate-100 */
+}
+.doc-prose h3 {
+  margin: 1.4em 0 0.5em;
+  font-size: 1.08rem;
+  font-weight: 650;
+  color: #e2e8f0;
+}
+.doc-prose h4 {
+  margin: 1.2em 0 0.4em;
+  font-size: 0.98rem;
+  font-weight: 650;
+  color: #e2e8f0;
+}
+.doc-prose p {
+  margin: 0.75em 0;
+}
+.doc-prose ul,
+.doc-prose ol {
+  margin: 0.7em 0;
+  padding-left: 1.4em;
+}
+.doc-prose li {
+  margin: 0.35em 0;
+}
+.doc-prose ul > li {
+  list-style: disc;
+}
+.doc-prose ol > li {
+  list-style: decimal;
+}
+.doc-prose a {
+  color: #4ea8ff; /* signal-info */
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.doc-prose a:hover {
+  color: #7fc0ff;
+}
+.doc-prose strong {
+  color: #f8fafc;
+  font-weight: 680;
+}
+.doc-prose em {
+  color: #cbd5e1;
+}
+.doc-prose code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.86em;
+  padding: 0.12em 0.4em;
+  border-radius: 6px;
+  background: rgba(148, 163, 184, 0.14);
+  color: #bfdbfe;
+}
+.doc-prose pre {
+  margin: 1em 0;
+  padding: 0.9em 1em;
+  overflow-x: auto;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+}
+.doc-prose pre code {
+  padding: 0;
+  background: none;
+  color: #e2e8f0;
+}
+.doc-prose blockquote {
+  margin: 1em 0;
+  padding: 0.6em 1em;
+  border-left: 3px solid #4ea8ff;
+  border-radius: 0 8px 8px 0;
+  background: rgba(78, 168, 255, 0.07);
+  color: #cbd5e1;
+  font-style: italic;
+}
+.doc-prose blockquote p {
+  margin: 0.3em 0;
+}
+.doc-prose hr {
+  margin: 1.8em 0;
+  border: 0;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+}
+.doc-prose table {
+  width: 100%;
+  margin: 1em 0;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  display: block;
+  overflow-x: auto;
+}
+.doc-prose th,
+.doc-prose td {
+  padding: 0.5em 0.7em;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  text-align: left;
+  vertical-align: top;
+}
+.doc-prose th {
+  background: rgba(148, 163, 184, 0.1);
+  color: #f1f5f9;
+  font-weight: 650;
+}
+
+/* Light-mode overrides for the document prose. */
+:root.theme-light .doc-prose {
+  color: #334155;
+}
+:root.theme-light .doc-prose h2,
+:root.theme-light .doc-prose h3,
+:root.theme-light .doc-prose h4 {
+  color: #0f172a;
+}
+:root.theme-light .doc-prose h2 {
+  border-bottom-color: rgba(100, 116, 139, 0.25);
+}
+:root.theme-light .doc-prose strong {
+  color: #0f172a;
+}
+:root.theme-light .doc-prose a {
+  color: #2563eb;
+}
+:root.theme-light .doc-prose code {
+  background: rgba(100, 116, 139, 0.14);
+  color: #1d4ed8;
+}
+:root.theme-light .doc-prose pre {
+  background: #f1f5f9;
+  border-color: rgba(100, 116, 139, 0.2);
+}
+:root.theme-light .doc-prose pre code {
+  color: #0f172a;
+}
+:root.theme-light .doc-prose blockquote {
+  background: rgba(37, 99, 235, 0.07);
+  border-left-color: #2563eb;
+  color: #334155;
+}
+:root.theme-light .doc-prose th {
+  background: rgba(100, 116, 139, 0.1);
+  color: #0f172a;
+}
+:root.theme-light .doc-prose th,
+:root.theme-light .doc-prose td {
+  border-color: rgba(100, 116, 139, 0.25);
+}
