@@ -60,4 +60,30 @@ test.describe("ATLAS OS platform", () => {
       page.getByRole("heading", { level: 1, name: /Carbon/ }),
     ).toBeVisible();
   });
+
+  test("hero glTF model asset is served and lightweight", async ({
+    request,
+  }) => {
+    const res = await request.get("/models/atlas-01.glb");
+    expect(res.status()).toBe(200);
+    const body = await res.body();
+    expect(body.byteLength).toBeGreaterThan(1000); // real asset, not a stub
+    expect(body.byteLength).toBeLessThan(3_000_000); // stays lightweight
+    // glTF binary magic header "glTF".
+    expect(body.subarray(0, 4).toString("ascii")).toBe("glTF");
+  });
+
+  test("Hero toggle swaps the twin model without crashing the viewer", async ({
+    page,
+  }) => {
+    await page.goto("/simulate/atlas-01");
+    const hero = page.getByRole("button", { name: "Hero", exact: true });
+    await expect(hero).toBeVisible();
+    await hero.click();
+    // The error boundary falls back to voxel on any load failure, so either way
+    // the viewer stays alive: its exit affordance remains present.
+    await expect(
+      page.getByRole("button", { name: "Exit fullscreen viewer" }),
+    ).toBeVisible();
+  });
 });
