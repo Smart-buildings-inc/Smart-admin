@@ -17,6 +17,25 @@
 
 ---
 
+## 0a. Generated build (working — ships in the repo)
+
+A reproducible Blender build of this spec exists and is wired in:
+
+```bash
+pip install bpy                         # Blender 5.x as a Python module (Py 3.11)
+python3 scripts/blender/build_atlas01.py   # → public/models/atlas-01.glb
+```
+
+`scripts/blender/build_atlas01.py` procedurally generates the right-sized tower
+(basement reservoir, pool-only roof, dual passenger elevators + a firefighter
+car, two stair cores, ESS room, per-need emissive accents) using boxes + Array
+modifiers + a 1-segment bevel, names every floor collection by `Floor.key`, and
+exports `public/models/atlas-01.glb` — **~6.2k triangles, ~0.5 MB**, no textures,
+no Draco (so no decoder needed). Flip the **"Hero"** toggle in the simulator /
+fullscreen viewer to load it (falls back to the voxel twin on any error). Re-run
+the script to regenerate after editing geometry. The sections below are the full
+authoring reference for hand-modelling or extending it.
+
 ## 1. Coordinate system, scale & origin (must match the app)
 
 The R3F scene is **Y-up, metric, origin at grade centre**. Match these exactly so a `.glb`
