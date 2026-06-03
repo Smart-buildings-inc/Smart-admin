@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import NavBar from "@/components/NavBar";
 import MobileTabBar from "@/components/MobileTabBar";
+import SplashScreen from "@/components/SplashScreen";
 
 const DESCRIPTION =
   "Building operations platform for self-sufficient ATLAS habitats. Live per-floor telemetry, incident triage, and resident broadcast over an interactive 3D digital twin.";
@@ -69,6 +70,7 @@ export default function RootLayout({
           MobileTabBar — body padding-bottom is ineffective here because
           html/body use height:100%. */}
       <body className="min-h-screen">
+        <SplashScreen />
         <NavBar />
         {children}
         <MobileTabBar />

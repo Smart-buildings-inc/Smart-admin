@@ -2,6 +2,22 @@ import { test, expect } from "@playwright/test";
 
 // P0 — Console home page renders the core operator UI.
 test.describe("ATLAS OS console", () => {
+  test("splash screen animates on initial load and clears to console", async ({
+    page,
+  }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+
+    const splash = page.getByTestId("app-splash");
+    await expect(splash).toBeVisible();
+    await expect(splash.locator("svg")).toBeVisible();
+    await expect(splash).toHaveAttribute("aria-label", "Loading ATLAS OS");
+    await expect(splash).toBeHidden({ timeout: 4000 });
+
+    await expect(
+      page.getByRole("heading", { level: 1, name: /ATLAS\s*OS/ }),
+    ).toBeVisible();
+  });
+
   test("home page loads with header, KPI strip, seed chip and twin controls", async ({
     page,
   }) => {

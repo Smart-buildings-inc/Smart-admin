@@ -9,21 +9,59 @@ import type {
   Incident,
 } from "@/lib/types";
 import type { TwinMode } from "@/components/HabitatTwin";
+import {
+  CubeFocus,
+  DotsNine,
+  PersonSimpleWalk,
+  TextT,
+} from "@phosphor-icons/react";
 import KpiStrip from "@/components/KpiStrip";
 import FloorPanel from "@/components/FloorPanel";
 import IncidentFeed from "@/components/IncidentFeed";
 import BroadcastComposer from "@/components/BroadcastComposer";
 import FullscreenLink from "@/components/FullscreenLink";
+import LogoLoader from "@/components/LogoLoader";
 
 // The twin is client/WebGL-only — load it without SSR.
 const HabitatTwin = dynamic(() => import("@/components/HabitatTwin"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-full items-center justify-center text-sm text-slate-500">
-      Loading Habitat Twin…
+    <div className="flex h-full items-center justify-center">
+      <LogoLoader compact showWordmark={false} />
+      <span className="sr-only">Loading Habitat Twin</span>
     </div>
   ),
 });
+
+function StageControlButton({
+  active,
+  label,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      aria-pressed={active}
+      title={label}
+      className={`grid h-9 w-9 place-items-center rounded-full text-xs font-semibold transition-colors sm:w-auto sm:grid-cols-[auto_auto] sm:gap-1.5 sm:px-3 sm:py-1 ${
+        active
+          ? "bg-white text-ink-950"
+          : "text-slate-300 hover:text-white"
+      }`}
+    >
+      {children}
+      <span className="hidden sm:inline">{label}</span>
+    </button>
+  );
+}
 
 export default function Console({
   initialFloors,
@@ -138,56 +176,42 @@ export default function Console({
             />
 
             {/* Controls — iOS-style segmented mode buttons + fullscreen toggle */}
-            <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
+            <div className="absolute right-3 top-3 z-10 flex items-center gap-2 sm:right-4 sm:top-4">
               <div className="flex gap-1 rounded-full border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur">
-                <button
-                  type="button"
+                <StageControlButton
+                  active={mode === "orbit"}
+                  label="Orbit"
                   onClick={() => setMode("orbit")}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-                    mode === "orbit"
-                      ? "bg-white text-ink-950"
-                      : "text-slate-300 hover:text-white"
-                  }`}
                 >
-                  Orbit
-                </button>
-                <button
-                  type="button"
+                  <CubeFocus aria-hidden weight="duotone" className="h-4 w-4" />
+                </StageControlButton>
+                <StageControlButton
+                  active={mode === "walkthrough"}
+                  label="Walk-through"
                   onClick={startWalkthrough}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-                    mode === "walkthrough"
-                      ? "bg-white text-ink-950"
-                      : "text-slate-300 hover:text-white"
-                  }`}
                 >
-                  Walk-through
-                </button>
+                  <PersonSimpleWalk
+                    aria-hidden
+                    weight="duotone"
+                    className="h-4 w-4"
+                  />
+                </StageControlButton>
               </div>
               <div className="flex gap-1 rounded-full border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur">
-                <button
-                  type="button"
+                <StageControlButton
+                  active={pixel}
+                  label="Pixel"
                   onClick={() => setPixel((p) => !p)}
-                  aria-pressed={pixel}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-                    pixel
-                      ? "bg-white text-ink-950"
-                      : "text-slate-300 hover:text-white"
-                  }`}
                 >
-                  Pixel
-                </button>
-                <button
-                  type="button"
+                  <DotsNine aria-hidden weight="duotone" className="h-4 w-4" />
+                </StageControlButton>
+                <StageControlButton
+                  active={ascii}
+                  label="ASCII"
                   onClick={() => setAscii((a) => !a)}
-                  aria-pressed={ascii}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-                    ascii
-                      ? "bg-white text-ink-950"
-                      : "text-slate-300 hover:text-white"
-                  }`}
                 >
-                  ASCII
-                </button>
+                  <TextT aria-hidden weight="duotone" className="h-4 w-4" />
+                </StageControlButton>
               </div>
               <FullscreenLink />
             </div>

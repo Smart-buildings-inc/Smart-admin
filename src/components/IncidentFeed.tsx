@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import type { Floor, Incident } from "@/lib/types";
 import { severityColor, severityLabel, severityRank, timeAgo } from "@/lib/ui";
+import { BellSimple, WarningCircle } from "@phosphor-icons/react";
 
 // F3 — Security & incident feed. Severity-ranked; click an item to focus its floor.
 export default function IncidentFeed({
@@ -34,7 +35,14 @@ export default function IncidentFeed({
   return (
     <div className="panel flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-ink-600/60 px-4 py-3">
-        <h2 className="text-sm font-semibold text-white">Incident feed</h2>
+        <h2 className="flex items-center gap-2 text-sm font-semibold text-white">
+          <BellSimple
+            aria-hidden
+            weight="duotone"
+            className="h-4 w-4 text-slate-500"
+          />
+          Incident feed
+        </h2>
         <span className="rounded-full bg-ink-700 px-2 py-0.5 text-xs text-slate-300">
           {incidents.length}
         </span>
@@ -52,12 +60,18 @@ export default function IncidentFeed({
                 }`}
               >
                 <span
-                  className={`mt-1 inline-block h-2.5 w-2.5 shrink-0 rounded-full ${
+                  title={severityLabel[inc.severity]}
+                  className={`mt-0.5 h-4 w-4 shrink-0 ${
                     inc.severity === "crit" ? "pulse" : ""
                   }`}
-                  style={{ backgroundColor: severityColor[inc.severity] }}
-                  title={severityLabel[inc.severity]}
-                />
+                  style={{ color: severityColor[inc.severity] }}
+                >
+                  <WarningCircle
+                    aria-hidden
+                    weight="duotone"
+                    className="h-4 w-4"
+                  />
+                </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm text-slate-100">
                     {inc.title}

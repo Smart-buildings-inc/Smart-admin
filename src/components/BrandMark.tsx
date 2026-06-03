@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 
 // Animated brand cube for the NavBar. This is an inline, living variant of the
 // static /icon.svg favicon: the same isometric ATLAS cube, but its three faces
@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 
 export default function BrandMark({ className }: { className?: string }) {
   const [animate, setAnimate] = useState(true);
+  const gradientId = `brandFlow-${useId().replace(/:/g, "")}`;
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -37,7 +38,7 @@ export default function BrandMark({ className }: { className?: string }) {
         {/* One horizontal need-palette gradient spanning 2× the icon width, with
             the palette repeated twice so a -64u shift loops seamlessly. */}
         <linearGradient
-          id="brandFlow"
+          id={gradientId}
           gradientUnits="userSpaceOnUse"
           x1="0"
           y1="0"
@@ -74,14 +75,14 @@ export default function BrandMark({ className }: { className?: string }) {
           isometric shading (top brightest, sides progressively dimmer). */}
       <polygon
         points="32,6 54.5,19 32,32 9.5,19"
-        fill="url(#brandFlow)"
+        fill={`url(#${gradientId})`}
         stroke="#586068"
         strokeWidth="0.6"
         strokeLinejoin="round"
       />
       <polygon
         points="9.5,19 32,32 32,58 9.5,45"
-        fill="url(#brandFlow)"
+        fill={`url(#${gradientId})`}
         fillOpacity="0.62"
         stroke="#586068"
         strokeWidth="0.6"
@@ -89,7 +90,7 @@ export default function BrandMark({ className }: { className?: string }) {
       />
       <polygon
         points="32,32 54.5,19 54.5,45 32,58"
-        fill="url(#brandFlow)"
+        fill={`url(#${gradientId})`}
         fillOpacity="0.82"
         stroke="#586068"
         strokeWidth="0.6"

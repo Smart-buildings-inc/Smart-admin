@@ -1,15 +1,27 @@
 import type { BuildingKpis } from "@/lib/types";
+import type { Icon } from "@phosphor-icons/react";
+import {
+  BatteryCharging,
+  Drop,
+  Gauge,
+  Leaf,
+  SolarPanel,
+  UsersThree,
+  WarningCircle,
+} from "@phosphor-icons/react";
 
 function Kpi({
   label,
   value,
   suffix,
   tone,
+  Icon,
 }: {
   label: string;
   value: number | string;
   suffix?: string;
   tone?: "ok" | "warn" | "crit";
+  Icon: Icon;
 }) {
   const toneClass =
     tone === "crit"
@@ -20,15 +32,24 @@ function Kpi({
           ? "text-signal-ok"
           : "text-white";
   return (
-    <div className="panel panel-pad min-w-0 flex-1 lg:min-w-[8.5rem]">
-      <div className="kpi-label">{label}</div>
-      <div className={`kpi-value ${toneClass}`}>
-        {value}
-        {suffix ? (
-          <span className="ml-0.5 text-sm font-normal text-slate-400">
-            {suffix}
-          </span>
-        ) : null}
+    <div className="panel panel-pad min-w-[9.5rem] snap-start flex-1 lg:min-w-[8.5rem]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="kpi-label">{label}</div>
+          <div className={`kpi-value ${toneClass}`}>
+            {value}
+            {suffix ? (
+              <span className="ml-0.5 text-sm font-normal text-slate-400">
+                {suffix}
+              </span>
+            ) : null}
+          </div>
+        </div>
+        <Icon
+          aria-hidden
+          weight="duotone"
+          className="mt-0.5 h-5 w-5 shrink-0 text-slate-500 opacity-70"
+        />
       </div>
     </div>
   );
@@ -37,26 +58,40 @@ function Kpi({
 // F5 — Building KPI strip.
 export default function KpiStrip({ kpis }: { kpis: BuildingKpis }) {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:flex lg:flex-wrap">
+    <div className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1 scroll-thin sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible sm:px-0 sm:pb-0 lg:flex lg:flex-wrap">
       <Kpi
         label="Autonomy"
         value={kpis.autonomyPct}
         suffix="%"
+        Icon={Gauge}
         tone={kpis.autonomyPct >= 90 ? "ok" : kpis.autonomyPct >= 70 ? "warn" : "crit"}
       />
       <Kpi
         label="Battery"
         value={kpis.batteryPct}
         suffix="%"
+        Icon={BatteryCharging}
         tone={kpis.batteryPct >= 40 ? "ok" : kpis.batteryPct >= 20 ? "warn" : "crit"}
       />
-      <Kpi label="Solar" value={kpis.solarKw} suffix="kW" />
-      <Kpi label="Water reuse" value={kpis.waterReusePct} suffix="%" tone="ok" />
-      <Kpi label="Food output" value={kpis.foodKgDay} suffix="kg/day" />
-      <Kpi label="Residents" value={kpis.residents} />
+      <Kpi label="Solar" value={kpis.solarKw} suffix="kW" Icon={SolarPanel} />
+      <Kpi
+        label="Water reuse"
+        value={kpis.waterReusePct}
+        suffix="%"
+        tone="ok"
+        Icon={Drop}
+      />
+      <Kpi
+        label="Food output"
+        value={kpis.foodKgDay}
+        suffix="kg/day"
+        Icon={Leaf}
+      />
+      <Kpi label="Residents" value={kpis.residents} Icon={UsersThree} />
       <Kpi
         label="Open incidents"
         value={kpis.openIncidents}
+        Icon={WarningCircle}
         tone={kpis.openIncidents === 0 ? "ok" : kpis.openIncidents <= 2 ? "warn" : "crit"}
       />
     </div>

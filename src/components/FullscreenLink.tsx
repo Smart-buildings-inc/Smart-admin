@@ -8,6 +8,7 @@
 // Styled to match the other round stage controls.
 
 import Link from "next/link";
+import { CornersOut } from "@phosphor-icons/react";
 
 export default function FullscreenLink({
   href = "/simulate/atlas-01",
@@ -23,18 +24,7 @@ export default function FullscreenLink({
       title="Fullscreen viewer"
       className="flex h-8 w-8 items-center justify-center rounded-full border border-ink-600/70 bg-ink-900/80 text-slate-200 backdrop-blur transition-colors hover:bg-ink-800 hover:text-white"
     >
-      <svg
-        width="15"
-        height="15"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M8 4H4v4M16 4h4v4M16 20h4v-4M8 20H4v-4" />
-      </svg>
+      <CornersOut aria-hidden weight="duotone" className="h-4 w-4" />
     </Link>
   );
 }
