@@ -37,6 +37,11 @@ const BUILT_ON: string[] = [
   "Playwright",
 ];
 
+const DEMO_VIDEO = {
+  src: "/marketing/atlas-drone-demo.mp4",
+  poster: "/marketing/atlas-drone-demo-poster.jpg",
+};
+
 // Operating loop: how the platform thinks, end to end.
 const LOOP: { step: string; title: string; body: string; color: string }[] = [
   {
@@ -257,6 +262,59 @@ export default function LandingPage() {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ---------------------------------------------------------- Demo video */}
+      <section className="px-4 pb-20 lg:px-6">
+        <div className="mx-auto grid max-w-5xl items-center gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12">
+          <div className="max-w-xl">
+            <p className="kpi-label text-signal-info">Video demonstration</p>
+            <h2 className="display mt-3 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+              Watch the <span className="gradient-text">habitat twin</span> move.
+            </h2>
+            <p className="mt-4 text-pretty leading-relaxed text-slate-300">
+              A short drone-style walkthrough moves from the systems blueprint
+              into the building interior, showing how the ATLAS concept connects
+              infrastructure, floors, and resident-scale space.
+            </p>
+            <dl className="mt-6 grid max-w-md grid-cols-2 gap-3">
+              <div className="rounded-lg border border-ink-600/60 bg-ink-900/60 p-3">
+                <dt className="kpi-label">Format</dt>
+                <dd className="mt-1 font-mono text-sm font-semibold text-white">
+                  MP4 · 5s
+                </dd>
+              </div>
+              <div className="rounded-lg border border-ink-600/60 bg-ink-900/60 p-3">
+                <dt className="kpi-label">Thumbnail</dt>
+                <dd className="mt-1 font-mono text-sm font-semibold text-white">
+                  Poster frame
+                </dd>
+              </div>
+            </dl>
+          </div>
+
+          <div
+            style={{ ["--accent" as string]: "#7fe7e0" }}
+            className="feature-card panel p-2 shadow-2xl shadow-black/35"
+          >
+            <video
+              data-testid="landing-demo-video"
+              className="aspect-[1112/834] w-full rounded-lg bg-ink-950 object-cover"
+              controls
+              playsInline
+              preload="none"
+              poster={DEMO_VIDEO.poster}
+              aria-label="ATLAS OS habitat twin video demonstration"
+            >
+              <source src={DEMO_VIDEO.src} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+            <div className="flex flex-wrap items-center justify-between gap-2 px-2 pb-1 pt-3 text-xs text-slate-400">
+              <span className="font-semibold text-slate-300">ATLAS concept demo</span>
+              <span className="font-mono tabular-nums">1112 × 834</span>
+            </div>
+          </div>
         </div>
       </section>
 

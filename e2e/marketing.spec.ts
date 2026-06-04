@@ -52,6 +52,39 @@ test.describe("ATLAS OS marketing parallax", () => {
     expect(depth.front.zIndex).toBeGreaterThan(depth.mid.zIndex);
   });
 
+  test("overview page renders the drone demo video with its poster", async ({
+    page,
+  }) => {
+    await page.goto("/landing");
+
+    const video = page.getByTestId("landing-demo-video");
+    await expect(video).toBeVisible();
+    await expect(video).toHaveAttribute(
+      "poster",
+      "/marketing/atlas-drone-demo-poster.jpg",
+    );
+    await expect(video.locator("source")).toHaveAttribute(
+      "src",
+      "/marketing/atlas-drone-demo.mp4",
+    );
+    await expect(video).toHaveAttribute("preload", "none");
+
+    const media = await video.evaluate((el) => {
+      const videoEl = el as HTMLVideoElement;
+      const box = videoEl.getBoundingClientRect();
+
+      return {
+        controls: videoEl.controls,
+        width: box.width,
+        height: box.height,
+      };
+    });
+
+    expect(media.controls).toBe(true);
+    expect(media.width).toBeGreaterThan(280);
+    expect(media.height).toBeGreaterThan(200);
+  });
+
   for (const { route, image } of [
     { route: "/landing", image: "atlas" },
     { route: "/for", image: "solutions" },
