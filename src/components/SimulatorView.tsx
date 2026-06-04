@@ -92,10 +92,9 @@ export default function SimulatorView({
     detailedModels: false,
     source: defaultTwinModel(),
   });
-  // Single render-mode switch: "Pixel" mode = procedural voxel figures +
-  // pixelation; off = crisp detailed glTF models. The two move together.
-  // Defaults to Pixel so first paint stays light (cloning the full set of
-  // detailed residents on load janks navigation); the detailed look is one tap.
+  // Single render-mode switch: "Pixel" mode = voxel figures + pixelation; off =
+  // crisp procedural human characters. The two move together. Defaults to
+  // Pixel so first paint stays light; the detailed look is one tap.
   const [pixel, setPixel] = useState(true);
   const togglePixel = useCallback(() => {
     setPixel((on) => {

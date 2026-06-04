@@ -1,23 +1,26 @@
 # /public/models — optional detailed 3D assets
 
 ATLAS renders fully on hand-authored procedural three.js geometry. The scenes
-can **optionally** swap or augment individual "slots" with higher-detail
-glTF/GLB models dropped here. Each slot falls back to its procedural geometry
-when its asset is disabled, missing, or fails to load — so the app still runs
-with zero binaries in this folder.
+can **optionally** augment individual "slots" with higher-detail glTF/GLB
+models dropped here. Each slot falls back to its procedural geometry when its
+asset is disabled, missing, or fails to load — so the app still runs with zero
+binaries in this folder.
+
+Simulator people are authored as procedural three.js human characters in
+`src/components/three/HumanCharacter.tsx`, not as external GLB robots. Pixel
+mode uses the tiny voxel people; detailed mode swaps them for the richer human
+character family.
 
 ## Slots
 
 Defined in [`src/lib/models.ts`](../../src/lib/models.ts):
 
-| Slot          | Scene                | Behavior            | Default |
-|---------------|----------------------|---------------------|---------|
-| `resident`    | Building Simulator   | replaces voxel residents | **on** (`robot.glb`) |
-| `rooftopProp` | Building Simulator   | additive rooftop detail  | off |
-| `twinCrown`   | Habitat Twin (Console) | additive crown on the tower | off |
+| Slot          | Scene              | Behavior               | Default |
+|---------------|--------------------|------------------------|---------|
+| `rooftopProp` | Building Simulator | additive rooftop detail | off |
 
-The simulator exposes a **Detail** toggle in its control bar to flip the
-detailed residents on/off live.
+The simulator exposes a **Pixel** toggle in its control bar to flip between
+voxel people and detailed procedural human characters live.
 
 ## How the loader behaves
 

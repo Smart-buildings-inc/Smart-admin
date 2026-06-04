@@ -1,31 +1,37 @@
-// Optional detailed glTF models, with graceful procedural fallback.
+// Optional additive glTF models, with graceful procedural fallback.
 //
 // ATLAS renders fully on hand-authored procedural three.js geometry (voxel
-// simulator, slab twin). This registry lets us *optionally* swap or augment
-// individual "slots" with higher-detail glTF/GLB assets dropped into
+// simulator, slab twin, human characters). This registry lets us *optionally*
+// augment individual "slots" with higher-detail glTF/GLB assets dropped into
 // `/public/models`. Every slot keeps working when its asset is disabled,
-// absent, or fails to load — it falls back to the original procedural
-// geometry. That mirrors the DB-optional data layer: the app still runs with
-// zero model binaries committed.
+// absent, or fails to load — it falls back to the original procedural geometry.
+// That mirrors the DB-optional data layer: the app still runs with zero model
+// binaries committed.
 //
-// To add detail: drop a `.glb` into /public/models, point a slot at it, flip
-// `enabled: true`, and record the license in /public/models/CREDITS.md.
-// Good free sources (CC0 unless noted): Kenney (kenney.nl), Quaternius
-// (quaternius.com), Khronos glTF-Sample-Assets, Poly Pizza (CC-BY).
+// The per-floor `floor-<need>.glb` assets are produced by the Blender pipeline
+// `_blender/build_atlas_floors.py` (detailed PBR interiors, exported compact —
+// the whole set is well under the PRD's 2.5 MB live-model budget). To rebuild
+// or extend them, see the `atlas-blender` skill. Record licenses in
+// /public/models/CREDITS.md.
 
-export type ModelSlot = "resident" | "rooftopProp" | "twinCrown";
+import type { Need } from "@/lib/types";
+
+export type FloorSlot = `floor-${Need}` | "floor-basement" | "floor-rooftop";
+export type ModelSlot = FloorSlot | "rooftopProp";
 
 export interface ModelAsset {
-  /** Public path served from /public (e.g. "/models/robot.glb"). */
+  /** Public path served from /public (e.g. "/models/floor-water.glb"). */
   path: string;
   /** When false the slot renders its procedural fallback instead. */
   enabled: boolean;
   /**
-   * Target world-space height the loaded scene is normalized to (the loader
-   * measures the model's bounding box and scales to fit), so a slot works
-   * regardless of the asset's native units.
+   * Target world-space size the loaded scene is normalized to. The loader
+   * measures the model's bounding box and scales to fit, so a slot works
+   * regardless of the asset's native units. Floor modules normalize on WIDTH
+   * (they are wide, shallow interiors); props normalize on HEIGHT.
    */
-  targetHeight: number;
+  targetHeight?: number;
+  targetWidth?: number;
   /** Y rotation (radians) applied when placed. */
   rotationY?: number;
   /** Animation clip to play, if the asset is rigged (e.g. "Walking"). */
@@ -36,23 +42,33 @@ export interface ModelAsset {
   source: string;
 }
 
-export const MODELS: Record<ModelSlot, ModelAsset> = {
-  // Voxel residents → a stylized, low-poly, animated character. RobotExpressive
-  // is a Quaternius CC0 model (one of the free sources we recommend), so it
-  // reads in-style with the flat-shaded sim rather than clashing like a
-  // photoreal human would.
-  resident: {
-    path: "/models/robot.glb",
+const FLOOR_PROVENANCE = {
+  license: "CC0-1.0 (procedural, original)",
+  author: "ATLAS / build_atlas_floors.py",
+  source: "_blender/build_atlas_floors.py",
+} as const;
+
+/** A detailed interior module, width-normalized to sit inside a twin slab. */
+function floorModule(slot: FloorSlot): ModelAsset {
+  return {
+    path: `/models/${slot}.glb`,
     enabled: true,
-    targetHeight: 1.0,
-    clip: "Walking",
-    license: "CC0 1.0",
-    author: "Tomás Laulhé (Quaternius); modifications by Don McCurdy",
-    source:
-      "https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf/RobotExpressive",
-  },
-  // Additive rooftop detail (e.g. a detailed solar/comms array). Disabled until
-  // a curated asset is dropped in — the procedural rooftop renders meanwhile.
+    targetWidth: 3.4, // matches FLOOR_W in the twin
+    ...FLOOR_PROVENANCE,
+  };
+}
+
+export const MODELS: Record<ModelSlot, ModelAsset> = {
+  "floor-water": floorModule("floor-water"),
+  "floor-energy": floorModule("floor-energy"),
+  "floor-food": floorModule("floor-food"),
+  "floor-shelter": floorModule("floor-shelter"),
+  "floor-air": floorModule("floor-air"),
+  "floor-health": floorModule("floor-health"),
+  "floor-restoration": floorModule("floor-restoration"),
+  "floor-basement": floorModule("floor-basement"),
+  "floor-rooftop": floorModule("floor-rooftop"),
+  // Additive rooftop detail prop (legacy slot) — disabled; procedural rooftop renders.
   rooftopProp: {
     path: "/models/rooftop.glb",
     enabled: false,
@@ -61,20 +77,14 @@ export const MODELS: Record<ModelSlot, ModelAsset> = {
     author: "—",
     source: "—",
   },
-  // A detailed mascot perched atop the Habitat Twin slab tower — gives the
-  // Console twin's realistic mode something detailed to show. Reuses the CC0
-  // robot so no extra binary is needed.
-  twinCrown: {
-    path: "/models/robot.glb",
-    enabled: true,
-    targetHeight: 1.3,
-    license: "CC0 1.0",
-    author: "Tomás Laulhé (Quaternius); modifications by Don McCurdy",
-    source:
-      "https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf/RobotExpressive",
-  },
 };
 
 export function getModel(slot: ModelSlot): ModelAsset {
   return MODELS[slot];
+}
+
+/** Resolve the detailed interior slot for a floor's need (null when none). */
+export function floorSlotForNeed(need: Need): FloorSlot | null {
+  const slot = `floor-${need}` as FloorSlot;
+  return slot in MODELS ? slot : null;
 }

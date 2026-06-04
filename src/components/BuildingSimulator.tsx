@@ -13,25 +13,16 @@
 // This file is the WebGL layer only; SimulatorView.tsx owns the DOM chrome
 // (header, controls, legend, telemetry) and feeds options/selection in.
 
-import { Suspense, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
-import { OrbitControls, Html, useGLTF } from "@react-three/drei";
+import { OrbitControls, Html } from "@react-three/drei";
 import * as THREE from "three";
 import type { Floor, Incident, Need } from "@/lib/types";
 import { needColor } from "@/lib/ui";
 import AsciiRenderer from "@/components/AsciiRenderer";
 import GltfBuilding from "@/components/GltfBuilding";
-import { getModel } from "@/lib/models";
-import {
-  GltfProp,
-  ModelErrorBoundary,
-  preloadModel,
-  useNormalizedClone,
-} from "@/components/three/gltf";
-
-const RESIDENT = getModel("resident");
-// Warm the resident asset so detailed residents stream in without pop-in.
-preloadModel("resident");
+import HumanCharacter from "@/components/three/HumanCharacter";
+import { GltfProp } from "@/components/three/gltf";
 
 type Vec3 = [number, number, number];
 
@@ -51,7 +42,7 @@ export interface SimOptions {
   cutaway: boolean;
   autoRotate: boolean;
   elevatorRunning: boolean;
-  /** Use detailed glTF residents (else the flat-shaded voxel figures). */
+  /** Use detailed procedural residents (else the flat-shaded voxel figures). */
   detailedModels: boolean;
   /**
    * Which building model to render: the procedural "voxel" twin (default) or a
@@ -194,55 +185,16 @@ function VoxPerson({
   );
 }
 
-// A detailed, rigged glTF resident (RobotExpressive, CC0). Each instance gets
-// its own skeleton clone + animation mixer so they move independently. Paces
-// along the floor like VoxPerson and plays a walk/idle clip.
-function RobotResident({
-  position,
-  pace = 0,
-  height = RESIDENT.targetHeight,
-  rotationY = 0,
-}: {
-  position: Vec3;
-  pace?: number;
-  height?: number;
-  rotationY?: number;
-}) {
-  const { scene } = useGLTF(RESIDENT.path);
-  const obj = useNormalizedClone(scene, height);
-  const group = useRef<THREE.Group>(null);
-  const phase = useMemo(() => position[0] + position[2], [position]);
-
-  // Cheap, reliable life: a gentle bob, plus pacing along the floor. (We render
-  // the bind pose rather than skeletal animation — see useNormalizedClone.)
-  useFrame((s) => {
-    if (!group.current) return;
-    const t = s.clock.elapsedTime;
-    group.current.position.y = position[1] + Math.abs(Math.sin(t * 2 + phase)) * 0.04;
-    if (pace > 0) {
-      group.current.position.x = position[0] + Math.sin(t * 0.6 + phase) * pace;
-      group.current.rotation.y =
-        (Math.cos(t * 0.6 + phase) > 0 ? Math.PI * 0.5 : -Math.PI * 0.5) + rotationY;
-    }
-  });
-
-  return (
-    <group ref={group} position={position} rotation={[0, rotationY, 0]}>
-      <primitive object={obj} />
-    </group>
-  );
-}
-
-// Chooses a detailed resident when enabled, otherwise the voxel figure. The
-// voxel figure is also the Suspense/error fallback, so residents always render.
+// Chooses a richer human character in detailed mode, otherwise the voxel figure.
 // `height` lets a placement (e.g. the plaza greeter) render a larger figure.
 function SimPerson({
   position,
   color,
   pace = 0,
   detailed,
-  height = RESIDENT.targetHeight,
+  height = 1,
   rotationY,
+  variant = "resident",
 }: {
   position: Vec3;
   color: string;
@@ -250,6 +202,7 @@ function SimPerson({
   detailed: boolean;
   height?: number;
   rotationY?: number;
+  variant?: "resident" | "greeter" | "engineer";
 }) {
   const voxScale = height / 0.6; // voxel figure is ~0.6 units tall
   const fallback = (
@@ -257,18 +210,16 @@ function SimPerson({
       <VoxPerson position={[0, 0, 0]} color={color} pace={pace / voxScale} />
     </group>
   );
-  if (!detailed || !RESIDENT.enabled) return fallback;
+  if (!detailed) return fallback;
   return (
-    <ModelErrorBoundary fallback={fallback}>
-      <Suspense fallback={fallback}>
-        <RobotResident
-          position={position}
-          pace={pace}
-          height={height}
-          rotationY={rotationY}
-        />
-      </Suspense>
-    </ModelErrorBoundary>
+    <HumanCharacter
+      position={position}
+      color={color}
+      pace={pace}
+      height={height}
+      rotationY={rotationY}
+      variant={variant}
+    />
   );
 }
 
@@ -690,6 +641,30 @@ function FloorBlock({
         )),
       )}
 
+      {/* Per-floor interior fill light. The cut-away tower is otherwise lit only
+          by global lights from above/front, so interiors on lower or back-of-
+          floor areas read dark and inconsistent. A confined point light per
+          floor guarantees every level is legibly lit and shaded, while `distance`
+          keeps it from bleeding into neighbouring floors. Warm by day, cool and
+          dimmer at night so the emissive equipment/window glows still dominate.
+          Selecting a floor brightens its own light so the active floor pops. */}
+      <pointLight
+        position={[0, FLOOR_H * 0.78, HALF_D * 0.25]}
+        intensity={(night ? 1.5 : 2.6) * (selected ? 1.7 : 1)}
+        distance={HALF_W * 2.3}
+        decay={2}
+        color={night ? "#aebfe6" : "#fff1d6"}
+      />
+      {/* low neutral fill toward the back wall so deep interior detail (tanks,
+          racks, beds) is shaded rather than silhouetted. */}
+      <pointLight
+        position={[0, FLOOR_H * 0.5, -HALF_D * 0.55]}
+        intensity={night ? 0.6 : 1.0}
+        distance={HALF_W * 1.7}
+        decay={2}
+        color={night ? "#7f93c4" : "#dfe9ff"}
+      />
+
       {/* interior */}
       <FloorInterior floor={floor} accent={accent} night={night} detailed={detailed} />
 
@@ -964,20 +939,19 @@ function Tower({
         />
       ))}
 
-      {/* A detailed "greeter" robot on the plaza out front — large and
-          unobstructed so the real 3D model reads at a glance (detailed mode). */}
+      {/* A detailed greeter on the plaza out front — large and unobstructed so
+          the human character reads at a glance in detailed mode. */}
       {options.detailedModels && (
         <group>
           {/* dedicated key light so the greeter reads against the dark plaza */}
           <pointLight position={[5, 5, 9]} intensity={2.2} distance={22} decay={2} color="#fff3da" />
-          {/* a detailed "greeter" robot on the plaza out front — large and
-              unobstructed so the real 3D model reads at a glance */}
           <SimPerson
             position={[3.4, -SLAB_T, 7.5]}
             color="#7fe7e0"
             detailed
             height={3.2}
             rotationY={-0.5}
+            variant="greeter"
           />
         </group>
       )}

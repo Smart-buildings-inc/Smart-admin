@@ -10,6 +10,8 @@ import { annotationByFloor } from "@/lib/annotations";
 import AsciiRenderer from "@/components/AsciiRenderer";
 import { createChamferedBoxGeometry } from "@/lib/geometry";
 import HumanCharacter from "@/components/three/HumanCharacter";
+import { FloorDetail } from "@/components/three/gltf";
+import { floorSlotForNeed } from "@/lib/models";
 
 export type TwinMode = "orbit" | "walkthrough";
 
@@ -109,6 +111,7 @@ interface SlabProps {
   selected: boolean;
   hasIncident: boolean;
   showAnnotation: boolean;
+  detailed: boolean;
   onSelect: (key: string) => void;
 }
 
@@ -118,6 +121,7 @@ function FloorSlab({
   selected,
   hasIncident,
   showAnnotation,
+  detailed,
   onSelect,
 }: SlabProps) {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -125,6 +129,10 @@ function FloorSlab({
   const y = index * STEP;
   const base = needColor[floor.need];
   const annotation = annotationByFloor.get(floor.key);
+  // In detailed (non-pixel) mode, selecting a floor reveals its full PBR
+  // interior module (Blender-exported GLB). The slab becomes a faint glass
+  // shell that stays the click target; the GLB fails soft to nothing.
+  const detailSlot = detailed && selected ? floorSlotForNeed(floor.need) : null;
 
   useFrame((state) => {
     const mat = meshRef.current?.material as THREE.MeshStandardMaterial | undefined;
@@ -165,9 +173,28 @@ function FloorSlab({
           metalness={0.2}
           roughness={0.45}
           transparent
-          opacity={0.92}
+          opacity={detailSlot ? 0.16 : 0.92}
         />
       </mesh>
+
+      {/* Detailed PBR interior reveal for the selected floor (fail-soft). */}
+      {detailSlot && (
+        <FloorDetail slot={detailSlot} position={[0, -FLOOR_HEIGHT / 2 + 0.02, 0]} />
+      )}
+
+      {/* Per-floor fill light. The twin is otherwise lit only by global lights
+          fixed at the upper-front-right, so as the tower auto-rotates each floor's
+          back/underside falls into the weak blue rim + ambient and reads dark and
+          unevenly shaded. A short-range point light per floor keeps every level
+          consistently lit and shaded through a full orbit; it brightens when the
+          floor is selected/hovered so the active floor stands out. */}
+      <pointLight
+        position={[0, FLOOR_HEIGHT * 0.6, 0]}
+        intensity={selected || hovered ? 2.4 : 1.3}
+        distance={FLOOR_W * 1.25}
+        decay={2}
+        color={selected || hovered ? "#fff1d6" : "#cdd9f5"}
+      />
 
       {/* Hover/select label */}
       {(hovered || selected) && !showAnnotation && (
@@ -368,6 +395,7 @@ function Tower({
           selected={floor.key === selectedKey}
           hasIncident={incidentFloorKeys.has(floor.key)}
           showAnnotation={mode === "walkthrough" && i === walkFloorIndex}
+          detailed={detailed}
           onSelect={onSelect}
         />
       ))}

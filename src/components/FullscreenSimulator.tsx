@@ -76,10 +76,9 @@ export default function FullscreenSimulator({
     detailedModels: false,
     source: defaultTwinModel(),
   });
-  // Single render-mode switch: "Pixel" = procedural voxel figures + pixelation;
-  // off = crisp detailed glTF models. The two move together. Defaults to Pixel
-  // here (and in the simulator) so first paint stays light — cloning the full
-  // set of detailed residents on load janks navigation; the detailed look is
+  // Single render-mode switch: "Pixel" = voxel figures + pixelation; off =
+  // crisp procedural human characters. The two move together. Defaults to Pixel
+  // here (and in the simulator) so first paint stays light; the detailed look is
   // one tap away.
   const [pixel, setPixel] = useState(true);
   const togglePixel = useCallback(() => {

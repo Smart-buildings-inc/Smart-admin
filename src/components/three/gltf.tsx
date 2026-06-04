@@ -110,7 +110,7 @@ export function GltfProp({
         <Suspense fallback={<>{children}</>}>
           <LoadedProp
             path={asset.path}
-            targetHeight={asset.targetHeight}
+            targetHeight={asset.targetHeight ?? 1.6}
             rotationY={asset.rotationY}
           />
         </Suspense>
@@ -121,6 +121,76 @@ export function GltfProp({
 
 /** Preload an enabled slot's asset to avoid pop-in. No-op when disabled. */
 export function preloadModel(slot: ModelSlot) {
+  const asset = getModel(slot);
+  if (asset.enabled) useGLTF.preload(asset.path);
+}
+
+/**
+ * Clone + fit a loaded scene to a target WIDTH (x) — used for the wide, shallow
+ * detailed floor interiors. Re-seats feet at y=0, centered on x/z.
+ */
+function useWidthFittedClone(scene: THREE.Object3D, targetWidth: number): THREE.Object3D {
+  return useMemo(() => {
+    const obj = scene.clone(true);
+    obj.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (m.isMesh) m.frustumCulled = false;
+    });
+    obj.updateWorldMatrix(true, true);
+    const size = new THREE.Box3().setFromObject(obj).getSize(new THREE.Vector3());
+    if (Number.isFinite(size.x) && size.x > 1e-3) {
+      obj.scale.setScalar(targetWidth / size.x);
+      obj.updateWorldMatrix(true, true);
+    }
+    const box = new THREE.Box3().setFromObject(obj);
+    if (Number.isFinite(box.min.y)) {
+      obj.position.x -= (box.min.x + box.max.x) / 2;
+      obj.position.z -= (box.min.z + box.max.z) / 2;
+      obj.position.y -= box.min.y;
+    }
+    return obj;
+  }, [scene, targetWidth]);
+}
+
+function LoadedFloor({ path, targetWidth }: { path: string; targetWidth: number }) {
+  const { scene } = useGLTF(path);
+  const obj = useWidthFittedClone(scene, targetWidth);
+  return <primitive object={obj} />;
+}
+
+/**
+ * Detailed PBR interior module for a floor `need`, fitted to the twin slab
+ * footprint. Renders the GLB when its slot is enabled (Suspense + error
+ * boundary fall back to `children` / nothing), so a missing or broken asset
+ * never blanks the scene. Used as an on-select reveal in the Habitat Twin.
+ */
+export function FloorDetail({
+  slot,
+  position = [0, 0, 0],
+  rotationY = 0,
+  children = null,
+}: {
+  slot: ModelSlot;
+  position?: Vec3;
+  rotationY?: number;
+  children?: ReactNode;
+}) {
+  const asset = getModel(slot);
+  if (!asset.enabled) return <>{children}</>;
+  const width = asset.targetWidth ?? 3.4;
+  return (
+    <group position={position} rotation={[0, rotationY, 0]}>
+      <ModelErrorBoundary fallback={<>{children}</>}>
+        <Suspense fallback={<>{children}</>}>
+          <LoadedFloor path={asset.path} targetWidth={width} />
+        </Suspense>
+      </ModelErrorBoundary>
+    </group>
+  );
+}
+
+/** Preload a floor slot's GLB (no-op when disabled). */
+export function preloadFloorDetail(slot: ModelSlot) {
   const asset = getModel(slot);
   if (asset.enabled) useGLTF.preload(asset.path);
 }

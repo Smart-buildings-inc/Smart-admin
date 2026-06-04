@@ -8,8 +8,10 @@ import type {
   Floor,
   FloorPresence,
   Incident,
+  SensorPoint,
 } from "@/lib/types";
 import type { Recommendation } from "@/lib/advisor";
+import type { AnalyticsSummary } from "@/lib/analytics";
 import type { TwinMode } from "@/components/HabitatTwin";
 import {
   CubeFocus,
@@ -24,6 +26,8 @@ import BroadcastComposer from "@/components/BroadcastComposer";
 import AdvisorPanel from "@/components/AdvisorPanel";
 import FullscreenLink from "@/components/FullscreenLink";
 import LogoLoader from "@/components/LogoLoader";
+import AnalyticsPanel from "@/components/AnalyticsPanel";
+import Copilot from "@/components/Copilot";
 
 // The twin is client/WebGL-only — load it without SSR.
 const HabitatTwin = dynamic(() => import("@/components/HabitatTwin"), {
@@ -71,12 +75,16 @@ export default function Console({
   initialIncidents,
   initialBroadcasts,
   initialKpis,
+  initialAnalytics,
+  initialSensors,
   dbConnected,
 }: {
   initialFloors: Floor[];
   initialIncidents: Incident[];
   initialBroadcasts: Broadcast[];
   initialKpis: BuildingKpis;
+  initialAnalytics: AnalyticsSummary;
+  initialSensors: SensorPoint[];
   dbConnected: boolean;
 }) {
   const [floors] = useState<Floor[]>(initialFloors);
@@ -276,6 +284,14 @@ export default function Console({
             <AdvisorPanel recommendations={recommendations} />
           </div>
           <BroadcastComposer floors={floors} onSent={refresh} />
+
+          {/* Analytics + anomaly detection (advisory only, per OPR §4) */}
+          <AnalyticsPanel summary={initialAnalytics} sensors={initialSensors} />
+
+          {/* AI ops copilot — observe-and-advise over live telemetry */}
+          <div className="h-[460px]">
+            <Copilot />
+          </div>
         </section>
       </div>
 

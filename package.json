@@ -5,7 +5,7 @@
   "description": "ATLAS OS — the Habitat Twin. Building operations platform for self-sufficient ATLAS habitats.",
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm run docs:build",
+    "prebuild": "node scripts/clean-next-output.mjs && npm run docs:build",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

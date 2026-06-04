@@ -24,22 +24,19 @@ test.describe("ATLAS OS building simulator", () => {
     await expect(page.getByText("Floor telemetry", { exact: true })).toBeVisible();
   });
 
-  test("Pixel switch toggles between voxel and detailed glTF residents", async ({ page }) => {
-    // The simulator defaults to Pixel (procedural) mode; the GLB is still
-    // preloaded so toggling to realistic streams in the detailed residents.
-    const glb = page.waitForResponse(
-      (r) => r.url().includes("/models/robot.glb") && r.status() === 200,
-      { timeout: 20000 },
-    );
-    await page.goto("/simulator");
+  test("Pixel switch toggles between voxel and detailed human characters", async ({ page }) => {
+    const robotRequests: string[] = [];
+    page.on("request", (request) => {
+      if (request.url().includes("/models/robot.glb")) robotRequests.push(request.url());
+    });
 
-    const res = await glb; // model is preloaded
-    expect(res.status()).toBe(200);
+    await page.goto("/simulator");
 
     const pixel = page.getByRole("button", { name: "Pixel", exact: true });
     await expect(pixel).toHaveAttribute("aria-pressed", "true");
-    await pixel.click(); // → realistic (detailed glTF) mode
+    await pixel.click(); // detailed procedural human characters
     await expect(pixel).toHaveAttribute("aria-pressed", "false");
+    expect(robotRequests).toHaveLength(0);
   });
 
   test("fullscreen control opens the full-viewport viewer and exits back", async ({
