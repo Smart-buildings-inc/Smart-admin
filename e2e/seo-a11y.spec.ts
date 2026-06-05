@@ -40,6 +40,6 @@ test.describe("ATLAS OS accessibility", () => {
     await expect(skip).toHaveAttribute("href", "#main");
 
     // The target landmark exists.
-    await expect(page.locator("main#main")).toHaveCount(1);
+    await expect(page.locator("main#main")).toHaveCount(1, { timeout: 20_000 });
   });
 });

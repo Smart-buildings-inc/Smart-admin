@@ -17,11 +17,16 @@ test("broadcast send shows success and mirrors into the incident feed", async ({
   // Unique marker so we can find this exact broadcast in the feed afterwards.
   const marker = `E2E broadcast ${Date.now()}`;
 
-  const textarea = page.getByPlaceholder("Compose a notification for residents…");
+  let textarea = page.getByPlaceholder("Compose a notification for residents…");
+  if ((await textarea.count()) === 0) {
+    await page.getByRole("button", { name: "Restore Broadcast window" }).click();
+    textarea = page.getByPlaceholder("Compose a notification for residents…");
+  }
+
   await expect(textarea).toBeVisible();
   await textarea.fill(marker);
 
-  await page.getByRole("button", { name: "Send" }).click();
+  await page.getByRole("button", { name: "Send", exact: true }).click();
 
   // Status text: "Sent to N resident(s)."
   await expect(page.getByText(/Sent to \d+ resident/)).toBeVisible();

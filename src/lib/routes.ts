@@ -45,6 +45,14 @@ export const SITE_ROUTES: SiteRoute[] = [
     priority: 0.8,
   },
   {
+    path: "/pitch",
+    title: "Pitch Quest",
+    description:
+      "A playable 3D pitch page that teaches the ATLAS OS project through mission-based exploration of the habitat twin.",
+    changeFrequency: "weekly",
+    priority: 0.8,
+  },
+  {
     path: "/portfolio",
     title: "Portfolio",
     description:

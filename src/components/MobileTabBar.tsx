@@ -77,6 +77,32 @@ const TABS: Tab[] = [
       </svg>
     ),
   },
+  {
+    href: "/pitch",
+    label: "Pitch",
+    icon: () => (
+      <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden>
+        <path
+          d="M4 19V7.5L12 4l8 3.5V19"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M8 17v-5l4-2 4 2v5M12 10v9M7 7.5 12 10l5-2.5"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M5 20h14"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+        />
+      </svg>
+    ),
+  },
 ];
 
 export default function MobileTabBar() {

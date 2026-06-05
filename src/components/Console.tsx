@@ -1119,6 +1119,7 @@ function AtlasDesktop({
 
   return (
     <main
+      id="main"
       ref={shellRef}
       data-testid="desktop-shell"
       className="atlas-desktop-shell relative h-[calc(100vh-4rem)] min-h-[760px] overflow-hidden bg-ink-950 text-slate-100"

@@ -76,10 +76,13 @@ test.describe("ATLAS OS desktop window manager", () => {
 
     const before = await win.boundingBox();
     expect(before).not.toBeNull();
-    await titlebar.dragTo(titlebar, {
-      sourcePosition: { x: 120, y: 18 },
-      targetPosition: { x: 220, y: 78 },
-    });
+    const titlebarBox = await titlebar.boundingBox();
+    expect(titlebarBox).not.toBeNull();
+    if (!titlebarBox) return;
+    await page.mouse.move(titlebarBox.x + 120, titlebarBox.y + 18);
+    await page.mouse.down();
+    await page.mouse.move(titlebarBox.x + 220, titlebarBox.y + 78, { steps: 6 });
+    await page.mouse.up();
 
     await expect
       .poll(() =>

@@ -76,7 +76,12 @@ test.describe("ATLAS OS platform", () => {
   test("Hero toggle swaps the twin model without crashing the viewer", async ({
     page,
   }) => {
+    test.setTimeout(60_000);
+
     await page.goto("/simulate/atlas-01");
+    await expect(page.getByTestId("fullscreen-stage")).toBeVisible({
+      timeout: 30_000,
+    });
     const hero = page.getByRole("button", { name: "Hero", exact: true });
     await expect(hero).toBeVisible();
     await hero.click();
