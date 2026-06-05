@@ -1,74 +1,80 @@
-# Privacy Policy
+# ATLAS OS — Privacy Policy
 
-> **Draft for counsel review — not legal advice.** This document describes how
-> ATLAS OS (Smart Buildings Inc.) intends to handle personal information. It must
-> be reviewed and finalized by qualified Canadian privacy counsel before reliance.
+| | |
+|---|---|
+| **Controller** | Smart Buildings Inc. / ATLAS Habitat Initiative ("we") |
+| **Product** | ATLAS OS (the Habitat Twin) |
+| **Status** | Draft v0.1 — review with privacy counsel before publishing |
+| **Effective** | _[date on publication]_ |
+| **Contact** | Elijah@vfitter.com |
 
-_Last updated: draft. Governing law: Ontario, Canada._
+> **Disclaimer.** Template for review by qualified counsel; not legal advice. Bracketed
+> items must be confirmed before this is published to users/residents.
 
-## Who we are
+---
 
-ATLAS OS is a building-operations platform operated by **Smart Buildings Inc.**
-("we", "us"). We act as a **service provider** to building operators and, for
-certain telemetry, as a **processor** on their behalf. This policy covers the
-ATLAS OS web application, APIs, and connected habitat services.
+## 1. Scope
 
-## Information we collect
+This policy explains how we handle personal information in ATLAS OS and connected habitat
+services, consistent with **PIPEDA** (and provincial laws — BC/AB PIPA, Québec Law 25 —
+and **PHIPA** where personal health information is involved).
 
-- **Account & operator data:** names, work emails, role, and authentication
-  identifiers for operators who access the console.
-- **Building telemetry:** per-floor sensor readings (energy, water, air, food,
-  occupancy) ingested through the platform's tagged-point model.
-- **Presence & wellness signals:** privacy-by-design **WiFi-CSI presence**
-  (RuView) — occupancy counts and, on health/clinic floors, optional vital-sign
-  estimates. **No cameras and no wearables are used.**
-- **Usage data:** log and diagnostic information needed to operate the service.
+## 2. What we collect
 
-## How we use information
+- **Account/operator data:** name, email, role (operators only).
+- **Resident contact data:** only what's needed to deliver broadcasts/notifications.
+- **Operational telemetry:** per‑floor energy/water/food/climate/occupancy metrics.
+- **Presence data:** occupancy from **camera‑free** ESP32 presence sensors (no images).
+- **Health data (PHI):** only if telehealth features are used; handled under PHIPA.
+- **Technical data:** logs needed for security and reliability.
 
-We process personal information to operate the digital twin, triage incidents,
-deliver resident broadcasts, compute building KPIs, and maintain security. We do
-**not** sell personal information.
+We do **not** collect more than a feature needs (data minimization), and demo/seed data
+contains no real individuals.
 
-## Legal bases & Canadian law
+## 3. Why we use it (purposes)
 
-We handle personal information consistent with **PIPEDA** and applicable
-provincial privacy legislation. Where a building uses health-related signals
-(e.g., clinic vitals), we apply **PHIPA**-aligned safeguards and process such
-data only as a service provider under the operator's direction and with
-appropriate consent.
+Operate and optimize the habitat; triage incidents; deliver resident broadcasts; secure
+the service; meet legal/audit obligations. We do **not** sell personal information and do
+**not** use telemetry to profile residents beyond operations.
 
-## Sensing and consent
+## 4. Legal basis / consent
 
-Presence and vital-sign sensing in dwellings is deployed only with resident
-notice and consent, and subject to a privacy-law review for the specific
-deployment. Residents may request information about, or object to, such sensing
-through their building operator.
+We rely on consent and the legitimate operation of the building service. Residents are told
+what is collected at onboarding and may withdraw consent where applicable (subject to
+service limitations and legal obligations).
 
-## Sharing & subprocessors
+## 5. Sharing & sub‑processors
 
-We share information with infrastructure subprocessors (hosting, database) under
-contract, and with the building operator who controls the deployment. A current
-list of subprocessors is available on request.
+Shared only with service providers under contract (hosting, database, email) bound by a
+[Data Processing Addendum](./DATA_PROCESSING_ADDENDUM.md), or where required by law. A
+current sub‑processor list is maintained and available on request.
 
-## Retention
+## 6. Retention
 
-We retain personal information only as long as necessary for the purposes above
-or as required by law, after which it is deleted or de-identified.
+Per the schedule in [Security & Data Compliance](./SECURITY_AND_DATA_COMPLIANCE.md) §5.
+We keep personal data only as long as needed for its purpose plus statutory minimums.
 
-## Security
+## 7. Your rights
 
-We use administrative, technical, and physical safeguards appropriate to the
-sensitivity of the information, including access controls and encryption in
-transit.
+Access, correction, withdrawal of consent, and (where applicable) erasure and portability.
+Email **Elijah@vfitter.com**; we respond within statutory timelines. You may also contact
+the Office of the Privacy Commissioner of Canada (or your provincial/health regulator).
 
-## Your rights
+## 8. Security
 
-Subject to applicable law, you may request access to, correction of, or deletion
-of your personal information, and may withdraw consent where processing relies on
-it. Requests are routed through your building operator or to us directly.
+TLS in transit, encryption at rest, least‑privilege access, audit logging, breach response.
+See [Security & Data Compliance](./SECURITY_AND_DATA_COMPLIANCE.md).
 
-## Contact
+## 9. Children & cross‑border
 
-Privacy questions: **privacy@smartbuildings.example** (placeholder — replace with
-the official contact before publication).
+[Confirm whether minors are residents and add appropriate protections.] Data may be
+processed by providers outside your province/country; we use contractual safeguards. We
+disclose hosting locations on request.
+
+## 10. Changes
+
+We will post updates here with a new effective date and notify operators of material
+changes.
+
+---
+*This external‑facing policy pairs with the internal Security & Data Compliance framework.*

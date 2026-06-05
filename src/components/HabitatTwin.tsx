@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, Html } from "@react-three/drei";
 import * as THREE from "three";
+import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import type { Floor, Incident } from "@/lib/types";
 import { needColor } from "@/lib/ui";
 import { annotationByFloor } from "@/lib/annotations";
@@ -73,16 +74,60 @@ function ResponsiveCamera({ mode }: { mode: TwinMode }) {
   return null;
 }
 
-/** OrbitControls with distance limits scaled for the viewport aspect. */
-function OrbitRig() {
-  const { size } = useThree();
+function selectedTwinTarget(index: number, totalHeight: number): THREE.Vector3 {
+  return new THREE.Vector3(0, index * STEP - totalHeight / 2, 0);
+}
+
+/** OrbitControls with responsive floor focus and pan enabled for inspection. */
+function OrbitRig({
+  selectedIndex,
+  totalHeight,
+}: {
+  selectedIndex: number | null;
+  totalHeight: number;
+}) {
+  const controls = useRef<OrbitControlsImpl>(null);
+  const { camera, size } = useThree();
   const { scale } = computeFit(size.width / size.height);
+  const releasedByUser = useRef(false);
+  const lastSelectedIndex = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (lastSelectedIndex.current !== selectedIndex) {
+      lastSelectedIndex.current = selectedIndex;
+      releasedByUser.current = false;
+    }
+  }, [selectedIndex]);
+
+  useFrame(() => {
+    if (selectedIndex === null || releasedByUser.current || !controls.current) {
+      return;
+    }
+
+    const target = selectedTwinTarget(selectedIndex, totalHeight);
+    const desiredPosition = target
+      .clone()
+      .add(new THREE.Vector3(5.2 * scale, 1.15, 5.8 * scale));
+
+    controls.current.target.lerp(target, 0.14);
+    camera.position.lerp(desiredPosition, 0.08);
+    controls.current.update();
+  });
+
   return (
     <OrbitControls
-      enablePan={false}
+      ref={controls}
+      enablePan
+      screenSpacePanning
+      enableDamping
+      dampingFactor={0.08}
+      panSpeed={0.9}
       minDistance={6 * scale}
       maxDistance={18 * scale}
       maxPolarAngle={Math.PI / 1.9}
+      onStart={() => {
+        if (selectedIndex !== null) releasedByUser.current = true;
+      }}
     />
   );
 }
@@ -437,6 +482,9 @@ export default function HabitatTwin({
   const arContainerRef = useRef<HTMLDivElement>(null);
   const [walkFloorIndex, setWalkFloorIndex] = useState(-1);
   const totalHeight = floors.length * STEP;
+  const selectedIndex = selectedKey
+    ? floors.findIndex((floor) => floor.key === selectedKey)
+    : -1;
 
   const incidentFloorKeys = useMemo(
     () =>
@@ -477,7 +525,12 @@ export default function HabitatTwin({
 
         <ResponsiveCamera mode={mode} />
 
-        {mode === "orbit" && <OrbitRig />}
+        {mode === "orbit" && (
+          <OrbitRig
+            selectedIndex={selectedIndex >= 0 ? selectedIndex : null}
+            totalHeight={totalHeight}
+          />
+        )}
 
         <WalkthroughCamera
           active={mode === "walkthrough"}

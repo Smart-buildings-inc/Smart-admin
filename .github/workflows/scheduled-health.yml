@@ -1,0 +1,78 @@
+name: Scheduled Health
+
+# Smart cloud automation: black-box health probe of the deployed ATLAS OS app.
+#
+# Every 6 hours (and on demand) we curl the live health surface and assert HTTP
+# 200. A concise status table is written to the workflow run summary, including
+# the open-incident count when the incidents payload is JSON-parseable. The job
+# fails on any non-200 so the failure shows up in GitHub's checks / notifications.
+on:
+  schedule:
+    - cron: "0 */6 * * *" # every 6 hours
+  workflow_dispatch:
+
+concurrency:
+  group: scheduled-health
+  cancel-in-progress: true
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    env:
+      # Override via repo variable/secret ATLAS_PROD_URL; falls back to the
+      # default Vercel production URL for this project.
+      ATLAS_PROD_URL: ${{ vars.ATLAS_PROD_URL || secrets.ATLAS_PROD_URL || 'https://smart-admin.vercel.app' }}
+    steps:
+      - name: Probe health surface
+        run: |
+          set -uo pipefail
+          BASE="${ATLAS_PROD_URL%/}"
+          FAILED=0
+
+          {
+            echo "# ATLAS OS — Scheduled Health"
+            echo ""
+            echo "Target: \`$BASE\`"
+            echo "Checked: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+            echo ""
+            echo "| Endpoint | HTTP | Status |"
+            echo "| --- | --- | --- |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          check() {
+            local path="$1"
+            local url="$BASE$path"
+            local body_file
+            body_file="$(mktemp)"
+            local code
+            code="$(curl -sS -o "$body_file" -w '%{http_code}' --max-time 30 "$url" || echo "000")"
+
+            local status="OK"
+            if [ "$code" != "200" ]; then
+              status="FAIL"
+              FAILED=1
+            fi
+
+            local extra=""
+            if [ "$path" = "/api/incidents" ] && [ "$code" = "200" ]; then
+              # Best-effort: count incidents if the payload parses as JSON.
+              local n
+              n="$(jq 'if type=="array" then length elif has("incidents") then (.incidents|length) else empty end' "$body_file" 2>/dev/null || true)"
+              if [ -n "$n" ]; then
+                extra=" — open incidents: $n"
+              fi
+            fi
+
+            echo "| \`$path\` | $code | $status$extra |" >> "$GITHUB_STEP_SUMMARY"
+            rm -f "$body_file"
+          }
+
+          check "/api/incidents"
+          check "/api/analytics"
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$FAILED" -ne 0 ]; then
+            echo "**Result: UNHEALTHY** — one or more endpoints returned non-200." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo "**Result: HEALTHY**" >> "$GITHUB_STEP_SUMMARY"

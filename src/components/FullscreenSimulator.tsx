@@ -2,8 +2,8 @@
 
 // Dedicated full-screen 3D viewer for ATLAS-01 (/simulate/atlas-01).
 //
-// Renders the F12 voxel Building Simulator edge-to-edge on every device — phone,
-// tablet, desktop — as a true full-viewport showcase. The console twin and the
+// Renders the F12 cinematic Building Simulator edge-to-edge on every device —
+// phone, tablet, desktop — as a true full-viewport showcase. The console twin and the
 // simulator stage both link here via their "fullscreen viewer" control. Minimal
 // chrome: an exit affordance (← / Esc), the simulator option toggles, a live
 // elevator readout, the need legend, and a tap-to-inspect floor chip.
@@ -33,6 +33,15 @@ const NEEDS: { need: Floor["need"]; label: string }[] = [
   { need: "air", label: "Air" },
   { need: "health", label: "Health" },
   { need: "restoration", label: "Restoration" },
+];
+
+type ResearchLens = NonNullable<SimOptions["researchLens"]>;
+
+const RESEARCH_LENSES: { lens: ResearchLens; label: string }[] = [
+  { lens: "ops", label: "Ops" },
+  { lens: "fluid", label: "Fluid" },
+  { lens: "sdf", label: "SDF" },
+  { lens: "hologram", label: "Holo" },
 ];
 
 function Toggle({
@@ -73,14 +82,13 @@ export default function FullscreenSimulator({
     cutaway: true,
     autoRotate: true,
     elevatorRunning: true,
-    detailedModels: false,
+    researchLens: "ops",
+    detailedModels: true,
     source: defaultTwinModel(),
   });
-  // Single render-mode switch: "Pixel" = voxel figures + pixelation; off =
-  // crisp procedural human characters. The two move together. Defaults to Pixel
-  // here (and in the simulator) so first paint stays light; the detailed look is
-  // one tap away.
-  const [pixel, setPixel] = useState(true);
+  // Single render-mode switch: off = cinematic detailed twin; "Pixel" = retro
+  // voxel figures + pixelation for a deliberate lightweight fallback.
+  const [pixel, setPixel] = useState(false);
   const togglePixel = useCallback(() => {
     setPixel((on) => {
       const next = !on;
@@ -125,6 +133,7 @@ export default function FullscreenSimulator({
   );
 
   const elevatorFloorName = floors[elevatorFloor]?.name ?? "—";
+  const activeLens = options.researchLens ?? "ops";
 
   return (
     <div
@@ -163,14 +172,29 @@ export default function FullscreenSimulator({
           </div>
         </div>
 
-        <div className="flex flex-wrap justify-end gap-1 rounded-2xl border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur">
-          <Toggle label={options.night ? "Night" : "Day"} active={options.night} onClick={() => set({ night: !options.night })} />
-          <Toggle label="Cut-away" active={options.cutaway} onClick={() => set({ cutaway: !options.cutaway })} />
-          <Toggle label="Pixel" active={pixel} onClick={togglePixel} />
-          <Toggle label="ASCII" active={ascii} onClick={() => setAscii((a) => !a)} />
-          <Toggle label="Orbit" active={options.autoRotate} onClick={() => set({ autoRotate: !options.autoRotate })} />
-          <Toggle label="Elevator" active={options.elevatorRunning} onClick={() => set({ elevatorRunning: !options.elevatorRunning })} />
-          <Toggle label="Hero" active={options.source === "gltf"} onClick={() => set({ source: options.source === "gltf" ? "voxel" : "gltf" })} />
+        <div className="flex min-w-0 flex-col items-end gap-2">
+          <div className="flex max-w-[min(29rem,calc(100vw-4rem))] flex-wrap justify-end gap-1 rounded-2xl border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur">
+            <Toggle label={options.night ? "Night" : "Day"} active={options.night} onClick={() => set({ night: !options.night })} />
+            <Toggle label="Cut-away" active={options.cutaway} onClick={() => set({ cutaway: !options.cutaway })} />
+            <Toggle label="Pixel" active={pixel} onClick={togglePixel} />
+            <Toggle label="ASCII" active={ascii} onClick={() => setAscii((a) => !a)} />
+            <Toggle label="Orbit" active={options.autoRotate} onClick={() => set({ autoRotate: !options.autoRotate })} />
+            <Toggle label="Elevator" active={options.elevatorRunning} onClick={() => set({ elevatorRunning: !options.elevatorRunning })} />
+            <Toggle label="Hero" active={options.source === "gltf"} onClick={() => set({ source: options.source === "gltf" ? "voxel" : "gltf" })} />
+          </div>
+          <div
+            aria-label="3D research lens"
+            className="flex max-w-[min(20rem,calc(100vw-4rem))] flex-wrap justify-end gap-1 rounded-2xl border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur"
+          >
+            {RESEARCH_LENSES.map((mode) => (
+              <Toggle
+                key={mode.lens}
+                label={mode.label}
+                active={activeLens === mode.lens}
+                onClick={() => set({ researchLens: mode.lens })}
+              />
+            ))}
+          </div>
         </div>
       </div>
 

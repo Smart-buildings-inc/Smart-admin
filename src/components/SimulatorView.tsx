@@ -50,6 +50,45 @@ const NEEDS: { need: Floor["need"]; label: string }[] = [
   { need: "restoration", label: "Restoration" },
 ];
 
+type ResearchLens = NonNullable<SimOptions["researchLens"]>;
+
+const RESEARCH_LENSES: {
+  lens: ResearchLens;
+  label: string;
+  title: string;
+  source: string;
+  body: string;
+}[] = [
+  {
+    lens: "ops",
+    label: "Ops",
+    title: "Operational twin",
+    source: "R3F + Drei production baseline",
+    body: "The plain ATLAS operating view keeps telemetry, people, elevator movement, and floor selection visually dominant.",
+  },
+  {
+    lens: "fluid",
+    label: "Fluid",
+    title: "Volumetric flow field",
+    source: "Inspired by WebGL Fluid Simulation + Trinity",
+    body: "Additive currents wrap the building like air, water, and heat flow studies without pulling in a heavy solver.",
+  },
+  {
+    lens: "sdf",
+    label: "SDF",
+    title: "Morphing rooftop sculpture",
+    source: "Inspired by Shader Park SDF workflows",
+    body: "A procedural mesh breathes above the roof to preview how generative forms could react to real ATLAS signals.",
+  },
+  {
+    lens: "hologram",
+    label: "Holo",
+    title: "Point-cloud halo",
+    source: "Inspired by Potree + GaussianSplats3D",
+    body: "A sparse holographic shell suggests LiDAR, scan, and capture-driven digital-twin overlays around the habitat.",
+  },
+];
+
 function Toggle({
   label,
   active,
@@ -89,13 +128,13 @@ export default function SimulatorView({
     cutaway: true,
     autoRotate: true,
     elevatorRunning: true,
-    detailedModels: false,
+    researchLens: "ops",
+    detailedModels: true,
     source: defaultTwinModel(),
   });
-  // Single render-mode switch: "Pixel" mode = voxel figures + pixelation; off =
-  // crisp procedural human characters. The two move together. Defaults to
-  // Pixel so first paint stays light; the detailed look is one tap.
-  const [pixel, setPixel] = useState(true);
+  // Single render-mode switch: off = cinematic detailed twin; "Pixel" = retro
+  // voxel figures + pixelation for a deliberate lightweight fallback.
+  const [pixel, setPixel] = useState(false);
   const togglePixel = useCallback(() => {
     setPixel((on) => {
       const next = !on;
@@ -114,6 +153,9 @@ export default function SimulatorView({
     () => floors.find((f) => f.key === selectedKey) ?? null,
     [floors, selectedKey],
   );
+  const activeLens = options.researchLens ?? "ops";
+  const activeLensInfo =
+    RESEARCH_LENSES.find((mode) => mode.lens === activeLens) ?? RESEARCH_LENSES[0];
 
   const elevatorFloorName = floors[elevatorFloor]?.name ?? "—";
   const metricEntries = selectedFloor
@@ -127,7 +169,7 @@ export default function SimulatorView({
         <div>
           <h1 className="display text-2xl text-white lg:text-3xl">Building Simulator</h1>
           <p className="mt-1 max-w-2xl text-sm text-slate-400">
-            ATLAS‑01, operating live — every floor a human need, rendered in voxel.{" "}
+            ATLAS‑01, operating live — every floor a human need, rendered as a cinematic building twin.{" "}
             <span className="important">Watch the building breathe.</span>
           </p>
         </div>
@@ -174,14 +216,29 @@ export default function SimulatorView({
 
             {/* Controls */}
             <div className="absolute right-3 top-3 z-10 flex items-start justify-end gap-2">
-              <div className="flex flex-wrap justify-end gap-1 rounded-2xl border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur">
-                <Toggle label={options.night ? "Night" : "Day"} active={options.night} onClick={() => set({ night: !options.night })} />
-                <Toggle label="Cut-away" active={options.cutaway} onClick={() => set({ cutaway: !options.cutaway })} />
-                <Toggle label="Pixel" active={pixel} onClick={togglePixel} />
-                <Toggle label="ASCII" active={ascii} onClick={() => setAscii((a) => !a)} />
-                <Toggle label="Orbit" active={options.autoRotate} onClick={() => set({ autoRotate: !options.autoRotate })} />
-                <Toggle label="Elevator" active={options.elevatorRunning} onClick={() => set({ elevatorRunning: !options.elevatorRunning })} />
-                <Toggle label="Hero" active={options.source === "gltf"} onClick={() => set({ source: options.source === "gltf" ? "voxel" : "gltf" })} />
+              <div className="flex min-w-0 flex-col items-end gap-2">
+                <div className="flex max-w-[min(29rem,calc(100vw-2rem))] flex-wrap justify-end gap-1 rounded-2xl border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur">
+                  <Toggle label={options.night ? "Night" : "Day"} active={options.night} onClick={() => set({ night: !options.night })} />
+                  <Toggle label="Cut-away" active={options.cutaway} onClick={() => set({ cutaway: !options.cutaway })} />
+                  <Toggle label="Pixel" active={pixel} onClick={togglePixel} />
+                  <Toggle label="ASCII" active={ascii} onClick={() => setAscii((a) => !a)} />
+                  <Toggle label="Orbit" active={options.autoRotate} onClick={() => set({ autoRotate: !options.autoRotate })} />
+                  <Toggle label="Elevator" active={options.elevatorRunning} onClick={() => set({ elevatorRunning: !options.elevatorRunning })} />
+                  <Toggle label="Hero" active={options.source === "gltf"} onClick={() => set({ source: options.source === "gltf" ? "voxel" : "gltf" })} />
+                </div>
+                <div
+                  aria-label="3D research lens"
+                  className="flex max-w-[min(20rem,calc(100vw-2rem))] flex-wrap justify-end gap-1 rounded-2xl border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur"
+                >
+                  {RESEARCH_LENSES.map((mode) => (
+                    <Toggle
+                      key={mode.lens}
+                      label={mode.label}
+                      active={activeLens === mode.lens}
+                      onClick={() => set({ researchLens: mode.lens })}
+                    />
+                  ))}
+                </div>
               </div>
               <FullscreenLink />
             </div>
@@ -277,14 +334,22 @@ export default function SimulatorView({
           <div className="panel panel-pad text-sm text-slate-400">
             <div className="kpi-label mb-1.5">About this view</div>
             <p>
-              A procedurally-built voxel twin of ATLAS‑01 rendered in three.js — a
-              working elevator, switchback stairs, rooftop solar + reservoir, and
-              residents going about their day. Toggle <span className="text-slate-200">Cut-away</span> for the
+              A cinematic operating twin of ATLAS‑01 rendered in three.js — a
+              working elevator, switchback stairs, rooftop solar, detailed floor
+              modules, and residents going about their day. Toggle <span className="text-slate-200">Cut-away</span> for the
               dollhouse view, <span className="text-slate-200">Night</span> to see the windows glow,{" "}
-              <span className="text-slate-200">Pixel</span> for the retro voxel look (switch it off
-              for detailed 3D models), and <span className="text-slate-200">ASCII</span> for the
-              signature glyph render.
+              <span className="text-slate-200">Pixel</span> only when you want the retro voxel fallback, and{" "}
+              <span className="text-slate-200">ASCII</span> for the signature glyph render.
             </p>
+          </div>
+
+          <div className="panel panel-pad text-sm text-slate-400">
+            <div className="kpi-label mb-1.5">3D research lens</div>
+            <div className="text-base font-semibold text-white">{activeLensInfo.title}</div>
+            <div className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-signal-info">
+              {activeLensInfo.source}
+            </div>
+            <p className="mt-2 leading-relaxed">{activeLensInfo.body}</p>
           </div>
         </section>
       </div>

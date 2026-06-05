@@ -1,70 +1,90 @@
-# Terms of Service
+# ATLAS OS — Terms of Service
 
-> **Draft for counsel review — not legal advice.** These terms govern access to
-> and use of ATLAS OS (Smart Buildings Inc.) and must be reviewed and finalized
-> by qualified counsel before reliance.
+| | |
+|---|---|
+| **Provider** | Smart Buildings Inc. / ATLAS Habitat Initiative ("we", "us") |
+| **Product** | ATLAS OS (the Habitat Twin) |
+| **Status** | Draft v0.1 — review with counsel before use |
+| **Effective** | _[date on publication]_ |
+| **Governing law** | _[Province, Canada — e.g. Ontario]_ |
 
-_Last updated: draft. Governing law: Ontario, Canada._
+> **Disclaimer.** Template for review by qualified counsel; not legal advice.
 
-## Acceptance
+---
 
-By accessing or using the ATLAS OS platform ("Service"), you agree to these
-Terms. If you use the Service on behalf of an organization, you represent that
-you are authorized to bind that organization.
+## 1. Agreement
 
-## The Service
+By accessing or using ATLAS OS (the "Service") you agree to these Terms. If you use the
+Service for an organization, you represent you may bind it.
 
-ATLAS OS provides a building-operations platform: a 3D digital twin, per-floor
-telemetry, incident triage, resident broadcast, sensor ingestion, and fleet and
-portfolio views. Features may evolve over time.
+## 2. The Service
 
-## Accounts & access
+ATLAS OS is an operations and visualization layer (digital twin, telemetry, incident feed,
+broadcast) for ATLAS habitats. It is provided on a subscription or evaluation basis.
 
-Operators are responsible for safeguarding their credentials and for activity
-under their accounts. You must promptly notify us of any unauthorized use.
+## 3. **Safety limitation (critical)**
 
-## Acceptable use
+The Service is an **observe‑and‑advise optimization layer only**. It does **not** control,
+and must never be relied upon for, life‑safety functions (fire, egress, electrical
+isolation, biogas, water safety), which are held by independent, safety‑rated building
+controls. You must not configure or use the Service as a life‑safety dependency. See
+[Owner's Project Requirements](./OWNERS_PROJECT_REQUIREMENTS.md).
 
-You agree not to: (a) misuse or interfere with the Service; (b) attempt to gain
-unauthorized access; (c) use the Service to violate applicable law or the privacy
-rights of residents; or (d) reverse engineer except as permitted by law.
+## 4. Acceptable use
 
-## Building data & roles
+You will not: (a) break the law or others' rights; (b) reverse engineer or circumvent
+security; (c) overload, probe, or disrupt the Service; (d) misuse resident data; (e) use it
+as a safety‑critical control system (see §3). We may suspend access for violations.
 
-For building telemetry and presence signals, the building operator is the
-controller and Smart Buildings Inc. acts as a service provider/processor under
-the **Data Processing Addendum**. Operators are responsible for obtaining any
-resident notices and consents required for sensing.
+## 5. Accounts & security
 
-## Availability
+Keep credentials confidential; you are responsible for activity under your account; notify
+us of any compromise. We may require SSO/MFA for operators.
 
-The Service is provided on a commercially reasonable best-efforts basis. The
-platform is **local-first by design**: core views render on the operator's own
-data, so loss of cloud connectivity degrades gracefully rather than failing.
+## 6. Data & privacy
 
-## Intellectual property
+Your use is subject to the [Privacy Policy](./PRIVACY_POLICY.md) and, for business
+customers, the [Data Processing Addendum](./DATA_PROCESSING_ADDENDUM.md). You are
+responsible for the lawfulness of data you input.
 
-Smart Buildings Inc. retains all rights in the platform and its software.
-Operator and building data remain the property of the operator.
+## 7. Intellectual property
 
-## Disclaimers
+The Service and its content are owned by us and licensed, not sold (see the repository
+[LICENSE](../LICENSE)). Open‑source and third‑party components remain under their own
+licenses. Feedback may be used without obligation.
 
-The Service, and any modelling, financial, carbon, or compliance figures shown
-within it, are provided **for information only** and are not engineering,
-financial, or legal advice. Right-sizing, permitting, and code-compliance
-decisions must be confirmed with qualified professionals.
+## 8. Availability & changes
 
-## Limitation of liability
+We target high availability but provide the Service "as is"; we may modify or discontinue
+features with reasonable notice. Local‑first operation means core building function does
+not depend on Service uptime.
 
-To the maximum extent permitted by law, Smart Buildings Inc. is not liable for
-indirect, incidental, or consequential damages arising from use of the Service.
+## 9. Warranties & liability
 
-## Governing law
+THE SERVICE IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND. TO THE MAXIMUM EXTENT
+PERMITTED BY LAW, OUR AGGREGATE LIABILITY IS LIMITED TO FEES PAID IN THE PRIOR 12 MONTHS,
+AND WE ARE NOT LIABLE FOR INDIRECT OR CONSEQUENTIAL DAMAGES. Nothing limits liability that
+cannot be limited by law.
 
-These Terms are governed by the laws of the Province of Ontario and the federal
-laws of Canada applicable therein.
+## 10. Indemnity
 
-## Contact
+You will indemnify us against claims arising from your misuse of the Service or violation
+of these Terms.
 
-Questions about these Terms: **legal@smartbuildings.example** (placeholder —
-replace with the official contact before publication).
+## 11. Term & termination
+
+Either party may terminate per the applicable order/agreement; we may suspend for breach or
+risk to safety/security. On termination, your access ends and data is handled per the
+[retention schedule](./SECURITY_AND_DATA_COMPLIANCE.md).
+
+## 12. Governing law & disputes
+
+These Terms are governed by the laws of _[Province, Canada]_; disputes resolved in the
+courts of _[venue]_, subject to any mandatory consumer protections.
+
+## 13. Contact
+
+Elijah@vfitter.com
+
+---
+*Pairs with the Privacy Policy, DPA, and repository LICENSE.*

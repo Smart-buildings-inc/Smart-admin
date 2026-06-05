@@ -52,6 +52,53 @@ test.describe("ATLAS OS marketing parallax", () => {
     expect(depth.front.zIndex).toBeGreaterThan(depth.mid.zIndex);
   });
 
+  test("parallax scroll creates cinematic depth progression", async ({
+    page,
+  }) => {
+    await page.goto("/landing");
+
+    const parallax = page.getByTestId("marketing-parallax");
+    await parallax.scrollIntoViewIfNeeded();
+    await expect(parallax).toBeVisible();
+
+    const readDepth = async () =>
+      parallax.evaluate((el) => {
+        const style = window.getComputedStyle(el);
+
+        return {
+          backdropBlur: Number.parseFloat(
+            style.getPropertyValue("--parallax-back-blur"),
+          ),
+          backdropScale: Number.parseFloat(
+            style.getPropertyValue("--parallax-back-scale"),
+          ),
+          foregroundScale: Number.parseFloat(
+            style.getPropertyValue("--parallax-front-scale"),
+          ),
+          progress: Number.parseFloat(
+            style.getPropertyValue("--parallax-progress"),
+          ),
+          twinScale: Number.parseFloat(
+            style.getPropertyValue("--parallax-twin-scale"),
+          ),
+        };
+      });
+
+    const before = await readDepth();
+
+    await page.evaluate(() => window.scrollBy(0, window.innerHeight * 0.45));
+
+    await expect
+      .poll(async () => (await readDepth()).progress)
+      .toBeGreaterThan(before.progress);
+
+    const after = await readDepth();
+    expect(after.backdropBlur).toBeGreaterThan(before.backdropBlur);
+    expect(after.backdropScale).toBeLessThan(before.backdropScale);
+    expect(after.foregroundScale).toBeGreaterThan(before.foregroundScale);
+    expect(after.twinScale).toBeGreaterThan(before.twinScale);
+  });
+
   test("overview page renders the drone demo video with its poster", async ({
     page,
   }) => {

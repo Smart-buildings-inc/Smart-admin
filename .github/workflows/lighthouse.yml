@@ -1,0 +1,61 @@
+name: Lighthouse
+
+# Smart cloud automation: performance + accessibility budget check on every PR.
+#
+# Builds the app, serves the production build on port 3000, then runs Lighthouse
+# CI against the key surfaces (console, landing, simulator). Non-blocking for now
+# (continue-on-error) so it surfaces regressions without gating merges while we
+# tune the budgets; the HTML/JSON report is uploaded as an artifact either way.
+on:
+  pull_request:
+
+# One Lighthouse run per PR branch; cancel superseded runs.
+concurrency:
+  group: lighthouse-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Start app
+        run: |
+          npm run start &
+          # Wait for the server to accept connections (up to ~60s).
+          for i in $(seq 1 60); do
+            if curl -sSf -o /dev/null http://localhost:3000/; then
+              echo "App is up."
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "App did not start within 60s" >&2
+          exit 1
+
+      - name: Run Lighthouse CI
+        id: lhci
+        continue-on-error: true
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          configPath: ./lighthouserc.json
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+      - name: Upload Lighthouse report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report
+          path: .lighthouseci
+          if-no-files-found: ignore

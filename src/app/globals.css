@@ -754,8 +754,22 @@ body {
   --parallax-mid: 0px;
   --parallax-front: 0px;
   --parallax-float: 0px;
+  --parallax-progress: 0;
+  --parallax-back-scale: 1.16;
+  --parallax-twin-scale: 0.92;
+  --parallax-front-scale: 1.1;
+  --parallax-back-blur: 4.5px;
+  --parallax-back-opacity: 0.55;
+  --parallax-back-brightness: 0.77;
+  --parallax-twin-opacity: 0.88;
+  --parallax-front-opacity: 0.9;
+  --parallax-grid-opacity: 0.2;
+  --parallax-veil-opacity: 0.9;
   min-width: 0;
   width: 100%;
+  contain: layout paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 360px;
 }
 
 .marketing-parallax__viewport {
@@ -782,24 +796,32 @@ body {
 .marketing-parallax__image {
   pointer-events: none;
   user-select: none;
-  will-change: transform;
+  backface-visibility: hidden;
+  transition:
+    transform 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .marketing-parallax__backdrop {
   z-index: 0;
   object-fit: cover;
-  opacity: 0.52;
-  transform: translate3d(0, var(--parallax-back), 0) scale(1.13);
-  filter: blur(10px) saturate(0.96) contrast(0.92) brightness(0.74);
+  opacity: var(--parallax-back-opacity);
+  transform: translate3d(0, var(--parallax-back), 0) scale(var(--parallax-back-scale));
+  transform-origin: 50% 46%;
+  will-change: transform, filter, opacity;
+  filter: blur(var(--parallax-back-blur)) saturate(0.96) contrast(0.92) brightness(var(--parallax-back-brightness));
 }
 
 .marketing-parallax__twin {
   z-index: 2;
   object-fit: contain;
   object-position: 50% 52%;
-  opacity: 0.9;
+  opacity: var(--parallax-twin-opacity);
   mix-blend-mode: screen;
-  transform: translate3d(0, var(--parallax-mid), 0) scale(0.92);
+  transform: translate3d(0, var(--parallax-mid), 0) scale(var(--parallax-twin-scale));
+  transform-origin: 50% 58%;
+  will-change: transform, opacity;
   filter: saturate(1.28) contrast(1.16) brightness(1.08) drop-shadow(0 0 24px rgba(127, 231, 224, 0.18));
 }
 
@@ -807,9 +829,11 @@ body {
   z-index: 4;
   object-fit: cover;
   object-position: 50% 100%;
-  opacity: 0.94;
+  opacity: var(--parallax-front-opacity);
   mix-blend-mode: screen;
-  transform: translate3d(0, var(--parallax-front), 0) scale(1.1);
+  transform: translate3d(0, var(--parallax-front), 0) scale(var(--parallax-front-scale));
+  transform-origin: 50% 88%;
+  will-change: transform, opacity;
   filter: saturate(1.22) contrast(1.12) brightness(1.08);
   -webkit-mask-image: linear-gradient(
     to top,
@@ -837,6 +861,8 @@ body {
 
 .marketing-parallax__veil {
   z-index: 3;
+  opacity: var(--parallax-veil-opacity);
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   background:
     linear-gradient(to bottom, rgba(7, 11, 16, 0.16), transparent 26%, rgba(7, 11, 16, 0.2)),
     radial-gradient(80% 90% at 50% 30%, transparent 30%, rgba(7, 11, 16, 0.5));
@@ -844,8 +870,12 @@ body {
 
 .marketing-parallax__grid {
   z-index: 5;
-  opacity: 0.18;
+  opacity: var(--parallax-grid-opacity);
   transform: translate3d(0, var(--parallax-float), 0);
+  will-change: transform;
+  transition:
+    transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   background-image:
     linear-gradient(rgba(127, 231, 224, 0.12) 1px, transparent 1px),
     linear-gradient(90deg, rgba(127, 231, 224, 0.1) 1px, transparent 1px);
@@ -863,6 +893,15 @@ body {
 }
 
 @media (max-width: 640px) {
+  .marketing-parallax {
+    --parallax-back-scale: 1.28;
+    --parallax-twin-scale: 1.08;
+    --parallax-front-scale: 1.22;
+    --parallax-back-blur: 3.5px;
+    --parallax-back-opacity: 0.5;
+    --parallax-front-opacity: 0.9;
+  }
+
   .marketing-parallax__viewport,
   .marketing-parallax--compact .marketing-parallax__viewport {
     min-height: 0;
@@ -872,26 +911,194 @@ body {
 
   .marketing-parallax__backdrop {
     object-position: 50% 50%;
-    opacity: 0.48;
-    filter: blur(8px) saturate(0.96) contrast(0.92) brightness(0.74);
-    transform: translate3d(0, var(--parallax-back), 0) scale(1.26);
+    filter: blur(var(--parallax-back-blur)) saturate(0.96) contrast(0.92) brightness(var(--parallax-back-brightness));
   }
 
   .marketing-parallax__twin {
-    opacity: 0.92;
-    transform: translate3d(0, var(--parallax-mid), 0) scale(1.08);
+    object-position: 50% 54%;
   }
 
   .marketing-parallax__foreground {
-    opacity: 0.88;
-    transform: translate3d(0, var(--parallax-front), 0) scale(1.22);
+    object-position: 50% 100%;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .marketing-parallax__image,
   .marketing-parallax__grid {
-    transform: none;
+    transition: none;
     will-change: auto;
   }
+
+  .marketing-parallax__grid {
+    transform: none;
+  }
+}
+
+/* ── Legal / document prose ────────────────────────────────────────────────
+   Styling for server-rendered markdown HTML on /legal/* pages (.doc-prose).
+   Dark by default; light-mode overrides mirror the utility overrides above so
+   the legal pages track the global theme toggle. */
+.doc-prose {
+  color: #cbd5e1; /* slate-300 */
+  font-size: 0.95rem;
+  line-height: 1.7;
+  max-width: 72ch;
+}
+.doc-prose > :first-child {
+  margin-top: 0;
+}
+.doc-prose h2 {
+  margin: 1.8em 0 0.6em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #f1f5f9; /* slate-100 */
+}
+.doc-prose h3 {
+  margin: 1.4em 0 0.5em;
+  font-size: 1.08rem;
+  font-weight: 650;
+  color: #e2e8f0;
+}
+.doc-prose h4 {
+  margin: 1.2em 0 0.4em;
+  font-size: 0.98rem;
+  font-weight: 650;
+  color: #e2e8f0;
+}
+.doc-prose p {
+  margin: 0.75em 0;
+}
+.doc-prose ul,
+.doc-prose ol {
+  margin: 0.7em 0;
+  padding-left: 1.4em;
+}
+.doc-prose li {
+  margin: 0.35em 0;
+}
+.doc-prose ul > li {
+  list-style: disc;
+}
+.doc-prose ol > li {
+  list-style: decimal;
+}
+.doc-prose a {
+  color: #4ea8ff; /* signal-info */
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.doc-prose a:hover {
+  color: #7fc0ff;
+}
+.doc-prose strong {
+  color: #f8fafc;
+  font-weight: 680;
+}
+.doc-prose em {
+  color: #cbd5e1;
+}
+.doc-prose code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.86em;
+  padding: 0.12em 0.4em;
+  border-radius: 6px;
+  background: rgba(148, 163, 184, 0.14);
+  color: #bfdbfe;
+}
+.doc-prose pre {
+  margin: 1em 0;
+  padding: 0.9em 1em;
+  overflow-x: auto;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+}
+.doc-prose pre code {
+  padding: 0;
+  background: none;
+  color: #e2e8f0;
+}
+.doc-prose blockquote {
+  margin: 1em 0;
+  padding: 0.6em 1em;
+  border-left: 3px solid #4ea8ff;
+  border-radius: 0 8px 8px 0;
+  background: rgba(78, 168, 255, 0.07);
+  color: #cbd5e1;
+  font-style: italic;
+}
+.doc-prose blockquote p {
+  margin: 0.3em 0;
+}
+.doc-prose hr {
+  margin: 1.8em 0;
+  border: 0;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+}
+.doc-prose table {
+  width: 100%;
+  margin: 1em 0;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  display: block;
+  overflow-x: auto;
+}
+.doc-prose th,
+.doc-prose td {
+  padding: 0.5em 0.7em;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  text-align: left;
+  vertical-align: top;
+}
+.doc-prose th {
+  background: rgba(148, 163, 184, 0.1);
+  color: #f1f5f9;
+  font-weight: 650;
+}
+
+/* Light-mode overrides for the document prose. */
+:root.theme-light .doc-prose {
+  color: #334155;
+}
+:root.theme-light .doc-prose h2,
+:root.theme-light .doc-prose h3,
+:root.theme-light .doc-prose h4 {
+  color: #0f172a;
+}
+:root.theme-light .doc-prose h2 {
+  border-bottom-color: rgba(100, 116, 139, 0.25);
+}
+:root.theme-light .doc-prose strong {
+  color: #0f172a;
+}
+:root.theme-light .doc-prose a {
+  color: #2563eb;
+}
+:root.theme-light .doc-prose code {
+  background: rgba(100, 116, 139, 0.14);
+  color: #1d4ed8;
+}
+:root.theme-light .doc-prose pre {
+  background: #f1f5f9;
+  border-color: rgba(100, 116, 139, 0.2);
+}
+:root.theme-light .doc-prose pre code {
+  color: #0f172a;
+}
+:root.theme-light .doc-prose blockquote {
+  background: rgba(37, 99, 235, 0.07);
+  border-left-color: #2563eb;
+  color: #334155;
+}
+:root.theme-light .doc-prose th {
+  background: rgba(100, 116, 139, 0.1);
+  color: #0f172a;
+}
+:root.theme-light .doc-prose th,
+:root.theme-light .doc-prose td {
+  border-color: rgba(100, 116, 139, 0.25);
 }

@@ -7,7 +7,6 @@
 // page (/simulate/atlas-01) which renders the twin edge-to-edge on every device.
 // Styled to match the other round stage controls.
 
-import Link from "next/link";
 import { CornersOut } from "@phosphor-icons/react";
 
 export default function FullscreenLink({
@@ -18,13 +17,13 @@ export default function FullscreenLink({
   label?: string;
 }) {
   return (
-    <Link
+    <a
       href={href}
       aria-label={label}
       title="Fullscreen viewer"
       className="flex h-8 w-8 items-center justify-center rounded-full border border-ink-600/70 bg-ink-900/80 text-slate-200 backdrop-blur transition-colors hover:bg-ink-800 hover:text-white"
     >
       <CornersOut aria-hidden weight="duotone" className="h-4 w-4" />
-    </Link>
+    </a>
   );
 }

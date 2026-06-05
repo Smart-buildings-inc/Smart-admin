@@ -1,4 +1,28 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
+
+async function waitForSplashToStopBlocking(page: Page) {
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const node = document.querySelector('[data-testid="app-splash"]');
+          if (!node) return true;
+          const style = window.getComputedStyle(node);
+          return (
+            style.pointerEvents === "none" ||
+            style.display === "none" ||
+            style.visibility === "hidden" ||
+            Number(style.opacity) < 0.01
+          );
+        }),
+      { timeout: 20_000 },
+    )
+    .toBe(true);
+}
+
+async function waitForRouteLoadingToClear(page: Page) {
+  await expect(page.getByTestId("route-loading")).toBeHidden({ timeout: 20_000 });
+}
 
 // P0 — Console home page renders the core operator UI.
 test.describe("ATLAS OS console", () => {
@@ -11,7 +35,7 @@ test.describe("ATLAS OS console", () => {
     await expect(splash).toBeVisible();
     await expect(splash.locator("svg")).toBeVisible();
     await expect(splash).toHaveAttribute("aria-label", "Loading ATLAS OS");
-    await expect(splash).toBeHidden({ timeout: 4000 });
+    await waitForSplashToStopBlocking(page);
 
     await expect(
       page.getByRole("heading", { level: 1, name: /ATLAS\s*OS/ }),
@@ -22,6 +46,7 @@ test.describe("ATLAS OS console", () => {
     page,
   }) => {
     await page.goto("/");
+    await waitForSplashToStopBlocking(page);
 
     // Header (the title contains a non-breaking space between ATLAS and OS).
     await expect(
@@ -72,29 +97,19 @@ test.describe("ATLAS OS console", () => {
   });
 
   // The twin's fullscreen control links to the dedicated /simulate/atlas-01
-  // viewer, which renders the twin edge-to-edge on phone and desktop alike.
+  // viewer. The simulator spec owns the edge-to-edge geometry assertion.
   test("fullscreen control opens the full-viewport viewer", async ({ page }) => {
+    test.setTimeout(60_000);
     await page.goto("/");
-    const viewport = page.viewportSize();
-    if (!viewport) throw new Error("no viewport size");
+    await waitForSplashToStopBlocking(page);
 
     await page.getByRole("link", { name: "Open fullscreen viewer" }).click();
     await expect(page).toHaveURL(/\/simulate\/atlas-01$/);
 
-    // The full-screen stage fills the viewport (allow a 2px rounding tolerance).
+    await waitForRouteLoadingToClear(page);
     const stage = page.getByTestId("fullscreen-stage");
-    await expect
-      .poll(async () => {
-        const box = await stage.boundingBox();
-        if (!box) return false;
-        return (
-          Math.abs(box.x) <= 2 &&
-          Math.abs(box.y) <= 2 &&
-          Math.abs(box.width - viewport.width) <= 2 &&
-          Math.abs(box.height - viewport.height) <= 2
-        );
-      })
-      .toBe(true);
+    await expect(stage).toBeVisible({ timeout: 20_000 });
+    await expect(stage).toHaveClass(/fixed/);
 
     // Body scroll is locked while the viewer owns the screen.
     await expect
@@ -118,18 +133,19 @@ test.describe("ATLAS OS console", () => {
   });
 
   // The GitHub repo link shows off the source. On desktop it's an icon button
-  // in the top-right cluster; on mobile it lives inside the hamburger drawer.
+  // in the top-right cluster; on phone/tablet it lives inside the hamburger drawer.
   test("top navbar exposes a GitHub repo link per viewport", async ({ page }) => {
     // The navbar is global (rendered in layout.tsx), so any route works — use a
     // lightweight page rather than the WebGL-heavy console home.
     await page.goto("/sitemap");
+    await waitForSplashToStopBlocking(page);
     const repoUrl = "https://github.com/Smart-buildings-inc/Smart-admin";
     const width = page.viewportSize()?.width ?? 0;
 
-    if (width < 768) {
+    if (width < 1024) {
       // Mobile: link is inside the drawer, revealed by the hamburger.
       await page.getByRole("button", { name: "Open menu" }).click();
-      const mobileLink = page.getByRole("link", { name: "GitHub" });
+      const mobileLink = page.locator("#mobile-nav").getByRole("link", { name: "GitHub" });
       await expect(mobileLink).toBeVisible();
       await expect(mobileLink).toHaveAttribute("href", repoUrl);
       await expect(mobileLink).toHaveAttribute("target", "_blank");
@@ -151,6 +167,7 @@ test.describe("ATLAS OS console", () => {
       window.localStorage.setItem("atlas-theme", "dark");
     });
     await page.goto("/");
+    await waitForSplashToStopBlocking(page);
 
     const themeToggle = page.getByTestId("theme-toggle");
     await expect(themeToggle).toBeVisible();

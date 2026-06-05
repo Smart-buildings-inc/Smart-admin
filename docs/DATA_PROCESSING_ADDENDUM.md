@@ -1,72 +1,77 @@
-# Data Processing Addendum
+# ATLAS OS — Data Processing Addendum (DPA)
 
-> **Draft for counsel review — not legal advice.** This Addendum describes the
-> controller/processor terms intended to apply when Smart Buildings Inc. processes
-> personal data on behalf of a building operator. It must be reviewed and
-> finalized by qualified counsel before reliance.
+| | |
+|---|---|
+| **Parties** | Smart Buildings Inc. ("Processor") and the Customer ("Controller") |
+| **Product** | ATLAS OS (the Habitat Twin) |
+| **Status** | Draft v0.1 — review with counsel before signing |
+| **Incorporates** | [Terms of Service](./TERMS_OF_SERVICE.md) · [Privacy Policy](./PRIVACY_POLICY.md) · [Security & Data Compliance](./SECURITY_AND_DATA_COMPLIANCE.md) |
 
-_Last updated: draft. Governing law: Ontario, Canada._
+> **Disclaimer.** Template for review by qualified counsel; not legal advice. This DPA
+> applies where we process personal information on a customer's behalf (B2B deployments).
 
-## Roles
+---
 
-The building **operator is the controller** of personal data processed through
-ATLAS OS for its deployment. **Smart Buildings Inc. is the processor**, acting
-only on documented instructions from the controller, except where law requires
-otherwise.
+## 1. Roles
 
-## Scope of processing
+The Customer is the **Controller** (or, under PIPEDA, the organization accountable for the
+personal information); we act as **Processor / service provider** processing personal
+information only on the Controller's documented instructions.
 
-- **Subject matter:** operation of the ATLAS OS platform for the operator's
-  building(s).
-- **Data types:** operator account data; building telemetry; privacy-by-design
-  presence (WiFi-CSI, no cameras) and, where enabled, clinic vital-sign
-  estimates.
-- **Data subjects:** operators, staff, and residents of the deployed building.
+## 2. Scope of processing
 
-## Processor obligations
+| Item | Detail |
+|---|---|
+| **Subject matter** | Provision of ATLAS OS |
+| **Duration** | Term of the agreement + retention/return/deletion period |
+| **Nature & purpose** | Hosting, telemetry processing, incident/broadcast handling |
+| **Data types** | Operator accounts, resident contact data, operational telemetry, camera‑free presence; **PHI only if telehealth is enabled** |
+| **Data subjects** | Operators, residents |
 
-We will: (a) process personal data only on the controller's instructions;
-(b) ensure persons authorized to process are bound by confidentiality;
-(c) implement appropriate technical and organizational security measures;
-(d) assist the controller with data-subject requests and with its obligations
-under applicable law; and (e) delete or return personal data at the end of the
-engagement.
+## 3. Processor obligations
 
-## Subprocessors
+- Process only on documented instructions; no unrelated use or sale.
+- Ensure personnel are bound by confidentiality.
+- Implement the security controls in [Security & Data Compliance](./SECURITY_AND_DATA_COMPLIANCE.md) §4.
+- Assist the Controller with data‑subject requests and regulator inquiries.
+- Notify the Controller **without undue delay** on becoming aware of a breach, with details
+  to support the Controller's PIPEDA/PHIPA obligations.
 
-The controller authorizes the use of vetted subprocessors (e.g., hosting and
-database providers) under written terms no less protective than this Addendum. We
-will maintain a current subprocessor list and give notice of intended changes.
+## 4. Sub‑processors
 
-## Security
+The Controller authorizes sub‑processors on our current list (hosting, database, email).
+We impose equivalent data‑protection terms and remain responsible for their performance; we
+give notice of changes and a chance to object.
 
-Security measures include access controls, encryption in transit, least-privilege
-administration, and logging. The platform's local-first design limits the
-personal data that must leave the building.
+## 5. International transfers
 
-## Personal health information
+Where data is processed outside the Controller's jurisdiction, we apply contractual and
+technical safeguards and disclose processing locations on request.
 
-Where a deployment processes health-related signals, we apply **PHIPA**-aligned
-safeguards and process such information solely as the controller's agent, subject
-to resident consent obtained by the controller.
+## 6. Security & breach
 
-## Breach notification
+See §4 and §7 of [Security & Data Compliance](./SECURITY_AND_DATA_COMPLIANCE.md). We
+maintain a record of breaches (PIPEDA) and support required notifications.
 
-We will notify the controller without undue delay after becoming aware of a
-personal-data breach and provide information reasonably needed for the
-controller's own notification obligations.
+## 7. Audits
 
-## International transfers
+On reasonable notice and confidentiality terms, we provide information necessary to
+demonstrate compliance (e.g. SOC 2 report when available) and allow audits scoped to this
+DPA.
 
-Personal data is processed in Canada by default. Any cross-border processing will
-be subject to safeguards consistent with PIPEDA and applicable provincial law.
+## 8. Return & deletion
 
-## Term
+On termination, at the Controller's choice, we return or delete personal information per the
+[retention schedule](./SECURITY_AND_DATA_COMPLIANCE.md) §5, save where law requires retention.
 
-This Addendum applies for the duration of the processing and survives until all
-personal data is deleted or returned.
+## 9. PHI specifics (PHIPA)
 
-## Contact
+Where PHI is processed, we act consistent with the Controller's role under PHIPA, restrict
+access to the minimum necessary, segregate PHI, and support the Controller's PHIPA duties.
 
-Data-protection questions: **dpo@smartbuildings.example** (placeholder — replace
-with the official contact before publication).
+## 10. Order of precedence
+
+This DPA prevails over conflicting terms regarding personal‑information processing.
+
+Signed for the Processor: ______________________  Date: __________
+Signed for the Controller: ______________________ Date: __________

@@ -1,0 +1,41 @@
+ATLAS OS — Proprietary Software License
+Copyright (c) 2026 Smart Buildings Inc. / ATLAS Habitat Initiative. All rights reserved.
+
+This software and associated documentation files (the "Software") are the
+confidential and proprietary property of Smart Buildings Inc. and the ATLAS
+Habitat Initiative (the "Owner"). The Software is licensed, not sold.
+
+1. Grant. No license or right to use, copy, modify, merge, publish, distribute,
+   sublicense, or sell copies of the Software is granted except under a separate
+   written agreement signed by the Owner.
+
+2. Restrictions. Without the Owner's prior written consent you may not:
+   (a) use the Software for any commercial or production purpose;
+   (b) reverse engineer, decompile, or disassemble the Software except to the
+       extent applicable law expressly permits;
+   (c) remove or alter any proprietary notices; or
+   (d) use the Owner's names, logos, or trademarks.
+
+3. Third‑party components. The Software incorporates open‑source components, each
+   under its own license (see package.json and the dependency tree, e.g. Next.js,
+   React, three.js — typically MIT). Those licenses govern those components and
+   are unaffected by this license. Any bundled 3D assets are governed by the
+   licenses recorded in /public/models/CREDITS.md (CC0 / CC‑BY).
+
+4. No warranty. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+
+5. Limitation of liability. IN NO EVENT SHALL THE OWNER BE LIABLE FOR ANY CLAIM,
+   DAMAGES, OR OTHER LIABILITY ARISING FROM, OUT OF, OR IN CONNECTION WITH THE
+   SOFTWARE OR ITS USE.
+
+6. Safety. The Software is an operations/optimization layer only. It must never be
+   relied upon for life‑safety functions, which are held by independent,
+   safety‑rated building controls. See docs/OWNERS_PROJECT_REQUIREMENTS.md.
+
+For licensing inquiries: Elijah@vfitter.com
+
+NOTE: If the Owner later elects an open‑source release (e.g. MIT or Apache‑2.0),
+replace this file with the chosen license text. This proprietary default is chosen
+to keep all rights reserved until that decision is made with counsel.

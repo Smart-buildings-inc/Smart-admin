@@ -39,6 +39,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/landing", label: "Overview" },
   { href: "/for", label: "Solutions" },
   { href: "/brand", label: "Brand" },
+  { href: "/documents", label: "Documents" },
   { href: "/sitemap", label: "Site Map" },
 ];
 
@@ -174,7 +175,7 @@ export default function NavBar() {
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden items-center gap-1 md:flex">
+        <div className="hidden items-center gap-1 lg:flex">
           {NAV_ITEMS.map((item) => {
             const active = isActive(pathname, item.href);
             return (
@@ -203,7 +204,7 @@ export default function NavBar() {
             aria-label="View source on GitHub"
             title="View source on GitHub"
             data-testid="github-link"
-            className="relative hidden h-10 w-10 place-items-center rounded-lg border border-ink-600/70 bg-ink-900/60 text-slate-200 transition-colors hover:bg-ink-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-info md:grid"
+            className="relative hidden h-10 w-10 place-items-center rounded-lg border border-ink-600/70 bg-ink-900/60 text-slate-200 transition-colors hover:bg-ink-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-info lg:grid"
           >
             <span className="sr-only">View source on GitHub</span>
             <GitHubIcon className="h-5 w-5" />
@@ -218,7 +219,7 @@ export default function NavBar() {
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             aria-controls="mobile-nav"
-            className="relative grid h-10 w-10 place-items-center rounded-lg border border-ink-600/70 bg-ink-900/60 text-slate-200 transition-colors hover:bg-ink-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-info md:hidden"
+            className="relative grid h-10 w-10 place-items-center rounded-lg border border-ink-600/70 bg-ink-900/60 text-slate-200 transition-colors hover:bg-ink-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-info lg:hidden"
           >
             <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
             <span aria-hidden className="relative block h-4 w-5">
@@ -249,7 +250,7 @@ export default function NavBar() {
 
       {/* Mobile drawer + overlay */}
       <div
-        className={`fixed inset-0 z-30 md:hidden ${open ? "" : "pointer-events-none"}`}
+        className={`fixed inset-0 z-30 lg:hidden ${open ? "" : "pointer-events-none"}`}
         aria-hidden={!open}
       >
         {/* Overlay */}

@@ -119,8 +119,8 @@ function renderTable(doc: PDFKitDoc, table: Tokens.Table): void {
   const size = 9.5;
 
   const rows: { cells: string[]; header: boolean }[] = [
-    { cells: table.header.map((c: Tokens.TableCell) => plain(c.tokens, c.text)), header: true },
-    ...table.rows.map((r: Tokens.TableCell[]) => ({ cells: r.map((c: Tokens.TableCell) => plain(c.tokens, c.text)), header: false })),
+    { cells: table.header.map((c) => plain(c.tokens, c.text)), header: true },
+    ...table.rows.map((r) => ({ cells: r.map((c) => plain(c.tokens, c.text)), header: false })),
   ];
 
   for (const row of rows) {
@@ -189,7 +189,7 @@ function renderTokens(doc: PDFKitDoc, tokens: Token[]): void {
       case "list": {
         const list = token as Tokens.List;
         doc.moveDown(0.2);
-        list.items.forEach((item: Tokens.ListItem, idx: number) => {
+        list.items.forEach((item, idx) => {
           const marker = list.ordered ? `${(Number(list.start) || 1) + idx}.` : "•";
           const left = doc.page.margins.left;
           const indent = 16;

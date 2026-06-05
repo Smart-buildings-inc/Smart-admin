@@ -13,16 +13,20 @@
 // This file is the WebGL layer only; SimulatorView.tsx owns the DOM chrome
 // (header, controls, legend, telemetry) and feeds options/selection in.
 
-import { useMemo, useRef, useState } from "react";
-import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, Html } from "@react-three/drei";
 import * as THREE from "three";
+import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import type { Floor, Incident, Need } from "@/lib/types";
 import { needColor } from "@/lib/ui";
 import AsciiRenderer from "@/components/AsciiRenderer";
 import GltfBuilding from "@/components/GltfBuilding";
 import HumanCharacter from "@/components/three/HumanCharacter";
-import { GltfProp } from "@/components/three/gltf";
+import { FloorDetail, GltfProp } from "@/components/three/gltf";
+import { floorSlotForNeed } from "@/lib/models";
+import { characters } from "@/lib/character-profiles";
+import CharacterAI from "@/components/three/CharacterAI";
 
 type Vec3 = [number, number, number];
 
@@ -37,11 +41,16 @@ const CORE_Z = -1.9;
 const STAIR_X = -3.5; // stair core centre on -x
 const CAR_H = FLOOR_H * 0.86;
 
+function selectedSimulatorTarget(index: number): THREE.Vector3 {
+  return new THREE.Vector3(0, index * STEP + FLOOR_H * 0.58, 0);
+}
+
 export interface SimOptions {
   night: boolean;
   cutaway: boolean;
   autoRotate: boolean;
   elevatorRunning: boolean;
+  researchLens?: "ops" | "fluid" | "sdf" | "hologram";
   /** Use detailed procedural residents (else the flat-shaded voxel figures). */
   detailedModels: boolean;
   /**
@@ -50,6 +59,200 @@ export interface SimOptions {
    * no asset is installed. See docs/ATLAS-blender-model-spec.md.
    */
   source?: "voxel" | "gltf";
+}
+
+function seededWave(i: number, salt = 0) {
+  return (Math.sin(i * 12.9898 + salt * 78.233) * 43758.5453) % 1;
+}
+
+function HologramPointCloud({ totalHeight }: { totalHeight: number }) {
+  const points = useRef<THREE.Points>(null);
+  const { positions, colors } = useMemo(() => {
+    const count = 980;
+    const pos = new Float32Array(count * 3);
+    const col = new Float32Array(count * 3);
+    const palette = [
+      new THREE.Color("#7fe7e0"),
+      new THREE.Color("#4ea8ff"),
+      new THREE.Color("#c0a4ff"),
+      new THREE.Color("#5ddc7a"),
+    ];
+
+    for (let i = 0; i < count; i += 1) {
+      const shell = i % 5 === 0;
+      const y = -0.25 + Math.abs(seededWave(i, 2)) * (totalHeight + 2.6);
+      const angle = i * 2.399963 + seededWave(i, 3) * 0.22;
+      const towerRadius = shell ? 7.4 : 4.8 + Math.abs(seededWave(i, 4)) * 1.8;
+      const jitter = shell ? 0.8 : 0.34;
+      const x = Math.cos(angle) * towerRadius + seededWave(i, 5) * jitter;
+      const z = Math.sin(angle) * (towerRadius * 0.72) + seededWave(i, 6) * jitter;
+      pos[i * 3] = x;
+      pos[i * 3 + 1] = y;
+      pos[i * 3 + 2] = z;
+
+      const color = palette[i % palette.length].clone().lerp(new THREE.Color("#ffffff"), 0.18);
+      col[i * 3] = color.r;
+      col[i * 3 + 1] = color.g;
+      col[i * 3 + 2] = color.b;
+    }
+
+    return { positions: pos, colors: col };
+  }, [totalHeight]);
+
+  useFrame((state) => {
+    if (!points.current) return;
+    points.current.rotation.y = state.clock.elapsedTime * 0.035;
+    points.current.position.y = Math.sin(state.clock.elapsedTime * 0.45) * 0.08;
+  });
+
+  return (
+    <points ref={points}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" count={positions.length / 3} array={positions} itemSize={3} />
+        <bufferAttribute attach="attributes-color" count={colors.length / 3} array={colors} itemSize={3} />
+      </bufferGeometry>
+      <pointsMaterial
+        size={0.055}
+        vertexColors
+        transparent
+        opacity={0.72}
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
+      />
+    </points>
+  );
+}
+
+function FluidCurrent({
+  y,
+  radius,
+  color,
+  phase,
+}: {
+  y: number;
+  radius: number;
+  color: string;
+  phase: number;
+}) {
+  const mesh = useRef<THREE.Mesh>(null);
+  useFrame((state) => {
+    if (!mesh.current) return;
+    const t = state.clock.elapsedTime + phase;
+    mesh.current.rotation.x = 1.08 + Math.sin(t * 0.34) * 0.12;
+    mesh.current.rotation.y = t * 0.18;
+    mesh.current.rotation.z = Math.cos(t * 0.27) * 0.18;
+    const s = 1 + Math.sin(t * 0.7) * 0.035;
+    mesh.current.scale.setScalar(s);
+  });
+  return (
+    <mesh ref={mesh} position={[0, y, 0]}>
+      <torusGeometry args={[radius, 0.035, 10, 128]} />
+      <meshStandardMaterial
+        color={color}
+        emissive={color}
+        emissiveIntensity={1.15}
+        transparent
+        opacity={0.34}
+        depthWrite={false}
+        roughness={0.18}
+        metalness={0.08}
+      />
+    </mesh>
+  );
+}
+
+function FluidResearchField({ totalHeight }: { totalHeight: number }) {
+  const colors = ["#7fe7e0", "#4ea8ff", "#c0a4ff", "#ff8fb1"];
+  return (
+    <group>
+      {colors.map((color, i) => (
+        <FluidCurrent
+          key={color}
+          y={totalHeight * (0.18 + i * 0.19)}
+          radius={5.5 + i * 0.72}
+          color={color}
+          phase={i * 1.7}
+        />
+      ))}
+      <HologramPointCloud totalHeight={totalHeight} />
+    </group>
+  );
+}
+
+function MorphingSdfSculpture({ totalHeight }: { totalHeight: number }) {
+  const mesh = useRef<THREE.Mesh>(null);
+  const wire = useRef<THREE.Mesh>(null);
+  const base = useRef<Float32Array | null>(null);
+
+  useFrame((state) => {
+    const target = mesh.current;
+    if (!target) return;
+    const geometry = target.geometry as THREE.BufferGeometry;
+    const attr = geometry.getAttribute("position") as THREE.BufferAttribute;
+    if (!base.current) {
+      base.current = new Float32Array(attr.array as ArrayLike<number>);
+    }
+
+    const data = attr.array as Float32Array;
+    const source = base.current;
+    const t = state.clock.elapsedTime;
+    for (let i = 0; i < attr.count; i += 1) {
+      const ix = i * 3;
+      const x = source[ix];
+      const y = source[ix + 1];
+      const z = source[ix + 2];
+      const n =
+        Math.sin(x * 2.1 + t * 0.9) * 0.18 +
+        Math.sin(y * 3.2 + t * 1.2) * 0.12 +
+        Math.cos(z * 2.6 - t * 0.8) * 0.14;
+      data[ix] = x * (1 + n);
+      data[ix + 1] = y * (1 + n * 0.72);
+      data[ix + 2] = z * (1 + n);
+    }
+    attr.needsUpdate = true;
+    geometry.computeVertexNormals();
+
+    target.rotation.y = t * 0.18;
+    target.rotation.x = Math.sin(t * 0.25) * 0.15;
+    if (wire.current) {
+      wire.current.rotation.copy(target.rotation);
+    }
+  });
+
+  return (
+    <group position={[0, totalHeight + 2.6, 0]}>
+      <pointLight position={[0, 3, 1.5]} intensity={3.2} distance={16} decay={2} color="#bff0ea" />
+      <mesh ref={mesh}>
+        <icosahedronGeometry args={[2.1, 6]} />
+        <meshStandardMaterial
+          color="#7fe7e0"
+          emissive="#4ea8ff"
+          emissiveIntensity={0.68}
+          transparent
+          opacity={0.58}
+          roughness={0.26}
+          metalness={0.36}
+        />
+      </mesh>
+      <mesh ref={wire}>
+        <icosahedronGeometry args={[2.13, 3]} />
+        <meshBasicMaterial color="#ffffff" transparent opacity={0.16} wireframe />
+      </mesh>
+    </group>
+  );
+}
+
+function CreativeResearchLens({
+  lens,
+  totalHeight,
+}: {
+  lens: NonNullable<SimOptions["researchLens"]>;
+  totalHeight: number;
+}) {
+  if (lens === "ops") return null;
+  if (lens === "fluid") return <FluidResearchField totalHeight={totalHeight} />;
+  if (lens === "sdf") return <MorphingSdfSculpture totalHeight={totalHeight} />;
+  return <HologramPointCloud totalHeight={totalHeight} />;
 }
 
 // --------------------------------------------------------------------------
@@ -438,9 +641,6 @@ function FloorInterior({
               />
             </group>
           ))}
-          {/* a couple of residents at home */}
-          <SimPerson position={[-1.0, 0, -1.2]} color={accent} pace={0.25} detailed={detailed} />
-          <SimPerson position={[0.4, 0, 1.4]} color="#7fe7e0" pace={0.2} detailed={detailed} />
         </group>
       );
     }
@@ -463,8 +663,6 @@ function FloorInterior({
           <PulseVox position={[0, 1.0, -2.55]} size={[0.16, 0.5, 0.05]} color="#ff5d5d" base={0.6} amp={0.3} speed={1} />
           {/* reception desk */}
           <Vox position={[0.6, 0.4, 1.4]} size={[2.0, 0.1, 0.7]} color="#26323d" />
-          <SimPerson position={[-0.6, 0, 1.0]} color={accent} pace={0.2} detailed={detailed} />
-          <SimPerson position={[1.2, 0, 0.6]} color="#c0a4ff" pace={0.3} detailed={detailed} />
         </group>
       );
     case "restoration":
@@ -482,7 +680,6 @@ function FloorInterior({
           {[-2.0, 2.0].map((x) => (
             <Vox key={x} position={[x, 0.3, -2.2]} size={[0.5, 0.5, 0.5]} color="#3aa56a" />
           ))}
-          <SimPerson position={[-1.9, 0.3, -0.7]} color="#ffd9a0" detailed={detailed} />
         </group>
       );
     default:
@@ -588,6 +785,7 @@ function FloorBlock({
 
   const wallColor = "#16222d";
   const isResidential = floor.need === "shelter";
+  const detailSlot = detailed ? floorSlotForNeed(floor.need) : null;
 
   return (
     <group position={[0, baseY, 0]}>
@@ -667,6 +865,15 @@ function FloorBlock({
 
       {/* interior */}
       <FloorInterior floor={floor} accent={accent} night={night} detailed={detailed} />
+
+      {/* Detailed GLB floor dressing. The procedural geometry stays present as
+          the telemetry-safe fallback, while the compact PBR modules lift the
+          default art direction out of the blocky prototype look. */}
+      {detailSlot && (
+        <group position={[0, 0.04, 0]} scale={1.35}>
+          <FloorDetail slot={detailSlot} />
+        </group>
+      )}
 
       {/* invisible (opacity-0) selector spanning the floor volume */}
       <Vox
@@ -896,18 +1103,26 @@ function Rooftop({ y, night }: { y: number; night: boolean }) {
 // --------------------------------------------------------------------------
 function Tower({
   floors,
+  incidents,
   incidentFloorKeys,
   selectedKey,
   options,
   onSelect,
   onElevatorArrive,
+  selectedCharacter,
+  onSelectCharacter,
+  activityRef,
 }: {
   floors: Floor[];
+  incidents: Incident[];
   incidentFloorKeys: Set<string>;
   selectedKey: string | null;
   options: SimOptions;
   onSelect: (key: string) => void;
   onElevatorArrive: (i: number) => void;
+  selectedCharacter: string | null;
+  onSelectCharacter: (id: string | null) => void;
+  activityRef: React.MutableRefObject<Map<string, string>>;
 }) {
   const totalHeight = floors.length * STEP;
   const stops = useMemo(() => floors.map((_, i) => i * STEP + CAR_H / 2), [floors]);
@@ -939,35 +1154,106 @@ function Tower({
         />
       ))}
 
-      {/* A detailed greeter on the plaza out front — large and unobstructed so
-          the human character reads at a glance in detailed mode. */}
+      {/* A detailed greeter on the plaza out front — large, interactive */}
       {options.detailedModels && (
         <group>
-          {/* dedicated key light so the greeter reads against the dark plaza */}
           <pointLight position={[5, 5, 9]} intensity={2.2} distance={22} decay={2} color="#fff3da" />
-          <SimPerson
-            position={[3.4, -SLAB_T, 7.5]}
-            color="#7fe7e0"
-            detailed
-            height={3.2}
-            rotationY={-0.5}
-            variant="greeter"
-          />
+          <group position={[3.4, -SLAB_T, 7.5]} rotation={[0, -0.5, 0]}>
+            <SimPerson position={[0, 0, 0]} color="#7fe7e0" detailed height={3.2} variant="greeter" />
+            <mesh
+              position={[0, 1.6, 0]}
+              onClick={(e) => { e.stopPropagation(); onSelectCharacter("atlas-greeter"); }}
+            >
+              <sphereGeometry args={[1.2, 8, 8]} />
+              <meshBasicMaterial transparent opacity={0} />
+            </mesh>
+            {selectedCharacter === "atlas-greeter" && (
+              <Html position={[0, 3.5, 0]} center distanceFactor={14} style={{ pointerEvents: "none" }}>
+                <div className="flex flex-col items-center gap-0.5 whitespace-nowrap rounded-md border border-ink-600/50 bg-ink-900/90 px-2.5 py-1.5 text-xs backdrop-blur">
+                  <span className="font-semibold text-white">🤖 Atlas</span>
+                  <span className="text-slate-300">AI concierge · Welcomes visitors</span>
+                  <span className="max-w-[220px] text-center text-slate-400">
+                    ATLAS&apos;s AI concierge — welcomes visitors, gives directions, represents the mission
+                  </span>
+                </div>
+              </Html>
+            )}
+          </group>
         </group>
       )}
 
-      <Staircase floorCount={floors.length} />
-      {/* Elevator A — animated primary car */}
-      <Elevator
-        stops={stops}
-        running={options.elevatorRunning}
+      {/* AI-driven characters — every one has a role, a routine, and a purpose */}
+      {/* atlas-greeter is rendered separately on the plaza below */}
+      <CharacterAI
+        characters={characters.filter((c) => c.id !== "atlas-greeter")}
+        floors={floors}
+        incidents={incidents}
         detailed={options.detailedModels}
-        onArrive={onElevatorArrive}
+        pixel={false}
+        selectedCharacter={selectedCharacter}
+        onSelectCharacter={onSelectCharacter}
+        activityRef={activityRef}
       />
-      {/* Elevator B — second shaft (redundancy/accessibility, ATLAS-derisking-plan.md §5) */}
+
+      <Staircase floorCount={floors.length} />
+      <Elevator stops={stops} running={options.elevatorRunning} detailed={options.detailedModels} onArrive={onElevatorArrive} />
       <ElevatorB stops={stops} />
       <Rooftop y={totalHeight} night={options.night} />
     </group>
+  );
+}
+
+function SimulatorOrbitRig({
+  defaultTarget,
+  selectedIndex,
+  autoRotate,
+}: {
+  defaultTarget: Vec3;
+  selectedIndex: number | null;
+  autoRotate: boolean;
+}) {
+  const controls = useRef<OrbitControlsImpl>(null);
+  const { camera } = useThree();
+  const releasedByUser = useRef(false);
+  const lastSelectedIndex = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (lastSelectedIndex.current !== selectedIndex) {
+      lastSelectedIndex.current = selectedIndex;
+      releasedByUser.current = false;
+    }
+  }, [selectedIndex]);
+
+  useFrame(() => {
+    if (selectedIndex === null || releasedByUser.current || !controls.current) {
+      return;
+    }
+
+    const target = selectedSimulatorTarget(selectedIndex);
+    const desiredPosition = target.clone().add(new THREE.Vector3(11, 3.6, 13));
+    camera.position.lerp(desiredPosition, 0.08);
+    controls.current.target.lerp(target, 0.14);
+    controls.current.update();
+  });
+
+  return (
+    <OrbitControls
+      ref={controls}
+      target={defaultTarget}
+      enablePan
+      screenSpacePanning
+      enableDamping
+      dampingFactor={0.08}
+      panSpeed={0.9}
+      autoRotate={autoRotate}
+      autoRotateSpeed={0.6}
+      minDistance={8}
+      maxDistance={48}
+      maxPolarAngle={Math.PI / 1.95}
+      onStart={() => {
+        if (selectedIndex !== null) releasedByUser.current = true;
+      }}
+    />
   );
 }
 
@@ -997,6 +1283,12 @@ export default function BuildingSimulator({
 }) {
   const totalHeight = floors.length * STEP;
   const target = useMemo<Vec3>(() => [0, totalHeight * 0.46, 0], [totalHeight]);
+  const selectedIndex = selectedKey
+    ? floors.findIndex((floor) => floor.key === selectedKey)
+    : -1;
+
+  const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
+  const characterActivities = useRef<Map<string, string>>(new Map());
 
   const incidentFloorKeys = useMemo(
     () =>
@@ -1025,7 +1317,7 @@ export default function BuildingSimulator({
       // elevator core and the stair core all read; pulled back to frame the
       // whole tower including the rooftop.
       camera={{ position: [20, totalHeight * 0.62 + 4, 26], fov: 40 }}
-      onPointerMissed={() => onSelect(null)}
+      onPointerMissed={() => { onSelect(null); setSelectedCharacter(null); }}
     >
       <color attach="background" args={[bg]} />
       <fog attach="fog" args={[bg, 35, 70]} />
@@ -1041,11 +1333,18 @@ export default function BuildingSimulator({
         const voxelTower = (
           <Tower
             floors={floors}
+            incidents={incidents}
             incidentFloorKeys={incidentFloorKeys}
             selectedKey={selectedKey}
             options={options}
             onSelect={onSelect}
             onElevatorArrive={onElevatorArrive}
+            selectedCharacter={selectedCharacter}
+            onSelectCharacter={(id) => {
+              setSelectedCharacter(id);
+              if (id) onSelect(null);
+            }}
+            activityRef={characterActivities}
           />
         );
         return (options.source ?? "voxel") === "gltf" ? (
@@ -1055,14 +1354,12 @@ export default function BuildingSimulator({
         );
       })()}
 
-      <OrbitControls
-        target={target}
-        enablePan={false}
+      <CreativeResearchLens lens={options.researchLens ?? "ops"} totalHeight={totalHeight} />
+
+      <SimulatorOrbitRig
+        defaultTarget={target}
+        selectedIndex={selectedIndex >= 0 ? selectedIndex : null}
         autoRotate={options.autoRotate && !selectedKey}
-        autoRotateSpeed={0.6}
-        minDistance={10}
-        maxDistance={48}
-        maxPolarAngle={Math.PI / 1.95}
       />
 
       {/* Signature ASCII pass — the voxel tower resampled into live glyphs. */}

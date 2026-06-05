@@ -14,14 +14,13 @@ export const metadata: Metadata = {
     "ATLAS OS papers in one place — business plan, pitch deck, requirements, and the full legal & compliance set, readable inline and downloadable as PDF.",
 };
 
-export default async function DocumentsPage({
+export default function DocumentsPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ doc?: string }>;
+  searchParams?: { doc?: string };
 }) {
-  const { doc } = (await searchParams) ?? {};
   return (
-    <main id="main" className="mx-auto max-w-[1200px] px-4 pt-8 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-8 lg:px-6 lg:py-12">
+    <main className="mx-auto max-w-[1200px] px-4 pt-8 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-8 lg:px-6 lg:py-12">
       <header className="mb-8">
         <p className="kpi-label mb-2">ATLAS OS</p>
         <h1 className="display text-3xl font-extrabold tracking-tight text-white lg:text-4xl">
@@ -47,7 +46,7 @@ export default async function DocumentsPage({
         </p>
       </header>
 
-      <DocumentsExplorer initialSlug={doc} />
+      <DocumentsExplorer initialSlug={searchParams?.doc} />
     </main>
   );
 }
