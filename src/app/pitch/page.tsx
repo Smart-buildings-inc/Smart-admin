@@ -18,18 +18,23 @@ function parseQuality(value: string | string[] | undefined): QualityTier | undef
     : undefined;
 }
 
+type PitchSearchParams = {
+  quality?: string | string[];
+};
+
 export default async function PitchPage({
   searchParams,
 }: {
-  searchParams?: { quality?: string | string[] };
+  searchParams?: Promise<PitchSearchParams>;
 }) {
+  const params = await searchParams;
   const [floors, incidents] = await Promise.all([getFloors(), getIncidents()]);
 
   return (
     <PitchGame
       floors={floors}
       incidents={incidents}
-      initialQuality={parseQuality(searchParams?.quality)}
+      initialQuality={parseQuality(params?.quality)}
     />
   );
 }

@@ -26,6 +26,7 @@ import { FloorDetail, GltfProp } from "@/components/three/gltf";
 import { floorSlotForNeed } from "@/lib/models";
 import { characters } from "@/lib/character-profiles";
 import CharacterAI from "@/components/three/CharacterAI";
+import { getProcTexture, type ProcTextureType } from "@/lib/procedural-textures";
 
 type Vec3 = [number, number, number];
 
@@ -110,8 +111,8 @@ function HologramPointCloud({ totalHeight }: { totalHeight: number }) {
   return (
     <points ref={points}>
       <bufferGeometry>
-        <bufferAttribute attach="attributes-position" count={positions.length / 3} array={positions} itemSize={3} />
-        <bufferAttribute attach="attributes-color" count={colors.length / 3} array={colors} itemSize={3} />
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+        <bufferAttribute attach="attributes-color" args={[colors, 3]} />
       </bufferGeometry>
       <pointsMaterial
         size={0.055}
@@ -277,6 +278,8 @@ function Vox({
   visible = true,
   rotation,
   flatShading = false,
+  texture,
+  textureScale = 1,
 }: {
   position: Vec3;
   size: Vec3;
@@ -292,7 +295,19 @@ function Vox({
   visible?: boolean;
   rotation?: Vec3;
   flatShading?: boolean;
+  /** Optional procedural texture to apply as the colour map */
+  texture?: ProcTextureType;
+  /** UV repeat multiplier (default 1) */
+  textureScale?: number;
 }) {
+  const texMap = useMemo(() => {
+    if (!texture) return undefined;
+    const tex = getProcTexture(texture);
+    tex.repeat.set(textureScale, textureScale);
+    tex.needsUpdate = true;
+    return tex;
+  }, [texture, textureScale]);
+
   return (
     <mesh
       position={position}
@@ -304,6 +319,7 @@ function Vox({
     >
       <boxGeometry args={size} />
       <meshStandardMaterial
+        map={texMap}
         color={color ?? "#ffffff"}
         emissive={emissive ?? "#000000"}
         emissiveIntensity={emissiveIntensity}
@@ -855,6 +871,8 @@ function ArchitecturalSkin({
               opacity={glassOpacity}
               metalness={0.08}
               roughness={0.16}
+              texture="glassGrid"
+              textureScale={2}
             />
             <Vox
               position={[0, y + 0.28, -HALF_D - 0.14]}
@@ -862,6 +880,8 @@ function ArchitecturalSkin({
               color={spandrel}
               metalness={0.18}
               roughness={0.62}
+              texture="metalPanel"
+              textureScale={2}
             />
             {FACADE_MULLIONS.map((x) => (
               <Vox
@@ -884,6 +904,8 @@ function ArchitecturalSkin({
                   opacity={glassOpacity * 0.9}
                   metalness={0.08}
                   roughness={0.18}
+                  texture="glassGrid"
+                  textureScale={2}
                 />
                 {SIDE_MULLIONS.map((z) => (
                   <Vox
@@ -908,6 +930,8 @@ function ArchitecturalSkin({
                   opacity={night ? 0.34 : 0.24}
                   metalness={0.08}
                   roughness={0.14}
+                  texture="glassGrid"
+                  textureScale={2}
                 />
                 {FACADE_MULLIONS.map((x) => (
                   <Vox
@@ -964,6 +988,8 @@ function ArchitecturalFrame({
             color={columnColor}
             metalness={0.3}
             roughness={0.52}
+            texture="concreteDark"
+            textureScale={4}
           />
         )),
       )}
@@ -976,6 +1002,8 @@ function ArchitecturalFrame({
             color={beamColor}
             metalness={0.72}
             roughness={0.28}
+            texture="metalPanel"
+            textureScale={2}
           />
           <Vox
             position={[0, y + 0.02, -HALF_D - 0.28]}
@@ -983,6 +1011,8 @@ function ArchitecturalFrame({
             color={beamColor}
             metalness={0.72}
             roughness={0.28}
+            texture="metalPanel"
+            textureScale={2}
           />
           <Vox
             position={[-HALF_W - 0.28, y + 0.02, 0]}
@@ -1035,8 +1065,8 @@ function ArchitecturalFrame({
 function ArchitecturalPlaza({ night }: { night: boolean }) {
   return (
     <group>
-      <Vox position={[0, -SLAB_T - 0.42, 0]} size={[26, 0.16, 22]} color="#071016" roughness={0.9} />
-      <Vox position={[0, -SLAB_T - 0.27, 0]} size={[HALF_W * 2 + 4.5, 0.36, HALF_D * 2 + 4.4]} color="#101a24" roughness={0.72} />
+      <Vox position={[0, -SLAB_T - 0.42, 0]} size={[26, 0.16, 22]} color="#071016" roughness={0.9} texture="tile" textureScale={6} />
+      <Vox position={[0, -SLAB_T - 0.27, 0]} size={[HALF_W * 2 + 4.5, 0.36, HALF_D * 2 + 4.4]} color="#101a24" roughness={0.72} texture="tile" textureScale={5} />
       <Vox position={[0, -SLAB_T - 0.05, HALF_D + 2.4]} size={[3.2, 0.05, 4.2]} color="#29343b" roughness={0.64} />
       <Vox position={[0, -SLAB_T + 0.08, HALF_D + 0.92]} size={[5.0, 0.12, 1.08]} color="#384550" metalness={0.45} roughness={0.34} />
       <Vox position={[0, -SLAB_T + 0.68, HALF_D + 0.82]} size={[4.6, 0.1, 1.0]} color="#64727d" metalness={0.78} roughness={0.24} />
@@ -1125,9 +1155,9 @@ function FloorBlock({
 
   return (
     <group position={[0, baseY, 0]}>
-      {/* structural slab */}
-      <Vox position={[0, -SLAB_T / 2, 0]} size={[HALF_W * 2 + 0.3, SLAB_T, HALF_D * 2 + 0.3]} color="#0d161e" />
-      <Vox position={[0, -SLAB_T / 2 + 0.02, 0]} size={[HALF_W * 2, SLAB_T * 0.6, HALF_D * 2]} color="#1a2832" />
+      {/* structural slab — concrete with subtle grain */}
+      <Vox position={[0, -SLAB_T / 2, 0]} size={[HALF_W * 2 + 0.3, SLAB_T, HALF_D * 2 + 0.3]} color="#0d161e" texture="concreteDark" textureScale={3} />
+      <Vox position={[0, -SLAB_T / 2 + 0.02, 0]} size={[HALF_W * 2, SLAB_T * 0.6, HALF_D * 2]} color="#1a2832" texture="concrete" textureScale={3} />
 
       {/* selection / incident rim sitting on the slab edge */}
       <mesh position={[0, 0.02, 0]}>
@@ -1143,10 +1173,10 @@ function FloorBlock({
         />
       </mesh>
 
-      {/* back + side walls (front left open for the dollhouse cut-away) */}
-      <Vox position={[0, FLOOR_H / 2, -HALF_D]} size={[HALF_W * 2, FLOOR_H, 0.16]} color={wallColor} />
-      <Vox position={[-HALF_W, FLOOR_H / 2, 0]} size={[0.16, FLOOR_H, HALF_D * 2]} color={wallColor} />
-      <Vox position={[HALF_W, FLOOR_H / 2, 0]} size={[0.16, FLOOR_H, HALF_D * 2]} color={wallColor} />
+      {/* back + side walls (front left open for the dollhouse cut-away) — concrete finish */}
+      <Vox position={[0, FLOOR_H / 2, -HALF_D]} size={[HALF_W * 2, FLOOR_H, 0.16]} color={wallColor} texture="concreteDark" textureScale={2.5} />
+      <Vox position={[-HALF_W, FLOOR_H / 2, 0]} size={[0.16, FLOOR_H, HALF_D * 2]} color={wallColor} texture="concreteDark" textureScale={2.5} />
+      <Vox position={[HALF_W, FLOOR_H / 2, 0]} size={[0.16, FLOOR_H, HALF_D * 2]} color={wallColor} texture="concreteDark" textureScale={2.5} />
 
       {/* optional translucent glass front when not in cut-away mode */}
       {!cutaway && (
@@ -1299,7 +1329,7 @@ function Elevator({
   return (
     <group position={[CORE_X, 0, CORE_Z]}>
       {/* shaft frame: four glass corner panels + back, open to the cabin */}
-      <Vox position={[0, top / 2, -0.78]} size={[1.6, top, 0.08]} color="#0d161e" />
+      <Vox position={[0, top / 2, -0.78]} size={[1.6, top, 0.08]} color="#0d161e" texture="metalPanel" textureScale={4} />
       <Vox position={[-0.78, top / 2, 0]} size={[0.08, top, 1.5]} color="#7fe7e0" opacity={0.12} />
       <Vox position={[0.78, top / 2, 0]} size={[0.08, top, 1.5]} color="#7fe7e0" opacity={0.12} />
       {/* shaft guide rails */}
@@ -1338,7 +1368,7 @@ function ElevatorB({ stops }: { stops: number[] }) {
   return (
     <group position={[CORE_X, 0, CORE_Z2]}>
       {/* shaft frame — identical profile to Elevator A */}
-      <Vox position={[0, top / 2, -0.78]} size={[1.6, top, 0.08]} color="#0d161e" />
+      <Vox position={[0, top / 2, -0.78]} size={[1.6, top, 0.08]} color="#0d161e" texture="metalPanel" textureScale={4} />
       <Vox position={[-0.78, top / 2, 0]} size={[0.08, top, 1.5]} color="#7fe7e0" opacity={0.12} />
       <Vox position={[0.78, top / 2, 0]} size={[0.08, top, 1.5]} color="#7fe7e0" opacity={0.12} />
       {/* shaft guide rails */}
@@ -1388,7 +1418,7 @@ function Staircase({ floorCount }: { floorCount: number }) {
   return (
     <group>
       {steps.map((st, i) => (
-        <Vox key={i} position={st.pos} size={st.size} color={i % 2 ? "#2c3a47" : "#22323f"} />
+        <Vox key={i} position={st.pos} size={st.size} color={i % 2 ? "#2c3a47" : "#22323f"} texture={i % 2 ? undefined : "concreteDark"} textureScale={1.5} />
       ))}
       {/* a faint guide rail up the outer edge */}
       <Vox position={[STAIR_X - 0.7, (floorCount * STEP) / 2, 0]} size={[0.05, floorCount * STEP, 0.05]} color="#4ea8ff" opacity={0.5} />
@@ -1404,14 +1434,14 @@ function Staircase({ floorCount }: { floorCount: number }) {
 function Rooftop({ y, night }: { y: number; night: boolean }) {
   return (
     <group position={[0, y, 0]}>
-      <Vox position={[0, 0.08, 0]} size={[HALF_W * 2 + 0.72, 0.16, HALF_D * 2 + 0.72]} color="#0d161e" />
-      <Vox position={[0, 0.34, -HALF_D - 0.18]} size={[HALF_W * 2 + 0.7, 0.48, 0.16]} color="#27333d" metalness={0.2} roughness={0.48} />
-      <Vox position={[-HALF_W - 0.18, 0.34, 0]} size={[0.16, 0.48, HALF_D * 2 + 0.7]} color="#27333d" metalness={0.2} roughness={0.48} />
-      <Vox position={[HALF_W + 0.18, 0.34, 0]} size={[0.16, 0.48, HALF_D * 2 + 0.7]} color="#27333d" metalness={0.2} roughness={0.48} />
+      <Vox position={[0, 0.08, 0]} size={[HALF_W * 2 + 0.72, 0.16, HALF_D * 2 + 0.72]} color="#0d161e" texture="roofing" textureScale={4} />
+      <Vox position={[0, 0.34, -HALF_D - 0.18]} size={[HALF_W * 2 + 0.7, 0.48, 0.16]} color="#27333d" metalness={0.2} roughness={0.48} texture="concreteDark" textureScale={2} />
+      <Vox position={[-HALF_W - 0.18, 0.34, 0]} size={[0.16, 0.48, HALF_D * 2 + 0.7]} color="#27333d" metalness={0.2} roughness={0.48} texture="concreteDark" textureScale={2} />
+      <Vox position={[HALF_W + 0.18, 0.34, 0]} size={[0.16, 0.48, HALF_D * 2 + 0.7]} color="#27333d" metalness={0.2} roughness={0.48} texture="concreteDark" textureScale={2} />
 
       {/* PV canopy: architectural roof feature rather than loose blue tiles. */}
       <group position={[-2.0, 1.02, 0.12]} rotation={[-0.32, 0, 0]}>
-        <Vox position={[0, -0.18, 0]} size={[4.2, 0.08, 2.6]} color="#47525c" metalness={0.72} roughness={0.24} />
+        <Vox position={[0, -0.18, 0]} size={[4.2, 0.08, 2.6]} color="#47525c" metalness={0.72} roughness={0.24} texture="metalPanel" textureScale={2} />
         {[-1.35, 0, 1.35].map((x) => (
           <PulseVox
             key={x}
