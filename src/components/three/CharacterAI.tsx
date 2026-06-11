@@ -339,9 +339,11 @@ function Character({
     }
   });
 
+  const CHAR_SCALE = 0.7; // scale to ~0.77 units tall (proportional to a 5.5ft person in a 10ft floor)
+
   return (
     <group ref={root}>
-      <group ref={bodyRoot} position={[0, 0, 0]}>
+      <group ref={bodyRoot} position={[0, 0, 0]} scale={CHAR_SCALE}>
         {pixel ? (
           <group>
             <mesh position={[0, 0.12, 0]}>
