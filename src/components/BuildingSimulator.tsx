@@ -302,10 +302,13 @@ function Vox({
 }) {
   const texMap = useMemo(() => {
     if (!texture) return undefined;
-    const tex = getProcTexture(texture);
-    tex.repeat.set(textureScale, textureScale);
-    tex.needsUpdate = true;
-    return tex;
+    const cached = getProcTexture(texture);
+    // Clone so each Vox gets its own repeat — never mutating the shared cache.
+    const t = cached.clone();
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.repeat.set(textureScale, textureScale);
+    t.needsUpdate = true;
+    return t;
   }, [texture, textureScale]);
 
   return (
@@ -320,7 +323,7 @@ function Vox({
       <boxGeometry args={size} />
       <meshStandardMaterial
         map={texMap}
-        color={color ?? "#ffffff"}
+        color={texture ? "#ffffff" : (color ?? "#ffffff")}
         emissive={emissive ?? "#000000"}
         emissiveIntensity={emissiveIntensity}
         transparent={opacity < 1}

@@ -95,14 +95,14 @@ const TEXTURE_SPECS: Record<ProcTextureType, TextureSpec> = {
     w: 256,
     h: 256,
     paint: (ctx, w, h, rng) =>
-      fillNoise(ctx, w, h, rng, 130, 138, 145, 28),
+      fillNoise(ctx, w, h, rng, 160, 168, 175, 42),
     repeat: [2, 2],
   },
   concreteDark: {
     w: 256,
     h: 256,
     paint: (ctx, w, h, rng) =>
-      fillNoise(ctx, w, h, rng, 58, 64, 70, 18),
+      fillNoise(ctx, w, h, rng, 68, 74, 80, 28),
     repeat: [2, 2],
   },
   metalPanel: {
@@ -153,17 +153,17 @@ const TEXTURE_SPECS: Record<ProcTextureType, TextureSpec> = {
     paint: (ctx, w, h, rng) => {
       const cells = 8;
       const palette: [number, number, number][] = [
-        [130, 138, 145],
-        [140, 148, 155],
-        [120, 128, 135],
-        [145, 150, 158],
+        [195, 185, 170],
+        [180, 170, 155],
+        [170, 160, 145],
+        [185, 175, 160],
       ];
       fillCellNoise(ctx, w, h, rng, cells, cells, palette);
-      // Grout lines
+      // Grout lines — dark and thick for visibility
       const cellW = w / cells;
       const cellH = h / cells;
-      ctx.strokeStyle = "rgba(80,85,90,0.5)";
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = "rgba(50, 45, 40, 0.7)";
+      ctx.lineWidth = 2.5;
       for (let i = 0; i <= cells; i++) {
         ctx.beginPath();
         ctx.moveTo(i * cellW, 0);
@@ -176,8 +176,16 @@ const TEXTURE_SPECS: Record<ProcTextureType, TextureSpec> = {
         ctx.lineTo(w, i * cellH);
         ctx.stroke();
       }
+      // Scatter a few darker stones for authenticity
+      for (let i = 0; i < 5; i++) {
+        const cx = Math.floor(rng() * cells);
+        const cy = Math.floor(rng() * cells);
+        const inset = 2;
+        ctx.fillStyle = "rgb(100, 90, 80)";
+        ctx.fillRect(cx * cellW + inset, cy * cellH + inset, cellW - inset * 2, cellH - inset * 2);
+      }
     },
-    repeat: [4, 4],
+    repeat: [6, 6],
   },
   solar: {
     w: 256,
@@ -255,22 +263,27 @@ const TEXTURE_SPECS: Record<ProcTextureType, TextureSpec> = {
     repeat: [1, 1],
   },
   glassGrid: {
-    w: 128,
-    h: 128,
+    w: 256,
+    h: 256,
     paint: (ctx, w, h, rng) => {
       const cells = 4;
       const cellW = w / cells;
       const cellH = h / cells;
       const margin = 3;
+      // Outer frame (darker grid border)
+      ctx.fillStyle = "#1a2a38";
+      ctx.fillRect(0, 0, w, h);
+      // Glass panes (lighter, with subtle tint variation)
       for (let cy = 0; cy < cells; cy++) {
         for (let cx = 0; cx < cells; cx++) {
-          const v = 160 + rng() * 60;
-          ctx.fillStyle = `rgba(${v + 30},${v + 50},${v + 70},0.15)`;
+          const v = 140 + rng() * 50;
+          ctx.fillStyle = `rgb(${v + 20},${v + 40},${v + 60})`;
           ctx.fillRect(cx * cellW + margin, cy * cellH + margin, cellW - margin * 2, cellH - margin * 2);
         }
       }
-      ctx.strokeStyle = "rgba(180,200,230,0.2)";
-      ctx.lineWidth = 1.5;
+      // Grid mullions
+      ctx.strokeStyle = "#2a3a48";
+      ctx.lineWidth = 3;
       for (let i = 0; i <= cells; i++) {
         ctx.beginPath();
         ctx.moveTo(i * cellW, 0);
@@ -282,7 +295,7 @@ const TEXTURE_SPECS: Record<ProcTextureType, TextureSpec> = {
         ctx.stroke();
       }
     },
-    repeat: [1, 1],
+    repeat: [2, 2],
   },
   roofing: {
     w: 256,
