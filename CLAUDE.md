@@ -36,9 +36,9 @@ falls back to seed data whenever `DATABASE_URL` is unset (`isDbConfigured` / `ge
 - **Pages (server components)** fetch initial data and pass it into client components:
   - `src/app/page.tsx` — main Console (the twin + panels). `force-dynamic`.
   - `src/app/simulator/page.tsx` — Building Simulator (F12): a live, operating
-    voxel/pixel-art twin of ATLAS-01 (cut-away floors, **dual elevators**,
-    switchback stairs, rooftop solar + **pool-only** rooftop, **bulk reservoir in
-    basement**, voxel residents). Geometry reflects the right-sized permitted design
+    architectural cutaway twin of ATLAS-01 (curtain-wall frame, cut-away floors,
+    **dual elevators**, switchback stairs, rooftop solar + **pool-only** rooftop,
+    **bulk reservoir in basement**, residents). Geometry reflects the right-sized permitted design
     (reservoir → basement, pool-only roof, dual elevator shafts). `force-dynamic`.
   - `src/app/fleet/page.tsx` — Fleet view (F7), multi-building rollup.
   - `src/app/portfolio/page.tsx` — Portfolio page: OpCo/PropCo capital structure,
@@ -90,8 +90,9 @@ falls back to seed data whenever `DATABASE_URL` is unset (`isDbConfigured` / `ge
   manages floor selection + orbit/walk-through twin modes, and polls `/api/incidents` every ~15s.
 - **Client `SimulatorView`** (`src/components/SimulatorView.tsx`) owns the Building Simulator DOM
   chrome (controls, legend, telemetry, live elevator indicator) and lazy-loads the WebGL scene
-  `BuildingSimulator.tsx` (`ssr: false`) — a procedural voxel building (no Blender/GLTF assets;
-  geometry authored in three.js). Pixelation is a low `dpr` buffer upscaled nearest-neighbour.
+  `BuildingSimulator.tsx` (`ssr: false`) — a procedural architectural building
+  (no required Blender/GLTF asset; geometry authored in three.js). Pixelation is
+  a low `dpr` buffer upscaled nearest-neighbour.
 - **Feature labels:** code comments tag features `F1`–`F7` (e.g. F1 twin, F2 floor panel, F3 feed,
   F4 broadcast, F5 KPI strip, F7 fleet) plus `F11` (sensor ingestion) and `F12` (building simulator).
   Grep these labels to locate the code behind a feature.

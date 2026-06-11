@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "ATLAS‑01 · Fullscreen Twin — ATLAS OS",
   description:
-    "The ATLAS‑01 voxel digital twin, rendered full‑screen on every device. Orbit to inspect, tap a floor for live telemetry.",
+    "The ATLAS‑01 architectural digital twin, rendered full‑screen on every device. Orbit to inspect, tap a floor for live telemetry.",
 };
 
 // Dedicated full-screen 3D viewer. The console twin and simulator stage both

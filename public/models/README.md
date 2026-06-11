@@ -8,7 +8,7 @@ binaries in this folder.
 
 Simulator people are authored as procedural three.js human characters in
 `src/components/three/HumanCharacter.tsx`, not as external GLB robots. Pixel
-mode uses the tiny voxel people; detailed mode swaps them for the richer human
+mode uses tiny block people; detailed mode swaps them for the richer human
 character family.
 
 ## Slots
@@ -20,7 +20,7 @@ Defined in [`src/lib/models.ts`](../../src/lib/models.ts):
 | `rooftopProp` | Building Simulator | additive rooftop detail | off |
 
 The simulator exposes a **Pixel** toggle in its control bar to flip between
-voxel people and detailed procedural human characters live.
+block people and detailed procedural human characters live.
 
 ## How the loader behaves
 
@@ -45,13 +45,13 @@ See `CREDITS.md` for recommended free (CC0 / CC-BY) sources.
 ## Whole-building "hero" model — `atlas-01.glb`
 
 Distinct from the per-slot props above: this is the **entire ATLAS-01 tower** as a
-single Blender-authored asset, an alternative to the procedural voxel building.
+single Blender-authored asset, an alternative to the procedural architectural building.
 
 - The app looks for it at `/models/atlas-01.glb` (see
   `src/components/GltfBuilding.tsx`, `TWIN_MODEL_URL`).
-- Until a `.glb` is present, the simulator renders the **procedural voxel twin**
+- Until a `.glb` is present, the simulator renders the **procedural architectural twin**
   (default). Flipping the **"Hero"** toggle, or setting `NEXT_PUBLIC_TWIN_MODEL=gltf`,
-  attempts the glTF model and **falls back to voxel** if it is missing or fails to
+  attempts the glTF model and **falls back to procedural geometry** if it is missing or fails to
   load — so nothing breaks.
 - Authoring + binding contract (scale, +Y up, collection/node name === `Floor.key`,
   materials, export settings): **`docs/ATLAS-blender-model-spec.md`**.

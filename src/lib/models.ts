@@ -1,7 +1,7 @@
 // Optional additive glTF models, with graceful procedural fallback.
 //
-// ATLAS renders fully on hand-authored procedural three.js geometry (voxel
-// simulator, slab twin, human characters). This registry lets us *optionally*
+// ATLAS renders fully on hand-authored procedural three.js geometry
+// (architectural simulator, slab twin, human characters). This registry lets us *optionally*
 // augment individual "slots" with higher-detail glTF/GLB assets dropped into
 // `/public/models`. Every slot keeps working when its asset is disabled,
 // absent, or fails to load — it falls back to the original procedural geometry.

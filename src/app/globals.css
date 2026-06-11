@@ -607,8 +607,8 @@ body {
 /* ASCII signature render ------------------------------------------------- */
 
 /* The glyph table produced by three's AsciiEffect (and the static fallback).
-   Locked to a tight monospace grid with a soft phosphor glow so the voxel
-   models read as a living terminal. */
+   Locked to a tight monospace grid with a soft phosphor glow so the live 3D
+   scene reads as a living terminal. */
 .ascii-surface {
   font-family: "SF Mono", "JetBrains Mono", "Menlo", "Consolas", monospace;
   font-weight: 700;

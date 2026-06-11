@@ -7,11 +7,11 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Building Simulator · ATLAS OS",
   description:
-    "A live, operating voxel twin of ATLAS-01 — the full floor stack with working dual elevators, switchback stairs, rooftop solar and a basement reservoir.",
+    "A live, operating architectural twin of ATLAS-01 — the full floor stack with a curtain-wall frame, working dual elevators, switchback stairs, rooftop solar and a basement reservoir.",
   alternates: { canonical: "/simulator" },
 };
 
-// F12 — Building Simulator. A live, operating voxel twin of ATLAS-01: the full
+// F12 — Building Simulator. A live architectural twin of ATLAS-01: the full
 // floor stack with working elevator, staircase, rooftop systems and residents.
 export default async function SimulatorPage() {
   // Server-side initial load; falls back to seed data when no DB is configured

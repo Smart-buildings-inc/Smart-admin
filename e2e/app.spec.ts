@@ -81,7 +81,7 @@ test.describe("ATLAS OS console", () => {
     await walkthrough.click();
     await expect(walkthrough).toBeVisible();
 
-    // Pixel/poly ⟷ realistic render-mode switch is present and toggles.
+    // Pixel fallback <-> detailed render-mode switch is present and toggles.
     const pixel = page.getByRole("button", { name: "Pixel", exact: true });
     await expect(pixel).toBeVisible();
     await expect(pixel).toHaveAttribute("aria-pressed", "false");

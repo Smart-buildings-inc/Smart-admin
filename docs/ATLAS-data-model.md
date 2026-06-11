@@ -204,7 +204,7 @@ the `FloorPanel` can surface them to operators alongside `regulatoryNotes`.
 | **FloorPanel (F2)** | `occupancyGroup` + `useScope` badge per floor; `regulatoryNotes` rendered as a compliance callout list so operators and investors see the permitting strategy alongside live telemetry |
 | **KPI strip (F5)** | Three Resilience sub-scores (`energyPct`, `waterPct`, `foodPct`) plus the blended `overall` index; labels read "Energy autonomy", "Non-potable reuse", "Food (amenity)" — no overstatement |
 | **Fleet view (F7)** | `gridTied` and `islandCapable` flags per building in the rollup so fleet operators can see grid-dependency posture across the portfolio at a glance |
-| **Simulator (F12)** | Voxel building reflects the right-sized floor program (reservoir in basement, pool on rooftop only) |
+| **Simulator (F12)** | Architectural cutaway reflects the right-sized floor program (reservoir in basement, pool on rooftop only) |
 
 ---
 

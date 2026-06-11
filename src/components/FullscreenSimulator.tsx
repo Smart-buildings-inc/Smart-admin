@@ -2,7 +2,7 @@
 
 // Dedicated full-screen 3D viewer for ATLAS-01 (/simulate/atlas-01).
 //
-// Renders the F12 cinematic Building Simulator edge-to-edge on every device —
+// Renders the F12 architectural Building Simulator edge-to-edge on every device —
 // phone, tablet, desktop — as a true full-viewport showcase. The console twin and the
 // simulator stage both link here via their "fullscreen viewer" control. Minimal
 // chrome: an exit affordance (← / Esc), the simulator option toggles, a live
@@ -86,8 +86,8 @@ export default function FullscreenSimulator({
     detailedModels: true,
     source: defaultTwinModel(),
   });
-  // Single render-mode switch: off = cinematic detailed twin; "Pixel" = retro
-  // voxel figures + pixelation for a deliberate lightweight fallback.
+  // Single render-mode switch: off = architectural detailed twin; "Pixel" =
+  // retro figures + pixelation for a deliberate lightweight fallback.
   const [pixel, setPixel] = useState(false);
   const togglePixel = useCallback(() => {
     setPixel((on) => {

@@ -21,7 +21,7 @@ walk-through and AR mode.
 | **F4** | Resident broadcast | Compose + send notifications; mirrored into the incident feed |
 | **F5** | Building KPI strip | Resilience Index (energy autonomy / non-potable reuse / food amenity sub-scores), battery, solar, dwellings, residents, open incidents |
 | **F7** | Fleet view | Multi-building rollup with per-building KPIs, `gridTied`/`islandCapable` flags, and a **Permitting & compliance** detail panel per building (elevator count, firefighter elevator, exit stairs, sprinkler coverage, barrier-free/AODA, CSA B128 dual-plumbing, MECP ECA status, reservoir location, ESS fire-code compliance) |
-| **F12** | Building Simulator | Live voxel/pixel-art twin of ATLAS-01 (cut-away floors, working **dual elevators**, switchback stairs, **bulk reservoir in basement** / Reclamation Core, **pool-only rooftop**) — geometry matches the right-sized permitted design |
+| **F12** | Building Simulator | Live architectural cutaway twin of ATLAS-01 (curtain-wall frame, cut-away floors, working **dual elevators**, switchback stairs, **bulk reservoir in basement** / Reclamation Core, **pool-only rooftop**) — geometry matches the right-sized permitted design |
 | **+** | **Portfolio** | `/portfolio` — OpCo/PropCo capital structure, Canadian funding programs (CMHC MLI Select, Greener Affordable Housing, Save on Energy, SR&ED, NRC IRAP), and three-phase approvals timeline |
 | **+** | **Guided walk-through** | Animated camera descent from the rooftop pool down to the underground Reclamation Core, with futuristic bold-italic annotation callouts (arrows + quotes) |
 | **+** | **WebXR AR mode** | "Enter AR" on compatible devices (Android / Chrome WebXR). iOS Safari lacks WebXR — use the guided walk-through there |
@@ -95,7 +95,7 @@ npm run db:seed             # load the canonical ATLAS-01 data
 |---|---|
 | `/` | Main Console — 3D twin, per-floor telemetry, KPI strip, incident feed, broadcast |
 | `/fleet` | Fleet view — multi-building rollup with KPIs and compliance detail |
-| `/simulator` | Building Simulator (F12) — live voxel twin with right-sized geometry |
+| `/simulator` | Building Simulator (F12) — live architectural cutaway with right-sized geometry |
 | `/portfolio` | Portfolio — OpCo/PropCo structure, funding programs, approvals timeline |
 
 ## API surface
@@ -126,7 +126,7 @@ src/
     BroadcastComposer.tsx # F4 resident broadcast
     KpiStrip.tsx          # F5 building KPIs + Resilience Index
     SimulatorView.tsx     # F12 DOM chrome + controls
-    BuildingSimulator.tsx # F12 voxel scene (three.js, ssr:false)
+    BuildingSimulator.tsx # F12 architectural scene (three.js, ssr:false)
   lib/
     types.ts, ui.ts, annotations.ts
     data.ts               # data access with seed fallback

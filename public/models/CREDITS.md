@@ -8,7 +8,7 @@ and **CC-BY** (attribution required — list it here) assets.
 
 | File | Used for | License | Author | Source |
 |---|---|---|---|---|
-| `atlas-01.glb` | Whole-building "hero" tower (Simulator/viewer "Hero" toggle) | Original (this repo) | Generated procedurally in Blender by `scripts/blender/build_atlas01.py` | own work — ~6.2k tris, ~0.5 MB |
+| `atlas-01.glb` | Whole-building "hero" tower (Simulator/viewer "Hero" toggle) | Original (this repo) | Generated procedurally in Blender by `scripts/blender/build_atlas01.py` | own work — current export ~1.0 MB |
 
 ## Active bundled assets
 
@@ -28,7 +28,7 @@ live-model budget. Rebuild/extend them with the `atlas-blender` skill.
 | `floor-air.glb` | `floor-air` | Atrium "Lung" | CC0-1.0 | ATLAS / build_atlas_floors.py |
 | `floor-health.glb` | `floor-health` | Commons / telehealth | CC0-1.0 | ATLAS / build_atlas_floors.py |
 | `floor-restoration.glb` | `floor-restoration` | Skydeck / pool | CC0-1.0 | ATLAS / build_atlas_floors.py |
-| `floor-rooftop.glb` | `floor-rooftop` | PV + reservoir + mast | CC0-1.0 | ATLAS / build_atlas_floors.py |
+| `floor-rooftop.glb` | `floor-rooftop` | PV + pool + mast | CC0-1.0 | ATLAS / build_atlas_floors.py |
 
 Simulator people and the Habitat Twin guide remain procedural three.js human
 characters (no external GLB).
@@ -43,7 +43,7 @@ characters (no external GLB).
 
 ## Recommended free sources
 
-- **Kenney** — https://kenney.nl (CC0, low-poly kits; on-style with the voxel twin)
+- **Kenney** — https://kenney.nl (CC0, low-poly kits; useful for optional lightweight props)
 - **Quaternius** — https://quaternius.com (CC0, often rigged/animated)
 - **Khronos glTF-Sample-Assets** — https://github.com/KhronosGroup/glTF-Sample-Assets (per-model CC0 / CC-BY)
 - **Poly Pizza** — https://poly.pizza (CC-BY, large low-poly catalog)

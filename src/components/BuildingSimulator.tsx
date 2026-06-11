@@ -2,13 +2,12 @@
 
 // F12 — Building Simulator.
 //
-// A live, "operating" voxel/pixel-art rendering of ATLAS-01: the full floor
-// stack as a cut-away dollhouse with detailed per-floor interiors, a working
-// elevator car that travels the shaft, a switchback staircase, rooftop solar +
-// reservoir, and little voxel residents going about their day. Everything is
-// blocky and flat-shaded on purpose — that's the ATLAS pixel branding. Blender
-// isn't available in this headless environment, so the geometry is authored
-// procedurally in three.js / @react-three/fiber.
+// A live, operating architectural cutaway of ATLAS-01: the full floor stack as
+// a mid-rise habitat with a curtain-wall grid, structural frame, terraces,
+// detailed per-floor interiors, a working elevator car, switchback stairs,
+// rooftop solar, and residents going about their day. The Pixel/ASCII modes are
+// still available as explicit lightweight render styles; the default simulator
+// is meant to read like architecture rather than a block prototype.
 //
 // This file is the WebGL layer only; SimulatorView.tsx owns the DOM chrome
 // (header, controls, legend, telemetry) and feeds options/selection in.
@@ -40,6 +39,8 @@ const CORE_X = 3.4; // elevator core centre on +x
 const CORE_Z = -1.9;
 const STAIR_X = -3.5; // stair core centre on -x
 const CAR_H = FLOOR_H * 0.86;
+const FACADE_MULLIONS = [-4.35, -3.35, -2.35, -1.35, -0.35, 0.65, 1.65, 2.65, 3.65, 4.45];
+const SIDE_MULLIONS = [-2.65, -1.55, -0.45, 0.65, 1.75, 2.85];
 
 function selectedSimulatorTarget(index: number): THREE.Vector3 {
   return new THREE.Vector3(0, index * STEP + FLOOR_H * 0.58, 0);
@@ -51,12 +52,13 @@ export interface SimOptions {
   autoRotate: boolean;
   elevatorRunning: boolean;
   researchLens?: "ops" | "fluid" | "sdf" | "hologram";
-  /** Use detailed procedural residents (else the flat-shaded voxel figures). */
+  /** Use detailed procedural residents (else the lightweight block figures). */
   detailedModels: boolean;
   /**
-   * Which building model to render: the procedural "voxel" twin (default) or a
-   * Blender-authored "gltf" hero asset. The gltf path falls back to voxel when
-   * no asset is installed. See docs/ATLAS-blender-model-spec.md.
+   * Which building model to render: the procedural architectural twin (legacy
+   * value: "voxel") or a Blender-authored "gltf" hero asset. The gltf path
+   * falls back to procedural geometry when no asset is installed.
+   * See docs/ATLAS-blender-model-spec.md.
    */
   source?: "voxel" | "gltf";
 }
@@ -256,8 +258,9 @@ function CreativeResearchLens({
 }
 
 // --------------------------------------------------------------------------
-// Low-level voxel primitive: a flat-shaded box. The whole scene is built from
-// these so it reads as chunky pixel art.
+// Low-level architectural primitive. The scene stays procedural so telemetry
+// interactions remain live, but the default material treatment is architectural:
+// glass, metal, concrete, planter, and service volumes rather than abstract blocks.
 // --------------------------------------------------------------------------
 function Vox({
   position,
@@ -272,6 +275,8 @@ function Vox({
   onPointerOver,
   onPointerOut,
   visible = true,
+  rotation,
+  flatShading = false,
 }: {
   position: Vec3;
   size: Vec3;
@@ -285,10 +290,13 @@ function Vox({
   onPointerOver?: (e: ThreeEvent<PointerEvent>) => void;
   onPointerOut?: (e: ThreeEvent<PointerEvent>) => void;
   visible?: boolean;
+  rotation?: Vec3;
+  flatShading?: boolean;
 }) {
   return (
     <mesh
       position={position}
+      rotation={rotation}
       onClick={onClick}
       onPointerOver={onPointerOver}
       onPointerOut={onPointerOut}
@@ -301,9 +309,10 @@ function Vox({
         emissiveIntensity={emissiveIntensity}
         transparent={opacity < 1}
         opacity={opacity}
+        depthWrite={opacity >= 1}
         metalness={metalness}
         roughness={roughness}
-        flatShading
+        flatShading={flatShading}
       />
     </mesh>
   );
@@ -348,6 +357,7 @@ function PulseVox({
         emissiveIntensity={base}
         transparent={opacity < 1}
         opacity={opacity}
+        depthWrite={opacity >= 1}
         roughness={0.6}
         flatShading
       />
@@ -356,7 +366,7 @@ function PulseVox({
 }
 
 // --------------------------------------------------------------------------
-// A tiny voxel resident: legs + torso + head, gently bobbing (and on resident
+// A tiny block resident for the Pixel fallback: legs + torso + head, gently bobbing (and on resident
 // floors, pacing along the floor).
 // --------------------------------------------------------------------------
 function VoxPerson({
@@ -388,7 +398,7 @@ function VoxPerson({
   );
 }
 
-// Chooses a richer human character in detailed mode, otherwise the voxel figure.
+// Chooses a richer human character in detailed mode, otherwise the block figure.
 // `height` lets a placement (e.g. the plaza greeter) render a larger figure.
 function SimPerson({
   position,
@@ -407,7 +417,7 @@ function SimPerson({
   rotationY?: number;
   variant?: "resident" | "greeter" | "engineer";
 }) {
-  const voxScale = height / 0.6; // voxel figure is ~0.6 units tall
+  const voxScale = height / 0.6; // block figure is ~0.6 units tall
   const fallback = (
     <group position={position} scale={voxScale}>
       <VoxPerson position={[0, 0, 0]} color={color} pace={pace / voxScale} />
@@ -746,6 +756,332 @@ function PoolSurface({ accent }: { accent: string }) {
   );
 }
 
+function BalconyTerrace({
+  y,
+  accent,
+  night,
+  residential = false,
+}: {
+  y: number;
+  accent: string;
+  night: boolean;
+  residential?: boolean;
+}) {
+  const width = residential ? HALF_W * 2 - 1.2 : HALF_W * 2 - 2.4;
+  const planterXs = residential ? [-3.8, -1.3, 1.3, 3.8] : [-2.8, 0, 2.8];
+
+  return (
+    <group>
+      <Vox
+        position={[0, y + 0.08, HALF_D + 0.34]}
+        size={[width, 0.1, 0.68]}
+        color="#1e2d36"
+        metalness={0.2}
+        roughness={0.48}
+      />
+      <Vox
+        position={[0, y + 0.46, HALF_D + 0.66]}
+        size={[width - 0.24, 0.08, 0.05]}
+        color="#9fc7e8"
+        opacity={0.34}
+        metalness={0.05}
+        roughness={0.18}
+      />
+      {FACADE_MULLIONS.filter((x) => Math.abs(x) < width / 2 - 0.15).map((x) => (
+        <Vox
+          key={`bal-post-${y}-${x}`}
+          position={[x, y + 0.32, HALF_D + 0.66]}
+          size={[0.05, 0.42, 0.05]}
+          color="#7b8791"
+          metalness={0.72}
+          roughness={0.28}
+        />
+      ))}
+      {planterXs.map((x, i) => (
+        <group key={`planter-${y}-${x}`}>
+          <Vox
+            position={[x, y + 0.22, HALF_D + 0.48]}
+            size={[0.64, 0.22, 0.24]}
+            color="#22323f"
+            metalness={0.1}
+            roughness={0.68}
+          />
+          <PulseVox
+            position={[x, y + 0.42, HALF_D + 0.48]}
+            size={[0.5, 0.18, 0.18]}
+            color={i % 2 ? "#5ddc7a" : "#7fe7e0"}
+            emissive={accent}
+            base={night ? 0.14 : 0.05}
+            amp={0.06}
+            speed={0.9}
+            phase={x}
+          />
+        </group>
+      ))}
+    </group>
+  );
+}
+
+function ArchitecturalSkin({
+  floors,
+  cutaway,
+  night,
+}: {
+  floors: Floor[];
+  cutaway: boolean;
+  night: boolean;
+}) {
+  const glassOpacity = night ? 0.28 : 0.18;
+  const mullion = "#687783";
+  const spandrel = "#111c25";
+
+  return (
+    <group>
+      {floors.map((floor, index) => {
+        const y = index * STEP;
+        const cy = y + FLOOR_H / 2;
+        const accent = needColor[floor.need];
+        const residential = floor.need === "shelter";
+        const terrace =
+          residential || floor.need === "air" || floor.key === "vertical-farm" || floor.need === "restoration";
+
+        return (
+          <group key={`skin-${floor.key}`}>
+            {/* Back curtain-wall read: glass bays, dark spandrels, and mullions. */}
+            <Vox
+              position={[0, cy, -HALF_D - 0.11]}
+              size={[HALF_W * 2 - 0.82, FLOOR_H * 0.62, 0.05]}
+              color="#a8d8ef"
+              opacity={glassOpacity}
+              metalness={0.08}
+              roughness={0.16}
+            />
+            <Vox
+              position={[0, y + 0.28, -HALF_D - 0.14]}
+              size={[HALF_W * 2 - 0.66, 0.22, 0.09]}
+              color={spandrel}
+              metalness={0.18}
+              roughness={0.62}
+            />
+            {FACADE_MULLIONS.map((x) => (
+              <Vox
+                key={`back-mullion-${floor.key}-${x}`}
+                position={[x, cy, -HALF_D - 0.16]}
+                size={[0.045, FLOOR_H * 0.84, 0.065]}
+                color={mullion}
+                metalness={0.7}
+                roughness={0.3}
+              />
+            ))}
+
+            {/* Side facades keep the mass architectural without closing the cutaway. */}
+            {[-1, 1].map((side) => (
+              <group key={`side-${floor.key}-${side}`}>
+                <Vox
+                  position={[side * (HALF_W + 0.1), cy, 0]}
+                  size={[0.05, FLOOR_H * 0.62, HALF_D * 2 - 1.0]}
+                  color="#a8d8ef"
+                  opacity={glassOpacity * 0.9}
+                  metalness={0.08}
+                  roughness={0.18}
+                />
+                {SIDE_MULLIONS.map((z) => (
+                  <Vox
+                    key={`side-mullion-${floor.key}-${side}-${z}`}
+                    position={[side * (HALF_W + 0.14), cy, z]}
+                    size={[0.06, FLOOR_H * 0.78, 0.045]}
+                    color={mullion}
+                    metalness={0.7}
+                    roughness={0.3}
+                  />
+                ))}
+              </group>
+            ))}
+
+            {/* Front facade becomes a transparent skin only when the cutaway is closed. */}
+            {!cutaway ? (
+              <>
+                <Vox
+                  position={[0, cy, HALF_D + 0.1]}
+                  size={[HALF_W * 2 - 0.82, FLOOR_H * 0.72, 0.05]}
+                  color="#a8d8ef"
+                  opacity={night ? 0.34 : 0.24}
+                  metalness={0.08}
+                  roughness={0.14}
+                />
+                {FACADE_MULLIONS.map((x) => (
+                  <Vox
+                    key={`front-mullion-${floor.key}-${x}`}
+                    position={[x, cy, HALF_D + 0.14]}
+                    size={[0.045, FLOOR_H * 0.9, 0.065]}
+                    color={mullion}
+                    metalness={0.72}
+                    roughness={0.28}
+                  />
+                ))}
+              </>
+            ) : (
+              <Vox
+                position={[0, y + 0.22, HALF_D + 0.06]}
+                size={[HALF_W * 2 - 0.6, 0.08, 0.06]}
+                color={accent}
+                emissive={accent}
+                emissiveIntensity={night ? 0.34 : 0.16}
+                opacity={0.9}
+                metalness={0.2}
+                roughness={0.42}
+              />
+            )}
+
+            {terrace && <BalconyTerrace y={y} accent={accent} night={night} residential={residential} />}
+          </group>
+        );
+      })}
+    </group>
+  );
+}
+
+function ArchitecturalFrame({
+  floorCount,
+  totalHeight,
+}: {
+  floorCount: number;
+  totalHeight: number;
+}) {
+  const columnColor = "#27333d";
+  const beamColor = "#47525c";
+  const levels = Array.from({ length: floorCount + 1 }, (_, i) => i * STEP);
+
+  return (
+    <group>
+      {/* Heavier perimeter columns make the tower read as engineered structure. */}
+      {[-HALF_W - 0.28, HALF_W + 0.28].map((x) =>
+        [-HALF_D - 0.28, HALF_D + 0.28].map((z) => (
+          <Vox
+            key={`column-${x}-${z}`}
+            position={[x, totalHeight / 2, z]}
+            size={[0.26, totalHeight + 0.7, 0.26]}
+            color={columnColor}
+            metalness={0.3}
+            roughness={0.52}
+          />
+        )),
+      )}
+
+      {levels.map((y) => (
+        <group key={`beam-level-${y}`}>
+          <Vox
+            position={[0, y + 0.02, HALF_D + 0.28]}
+            size={[HALF_W * 2 + 0.74, 0.1, 0.12]}
+            color={beamColor}
+            metalness={0.72}
+            roughness={0.28}
+          />
+          <Vox
+            position={[0, y + 0.02, -HALF_D - 0.28]}
+            size={[HALF_W * 2 + 0.74, 0.1, 0.12]}
+            color={beamColor}
+            metalness={0.72}
+            roughness={0.28}
+          />
+          <Vox
+            position={[-HALF_W - 0.28, y + 0.02, 0]}
+            size={[0.12, 0.1, HALF_D * 2 + 0.74]}
+            color={beamColor}
+            metalness={0.72}
+            roughness={0.28}
+          />
+          <Vox
+            position={[HALF_W + 0.28, y + 0.02, 0]}
+            size={[0.12, 0.1, HALF_D * 2 + 0.74]}
+            color={beamColor}
+            metalness={0.72}
+            roughness={0.28}
+          />
+        </group>
+      ))}
+
+      {/* Solar/shade fins and a pair of subtle diagonal braces on the public face. */}
+      {[-3.9, -2.6, -1.3, 0, 1.3, 2.6, 3.9].map((x, i) => (
+        <Vox
+          key={`front-fin-${x}`}
+          position={[x, totalHeight / 2, HALF_D + 0.5]}
+          size={[0.08, totalHeight * 0.82, 0.36]}
+          color={i % 2 ? "#526370" : "#394956"}
+          metalness={0.55}
+          roughness={0.34}
+        />
+      ))}
+      <Vox
+        position={[-2.8, totalHeight * 0.43, HALF_D + 0.62]}
+        size={[0.11, totalHeight * 0.74, 0.12]}
+        color="#6f7d86"
+        rotation={[0, 0, 0.22]}
+        metalness={0.76}
+        roughness={0.24}
+      />
+      <Vox
+        position={[2.8, totalHeight * 0.43, HALF_D + 0.62]}
+        size={[0.11, totalHeight * 0.74, 0.12]}
+        color="#6f7d86"
+        rotation={[0, 0, -0.22]}
+        metalness={0.76}
+        roughness={0.24}
+      />
+    </group>
+  );
+}
+
+function ArchitecturalPlaza({ night }: { night: boolean }) {
+  return (
+    <group>
+      <Vox position={[0, -SLAB_T - 0.42, 0]} size={[26, 0.16, 22]} color="#071016" roughness={0.9} />
+      <Vox position={[0, -SLAB_T - 0.27, 0]} size={[HALF_W * 2 + 4.5, 0.36, HALF_D * 2 + 4.4]} color="#101a24" roughness={0.72} />
+      <Vox position={[0, -SLAB_T - 0.05, HALF_D + 2.4]} size={[3.2, 0.05, 4.2]} color="#29343b" roughness={0.64} />
+      <Vox position={[0, -SLAB_T + 0.08, HALF_D + 0.92]} size={[5.0, 0.12, 1.08]} color="#384550" metalness={0.45} roughness={0.34} />
+      <Vox position={[0, -SLAB_T + 0.68, HALF_D + 0.82]} size={[4.6, 0.1, 1.0]} color="#64727d" metalness={0.78} roughness={0.24} />
+      {[-1.95, 1.95].map((x) => (
+        <Vox
+          key={`canopy-col-${x}`}
+          position={[x, -SLAB_T + 0.34, HALF_D + 0.84]}
+          size={[0.1, 0.74, 0.1]}
+          color="#7b8791"
+          metalness={0.76}
+          roughness={0.26}
+        />
+      ))}
+      {[-8.3, -6.4, 6.4, 8.3].map((x) => (
+        <group key={`bioswale-${x}`}>
+          <Vox position={[x, -SLAB_T - 0.08, 2.8]} size={[1.0, 0.18, 5.2]} color="#14261d" roughness={0.78} />
+          <PulseVox
+            position={[x, -SLAB_T + 0.1, 2.8]}
+            size={[0.78, 0.18, 4.5]}
+            color="#5ddc7a"
+            emissive="#5ddc7a"
+            base={night ? 0.18 : 0.04}
+            amp={0.05}
+            speed={0.6}
+            phase={x}
+          />
+        </group>
+      ))}
+      {[-2.8, 2.8].map((x) => (
+        <PulseVox
+          key={`bollard-${x}`}
+          position={[x, -SLAB_T + 0.28, HALF_D + 3.4]}
+          size={[0.12, 0.62, 0.12]}
+          color="#ffd9a0"
+          emissive="#ffd9a0"
+          base={night ? 0.68 : 0.22}
+          amp={0.06}
+          speed={0.7}
+          phase={x}
+        />
+      ))}
+    </group>
+  );
+}
+
 // --------------------------------------------------------------------------
 // One floor: slab, three walls (front cut away), side windows, selector hit-
 // box, incident rim, and the interior recipe.
@@ -1068,30 +1404,65 @@ function Staircase({ floorCount }: { floorCount: number }) {
 function Rooftop({ y, night }: { y: number; night: boolean }) {
   return (
     <group position={[0, y, 0]}>
-      <Vox position={[0, 0.08, 0]} size={[HALF_W * 2 + 0.3, 0.16, HALF_D * 2 + 0.3]} color="#0d161e" />
-      {/* solar array (tilted panels) */}
-      <group position={[-1.6, 0.5, 0]} rotation={[-0.5, 0, 0]}>
-        {[-1, 0, 1].map((i) => (
+      <Vox position={[0, 0.08, 0]} size={[HALF_W * 2 + 0.72, 0.16, HALF_D * 2 + 0.72]} color="#0d161e" />
+      <Vox position={[0, 0.34, -HALF_D - 0.18]} size={[HALF_W * 2 + 0.7, 0.48, 0.16]} color="#27333d" metalness={0.2} roughness={0.48} />
+      <Vox position={[-HALF_W - 0.18, 0.34, 0]} size={[0.16, 0.48, HALF_D * 2 + 0.7]} color="#27333d" metalness={0.2} roughness={0.48} />
+      <Vox position={[HALF_W + 0.18, 0.34, 0]} size={[0.16, 0.48, HALF_D * 2 + 0.7]} color="#27333d" metalness={0.2} roughness={0.48} />
+
+      {/* PV canopy: architectural roof feature rather than loose blue tiles. */}
+      <group position={[-2.0, 1.02, 0.12]} rotation={[-0.32, 0, 0]}>
+        <Vox position={[0, -0.18, 0]} size={[4.2, 0.08, 2.6]} color="#47525c" metalness={0.72} roughness={0.24} />
+        {[-1.35, 0, 1.35].map((x) => (
           <PulseVox
-            key={i}
-            position={[i * 1.0, 0, 0]}
-            size={[0.9, 0.06, 1.4]}
-            color="#16314f"
+            key={x}
+            position={[x, -0.1, 0]}
+            size={[1.15, 0.06, 2.3]}
+            color="#152a46"
             emissive="#4ea8ff"
-            base={night ? 0.05 : 0.2}
+            base={night ? 0.06 : 0.24}
             amp={0.1}
             speed={0.7}
-            phase={i}
+            phase={x}
           />
         ))}
       </group>
+      {[-3.8, -0.2].map((x) => (
+        <Vox key={`pv-leg-${x}`} position={[x, 0.55, 1.22]} size={[0.1, 1.0, 0.1]} color="#7b8791" metalness={0.75} roughness={0.24} />
+      ))}
+
       {/* Skydeck pool (shallow) — the only rooftop water mass after reservoir
-          relocation; coping surround + shimmering water surface */}
-      <Vox position={[2.2, 0.16, -1.4]} size={[1.6, 0.32, 1.6]} color="#15384d" />
-      <PulseVox position={[2.2, 0.34, -1.4]} size={[1.4, 0.06, 1.4]} color="#3aa0ff" base={0.2} amp={0.15} speed={1.5} opacity={0.75} />
-      {/* comms mast */}
-      <Vox position={[2.4, 1.4, 1.6]} size={[0.1, 2.0, 0.1]} color="#2c3a47" />
-      <PulseVox position={[2.4, 2.45, 1.6]} size={[0.18, 0.18, 0.18]} color="#ff5d5d" base={0.5} amp={0.5} speed={3} />
+          relocation; coping surround + shimmering water surface. */}
+      <Vox position={[2.15, 0.17, -1.25]} size={[2.05, 0.34, 1.8]} color="#22323f" metalness={0.12} roughness={0.44} />
+      <PulseVox
+        position={[2.15, 0.38, -1.25]}
+        size={[1.72, 0.06, 1.45]}
+        color="#3aa0ff"
+        base={0.22}
+        amp={0.15}
+        speed={1.5}
+        opacity={0.75}
+      />
+
+      {/* Roof garden, pergola, and compact mechanical plant. */}
+      {[-3.6, -2.6, -1.6, 0.6, 1.6, 3.0].map((x, i) => (
+        <group key={`roof-planter-${x}`}>
+          <Vox position={[x, 0.2, 2.35]} size={[0.72, 0.24, 0.32]} color="#1f2d32" roughness={0.68} />
+          <PulseVox
+            position={[x, 0.42, 2.35]}
+            size={[0.54, 0.18, 0.22]}
+            color={i % 2 ? "#7fe7e0" : "#5ddc7a"}
+            emissive="#5ddc7a"
+            base={night ? 0.16 : 0.04}
+            amp={0.05}
+            speed={0.8}
+            phase={x}
+          />
+        </group>
+      ))}
+      <Vox position={[3.7, 0.48, 1.5]} size={[1.15, 0.82, 1.05]} color="#394956" metalness={0.42} roughness={0.38} />
+      <Vox position={[3.7, 0.95, 1.5]} size={[0.92, 0.12, 0.92]} color="#7b8791" metalness={0.78} roughness={0.22} />
+      <Vox position={[2.45, 1.45, 1.7]} size={[0.1, 2.0, 0.1]} color="#2c3a47" metalness={0.6} roughness={0.3} />
+      <PulseVox position={[2.45, 2.5, 1.7]} size={[0.18, 0.18, 0.18]} color="#ff5d5d" base={0.5} amp={0.5} speed={3} />
       {/* optional detailed rooftop prop (additive; off until an asset is set) */}
       <GltfProp slot="rooftopProp" position={[-1.6, 0.16, 0]} />
     </group>
@@ -1129,16 +1500,8 @@ function Tower({
 
   return (
     <group>
-      {/* ground plaza */}
-      <Vox position={[0, -SLAB_T - 0.1, 0]} size={[22, 0.2, 18]} color="#0a1117" />
-      <Vox position={[0, -SLAB_T - 0.01, 0]} size={[HALF_W * 2 + 3, 0.06, HALF_D * 2 + 3]} color="#101a24" />
-
-      {/* corner columns */}
-      {[-HALF_W, HALF_W].map((x) =>
-        [-HALF_D, HALF_D].map((z) => (
-          <Vox key={`${x}-${z}`} position={[x, totalHeight / 2, z]} size={[0.3, totalHeight + 0.2, 0.3]} color="#0d161e" />
-        )),
-      )}
+      <ArchitecturalPlaza night={options.night} />
+      <ArchitecturalFrame floorCount={floors.length} totalHeight={totalHeight} />
 
       {floors.map((floor, i) => (
         <FloorBlock
@@ -1153,6 +1516,8 @@ function Tower({
           onSelect={onSelect}
         />
       ))}
+
+      <ArchitecturalSkin floors={floors} cutaway={options.cutaway} night={options.night} />
 
       {/* A detailed greeter on the plaza out front — large, interactive */}
       {options.detailedModels && (
@@ -1328,9 +1693,9 @@ export default function BuildingSimulator({
       <directionalLight position={[-10, 6, -8]} intensity={0.3} color="#4ea8ff" />
 
       {(() => {
-        // The voxel twin is the default and the fallback for the optional glTF
-        // hero model (which renders only when a /models/atlas-01.glb exists).
-        const voxelTower = (
+        // The procedural tower is the default and the fallback for the optional
+        // glTF hero model (which renders only when /models/atlas-01.glb loads).
+        const proceduralTower = (
           <Tower
             floors={floors}
             incidents={incidents}
@@ -1348,9 +1713,9 @@ export default function BuildingSimulator({
           />
         );
         return (options.source ?? "voxel") === "gltf" ? (
-          <GltfBuilding fallback={voxelTower} />
+          <GltfBuilding fallback={proceduralTower} />
         ) : (
-          voxelTower
+          proceduralTower
         );
       })()}
 
@@ -1362,7 +1727,7 @@ export default function BuildingSimulator({
         autoRotate={options.autoRotate && !selectedKey}
       />
 
-      {/* Signature ASCII pass — the voxel tower resampled into live glyphs. */}
+      {/* Signature ASCII pass — the active tower resampled into live glyphs. */}
       {ascii && <AsciiRenderer color resolution={0.16} characters=" .:-=+*#%@" />}
     </Canvas>
   );

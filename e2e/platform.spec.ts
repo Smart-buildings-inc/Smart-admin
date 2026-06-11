@@ -85,7 +85,7 @@ test.describe("ATLAS OS platform", () => {
     const hero = page.getByRole("button", { name: "Hero", exact: true });
     await expect(hero).toBeVisible();
     await hero.click();
-    // The error boundary falls back to voxel on any load failure, so either way
+    // The error boundary falls back to the procedural twin on any load failure, so either way
     // the viewer stays alive: its exit affordance remains present.
     await expect(
       page.getByRole("button", { name: "Exit fullscreen viewer" }),

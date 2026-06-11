@@ -1,17 +1,18 @@
 # ATLAS-01 — Blender 3D Model Spec & Migration Brief
 
 > **Status / honest framing.** Today the twin (`src/components/BuildingSimulator.tsx`,
-> ~957 lines) is **procedural voxel geometry authored directly in three.js** — there are
-> no Blender or glTF assets in the repo, by design (see `CLAUDE.md`). This document is the
+> ~1,700 lines) is **procedural architectural geometry authored directly in three.js** — there are
+> no required Blender or glTF assets in the repo, by design (see `CLAUDE.md`). This document is the
 > brief for (1) the **geometry changes** the right-sized, permittable design demands
 > (`docs/ATLAS-derisking-plan.md`), and (2) a **Blender → glTF (.glb)** asset that slots into
 > the existing React-Three-Fiber pipeline. We **cannot run Blender in CI**, so the `.blend`
 > source and exported `.glb` are committed binaries (use **Git LFS**).
 >
-> **Recommended strategy — hybrid, not replacement.** Keep the procedural voxel scene as the
+> **Recommended strategy — hybrid, not replacement.** Keep the procedural architectural scene as the
 > **live ops twin** (cheap, data-bound, deterministic, local-first). Author a Blender
 > **"hero" `.glb`** for the marketing/walk-through and the `/simulate/atlas-01` viewer, loaded
-> behind a `source: "voxel" | "gltf"` switch. This preserves the "the cloud/hardware is an
+> behind the existing `source: "voxel" | "gltf"` switch (`"voxel"` is the legacy enum
+> value for the procedural tower). This preserves the "the cloud/hardware is an
 > optimization, never a dependency" ethos while giving us an archviz-grade asset when we want it.
 > This is a schematic massing model for visualization — **not** construction documents.
 
@@ -32,7 +33,7 @@ car, two stair cores, ESS room, per-need emissive accents) using boxes + Array
 modifiers + a 1-segment bevel, names every floor collection by `Floor.key`, and
 exports `public/models/atlas-01.glb` — **~6.2k triangles, ~0.5 MB**, no textures,
 no Draco (so no decoder needed). Flip the **"Hero"** toggle in the simulator /
-fullscreen viewer to load it (falls back to the voxel twin on any error). Re-run
+fullscreen viewer to load it (falls back to the procedural twin on any error). Re-run
 the script to regenerate after editing geometry. The sections below are the full
 authoring reference for hand-modelling or extending it.
 
@@ -107,7 +108,7 @@ food `#5ddc7a`, shelter `#c0a4ff`, air `#7fe7e0`, health `#ff8fb1`, restoration 
 
 | Lvl | `key` | Occupancy/Use | Model (geometry + right-sized changes) | Poly budget* |
 |----|-------|---------------|----------------------------------------|------|
-| −1 | `reclamation-core` | F / mechanical | **Bulk reservoir cistern** (relocated to basement — Flaw 7), 3 greywater/rainwater **treatment tanks**, pump skid, **dual-plumbing manifold** (purple non-potable + separate potable, with a visible **backflow preventer**). Already in voxel; refine as tanks + pipe runs. | 6–10k |
+| −1 | `reclamation-core` | F / mechanical | **Bulk reservoir cistern** (relocated to basement — Flaw 7), 3 greywater/rainwater **treatment tanks**, pump skid, **dual-plumbing manifold** (purple non-potable + separate potable, with a visible **backflow preventer**). Already in the procedural simulator; refine as tanks + pipe runs. | 6–10k |
 | 1 | `commons-clinic` | D / business | Commons seating + **telehealth booth** (screen, not clinical bays — avoids Group B), **first-aid** alcove, **accessible WC** (barrier-free turning circle), reception. | 6–9k |
 | 2 | `power-ops-core` | F / mechanical | **ESS room as a fire-rated enclosure** (2-hr walls, vented louvers, clean-agent/deluge head — Flaw 8) instead of an open battery wall; inverter cabinets, main bus, ops desk with screens. | 6–10k |
 | 3 | `aquaponics-bay` | F / amenity | Fish tanks + biofilter loop, **wet-location electrical** fittings (drip loops, sealed conduit), floor drains. Amenity scale (not commercial). | 5–8k |
@@ -160,8 +161,8 @@ the Fleet panel — now made visible in 3D.
   `PulseVox` logic; warmer/occupancy heat from `/api/presence`).
 - **`mat.glass.cutaway`** on `*.shell.front` so the cut-away toggle can hide/fade the front wall.
 - **`mat.purple.nonpotable`** for the CSA B128 riser (a literal "purple pipe").
-- Optionally **bake AO** to a small atlas; keep **vertex colors** to preserve the voxel charm
-  if we want a stylized hero rather than archviz.
+- Optionally **bake AO** to a small atlas; keep **vertex colors** to preserve the procedural
+  simulator's accent language if we want a stylized hero rather than full archviz.
 - Keep **animated shaders procedural** (pool shimmer, grow-light flicker, lung breathing,
   elevator motion) — do **not** bake these; they stay in R3F.
 
@@ -205,8 +206,9 @@ the Fleet panel — now made visible in 3D.
 2. **Loader:** `@react-three/drei` `useGLTF("/models/atlas-01.glb")` with a `DRACOLoader`
    (`gltf.dracoLoader`), wrapped in `<Suspense>`; `useGLTF.preload(...)`. `next.config.mjs`
    already transpiles `three`; `/public` is served statically, so no bundler change needed.
-3. **Model-source switch:** add `source: "voxel" | "gltf"` to `SimOptions` (and/or
-   `NEXT_PUBLIC_TWIN_MODEL`). **Default `voxel`** (local-first, no asset dependency); `gltf`
+3. **Model-source switch:** keep `source: "voxel" | "gltf"` in `SimOptions` (and/or
+   `NEXT_PUBLIC_TWIN_MODEL`). **Default `"voxel"` means the procedural architectural tower**
+   (local-first, no asset dependency); `gltf`
    loads the hero. The `/simulate/atlas-01` viewer is the natural first consumer.
 4. **Telemetry binding:** traverse the scene once, build `Map<floor.key, Object3D>`; for each,
    set `mat.need.<need>` emissive = `needColor[floor.need]`, **pulse on active incident**, and
@@ -226,11 +228,11 @@ the Fleet panel — now made visible in 3D.
 - [ ] Collection/node names === `Floor.key`; material names per §2.
 - [ ] +Y up, transforms applied, scale matches §1 constants.
 - [ ] glTF-Validator clean; Draco/meshopt applied; `.glb` within §6 budget.
-- [ ] Loads in `/simulate/atlas-01` behind `source: "gltf"`; procedural remains default + fallback.
+- [ ] Loads in `/simulate/atlas-01` behind `source: "gltf"`; procedural architectural tower remains default + fallback.
 - [ ] Telemetry binding verified (emissive accent, incident pulse, presence heat).
 - [ ] Cut-away, dual + firefighter elevators, two stairs all read correctly.
 - [ ] Mobile perf check (Pixel 5): ≥ 30 fps, draw calls within budget.
-- [ ] Visual diff vs procedural voxel; e2e simulator tests still green.
+- [ ] Visual diff vs procedural architectural tower; e2e simulator tests still green.
 
 ---
 

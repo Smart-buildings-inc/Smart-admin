@@ -133,8 +133,8 @@ const FEATURES: Feature[] = [
   },
   {
     tag: "F12 · Simulator",
-    title: "A pixel-perfect operating twin",
-    body: "A procedural voxel ATLAS-01 — cut-away floors, a working elevator, switchback stairs, rooftop solar and reservoir, and voxel residents going about their day.",
+    title: "An architectural operating twin",
+    body: "A procedural ATLAS-01 cutaway — curtain-wall frame, cut-away floors, a working elevator, switchback stairs, rooftop solar and reservoir, and residents going about their day.",
     color: "#5ddc7a",
     icon: I.layers,
     span: true,
@@ -219,7 +219,7 @@ export default function LandingPage() {
           label="ATLAS habitat skyline, digital twin, and infrastructure layers"
         />
 
-        {/* Signature: the voxel ATLAS tower, rendered live as colored ASCII. */}
+        {/* Signature: the ATLAS tower, rendered live as colored ASCII. */}
         <div className="mx-auto mt-16 max-w-2xl">
           <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
             The signature render

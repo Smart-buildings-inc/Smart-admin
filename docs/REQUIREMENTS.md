@@ -51,7 +51,7 @@ Feature labels mirror the code (`F1`–`F12`); each row is testable.
 | **F5** | Building KPI / Resilience strip | **Resilience Index** (blended energy‑autonomy / non‑potable‑reuse / food‑amenity sub‑scores, 0–100), battery, solar, dwellings, residents, open incidents — derived by aggregating floors. KPI labels are honest‑by‑design (grid‑tied, not off‑grid; non‑potable reuse only; food = amenity) |
 | **F7** | Fleet view | Multi‑building rollup, separate from the single‑building console |
 | **F11** | Sensor ingestion | Tagged sensor points (Brick/Haystack‑style); ingest + query via `/api/sensors`; 201/400 contract |
-| **F12** | Building Simulator | Cinematic operating twin by default: cut‑away floors, detailed floor GLB modules, working elevator(s), switchback stairs, rooftop solar, residents; Pixel mode remains an opt‑in retro fallback |
+| **F12** | Building Simulator | Architectural operating twin by default: cut‑away floors, curtain-wall frame, detailed floor GLB modules, working elevator(s), switchback stairs, rooftop solar, residents; Pixel and ASCII modes remain opt‑in retro fallbacks |
 | **+** | Guided walk‑through | Animated rooftop→underground camera descent with annotated callouts |
 | **+** | WebXR AR | "Enter AR" on WebXR‑capable devices; graceful fallback to walk‑through where unsupported |
 | **F13** | Presence sensing | Camera‑free occupancy/person‑count via RuView ESP32 nodes (`sys.presence`), `/api/presence`; seed fallback when hardware absent. See [RuView Presence](./ATLAS-ruview-presence.md) |

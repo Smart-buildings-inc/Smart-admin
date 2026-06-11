@@ -38,7 +38,7 @@ test.describe("ATLAS OS building simulator", () => {
     ).toBeVisible();
 
     // Control toggles.
-    for (const name of ["Cut-away", "Pixel", "Elevator"]) {
+    for (const name of ["Cut-away", "Pixel", "ASCII", "Elevator"]) {
       await expect(page.getByRole("button", { name, exact: true })).toBeVisible();
     }
     const researchLens = page.getByLabel("3D research lens");
@@ -60,7 +60,7 @@ test.describe("ATLAS OS building simulator", () => {
     await expect(page.getByText("Volumetric flow field", { exact: true })).toBeVisible();
   });
 
-  test("Pixel switch toggles between cinematic and voxel fallback modes", async ({ page }) => {
+  test("Pixel switch toggles between architectural and retro fallback modes", async ({ page }) => {
     const robotRequests: string[] = [];
     page.on("request", (request) => {
       if (request.url().includes("/models/robot.glb")) robotRequests.push(request.url());
@@ -71,7 +71,7 @@ test.describe("ATLAS OS building simulator", () => {
 
     const pixel = page.getByRole("button", { name: "Pixel", exact: true });
     await expect(pixel).toHaveAttribute("aria-pressed", "false");
-    await pixel.click(); // retro voxel fallback
+    await pixel.click(); // retro fallback
     await expect(pixel).toHaveAttribute("aria-pressed", "true");
     expect(robotRequests).toHaveLength(0);
   });
@@ -125,6 +125,8 @@ test.describe("ATLAS OS building simulator", () => {
 
     // Option toggles and the exit affordance are present.
     await expect(page.getByRole("button", { name: "Cut-away", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Pixel", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "ASCII", exact: true })).toBeVisible();
     await expect(page.getByLabel("3D research lens").getByRole("button", { name: "Holo", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Exit fullscreen viewer" })).toBeVisible();
   });

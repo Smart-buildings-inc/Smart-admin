@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
-build_atlas01.py — ENHANCED hero tower for ATLAS-01
-===================================================
+build_atlas01.py — ARCHITECTURAL hero tower for ATLAS-01
+=========================================================
 
-Denser facade, richer interior detail, better context, more interesting
-rooftop — while staying lightweight (~8-10k tris, ~600-800 KB .glb).
+Curtain-wall frame, expressed structure, balcony/terrace bands, richer interior
+detail, better context, and a stronger rooftop PV/pool plant — while staying
+lightweight enough for the browser.
 
 Run:
     pip install bpy
@@ -26,6 +27,8 @@ CORE_Z = -1.9
 CORE_Z2 = -0.1
 CORE_Z3 = 1.7
 STAIR_X = -3.5
+FACADE_MULLIONS = [-4.35, -3.35, -2.35, -1.35, -0.35, 0.65, 1.65, 2.65, 3.65, 4.45]
+SIDE_MULLIONS = [-2.65, -1.55, -0.45, 0.65, 1.75, 2.85]
 
 FLOORS = [
     ("reclamation-core", "water"),
@@ -129,6 +132,8 @@ PURPLE = lambda: material("mat.purple.nonpotable", "9b5de5", emission=0.6)
 WATERM = lambda: material("mat.water", "3aa0ff", emission=0.4, alpha=0.7)
 PV = lambda: material("mat.pv", "1b2a4a", metallic=0.6, roughness=0.25)
 BEACON = lambda: material("mat.beacon", "ff3333", emission=2.5)
+FIN = lambda: material("mat.fin", "526370", metallic=0.65, roughness=0.3)
+SPANDREL = lambda: material("mat.spandrel", "111c25", metallic=0.15, roughness=0.6)
 
 def accent(need, strength=1.4):
     return material(f"mat.need.{need}", NEED_HEX[need], emission=strength)
@@ -169,7 +174,7 @@ def build_floor(i, key, need, coll):
     box(f"{key}.emissive.core", (0.3, FLOOR_H * 0.7, 0.3),
         (-HALF_W + 1.2, cy, -HALF_D + 1.0), acc, coll)
 
-    # ---- FACADE ENHANCEMENTS ----
+    # ---- ARCHITECTURAL FACADE ENHANCEMENTS ----
     # Balcony slab (except rooftop level)
     if key != "skydeck-reservoir":
         box(f"{key}.balcony", (HALF_W * 2 - 0.6, 0.06, 0.5),
@@ -185,7 +190,22 @@ def build_floor(i, key, need, coll):
     # Spandrel panel between floors
     if i > 0:
         box(f"{key}.spandrel", (HALF_W * 2 - 0.4, 0.06, 0.12),
-            (0, y, HALF_D - 0.06), DARK(), coll, bevel=0.01)
+            (0, y, HALF_D - 0.06), SPANDREL(), coll, bevel=0.01)
+
+    # Back and side curtain-wall reads so the tower has architecture from every orbit angle.
+    box(f"{key}.rear.glass", (HALF_W * 2 - 0.8, FLOOR_H * 0.62, 0.04),
+        (0, cy, -HALF_D - 0.10), GLASS(), coll)
+    box(f"{key}.rear.spandrel", (HALF_W * 2 - 0.6, 0.18, 0.06),
+        (0, y + 0.28, -HALF_D - 0.14), SPANDREL(), coll)
+    for x in FACADE_MULLIONS:
+        box(f"{key}.rear.mullion.{x}", (0.045, FLOOR_H * 0.82, 0.055),
+            (x, cy, -HALF_D - 0.16), METAL(), coll)
+    for side in (-1, 1):
+        box(f"{key}.side.glass.{side}", (0.04, FLOOR_H * 0.62, HALF_D * 2 - 1.0),
+            (side * (HALF_W + 0.1), cy, 0), GLASS(), coll)
+        for z in SIDE_MULLIONS:
+            box(f"{key}.side.mullion.{side}.{z}", (0.055, FLOOR_H * 0.78, 0.04),
+                (side * (HALF_W + 0.14), cy, z), METAL(), coll)
 
     # Window mullions (front facade)
     mull = box(f"{key}.mullion", (0.07, FLOOR_H, 0.07),
@@ -196,6 +216,20 @@ def build_floor(i, key, need, coll):
     for t in range(2):
         box(f"{key}.transom{t}", (HALF_W * 2 - 0.6, 0.04, 0.04),
             (0, y + 0.4 + t * 0.7, HALF_D - 0.02), METAL(), coll)
+
+    # Occupied/green floors get a projecting terrace with planters, not just a flat face.
+    if need in ("shelter", "air", "restoration") or key == "vertical-farm":
+        width = HALF_W * 2 - (1.2 if need == "shelter" else 2.4)
+        box(f"{key}.terrace.slab", (width, 0.08, 0.68),
+            (0, y + 0.08, HALF_D + 0.34), CONCRETE(), coll, bevel=0.015)
+        box(f"{key}.terrace.rail", (width - 0.24, 0.06, 0.04),
+            (0, y + 0.46, HALF_D + 0.66), GLASS(), coll)
+        for n, x in enumerate((-3.8, -1.3, 1.3, 3.8) if need == "shelter" else (-2.8, 0, 2.8)):
+            box(f"{key}.terrace.planter.{n}", (0.62, 0.2, 0.24),
+                (x, y + 0.22, HALF_D + 0.48), DARK(), coll, bevel=0.02)
+            box(f"{key}.terrace.green.{n}", (0.48, 0.16, 0.18),
+                (x, y + 0.40, HALF_D + 0.48),
+                material("mat.terrace.green", "5ddc7a", emission=0.3), coll, bevel=0.03)
 
     # --- per-need interior detail ---
     if key == "reclamation-core":
@@ -307,12 +341,46 @@ def build_cores(n_floors):
                 (STAIR_X, f * STEP + FLOOR_H * 0.8, z - 0.3), CONCRETE(), coll)
 
 
+def build_architectural_exoskeleton(n_floors):
+    coll = new_collection("sys.architectural-envelope")
+    h = n_floors * STEP
+    cy = h / 2.0
+
+    # Expressed perimeter frame: columns + floor-level beams, readable from orbit.
+    for x in (-HALF_W - 0.28, HALF_W + 0.28):
+        for z in (-HALF_D - 0.28, HALF_D + 0.28):
+            box(f"exo.column.{x}.{z}", (0.26, h + 0.7, 0.26), (x, cy, z),
+                CONCRETE(), coll, bevel=0.025)
+
+    for f in range(n_floors + 1):
+        y = f * STEP + 0.02
+        box(f"exo.front.beam.{f}", (HALF_W * 2 + 0.74, 0.10, 0.12),
+            (0, y, HALF_D + 0.28), METAL(), coll, bevel=0.01)
+        box(f"exo.back.beam.{f}", (HALF_W * 2 + 0.74, 0.10, 0.12),
+            (0, y, -HALF_D - 0.28), METAL(), coll, bevel=0.01)
+        box(f"exo.left.beam.{f}", (0.12, 0.10, HALF_D * 2 + 0.74),
+            (-HALF_W - 0.28, y, 0), METAL(), coll, bevel=0.01)
+        box(f"exo.right.beam.{f}", (0.12, 0.10, HALF_D * 2 + 0.74),
+            (HALF_W + 0.28, y, 0), METAL(), coll, bevel=0.01)
+
+    for n, x in enumerate((-3.9, -2.6, -1.3, 0.0, 1.3, 2.6, 3.9)):
+        box(f"exo.solar.fin.{n}", (0.08, h * 0.82, 0.36),
+            (x, cy, HALF_D + 0.50), FIN(), coll, bevel=0.012)
+
+    brace_a = box("exo.diagonal.brace.a", (0.11, h * 0.74, 0.12),
+                  (-2.8, h * 0.43, HALF_D + 0.62), METAL(), coll, bevel=0.015)
+    brace_a.rotation_euler = (0, 0, math.radians(12))
+    brace_b = box("exo.diagonal.brace.b", (0.11, h * 0.74, 0.12),
+                  (2.8, h * 0.43, HALF_D + 0.62), METAL(), coll, bevel=0.015)
+    brace_b.rotation_euler = (0, 0, math.radians(-12))
+
+
 def build_context(n_floors):
     coll = new_collection("env")
     h = n_floors * STEP
 
     # Ground podium
-    box("env.podium", (HALF_W * 2 + 3, 0.5, HALF_D * 2 + 3),
+    box("env.podium", (HALF_W * 2 + 4.5, 0.5, HALF_D * 2 + 4.4),
         (0, -SLAB_T - 0.25, 0), DARK(), coll, bevel=0.1)
 
     # Ground plane
@@ -320,8 +388,10 @@ def build_context(n_floors):
         material("mat.ground", "101a24", roughness=1.0), coll)
 
     # Entrance canopy
-    box("env.canopy", (4.0, 0.08, 1.0), (0, -SLAB_T - 0.1, HALF_D + 0.5),
+    box("env.canopy", (5.0, 0.10, 1.08), (0, -SLAB_T + 0.08, HALF_D + 0.92),
         METAL(), coll, bevel=0.03)
+    box("env.canopy.glass", (4.6, 0.06, 1.0), (0, -SLAB_T + 0.68, HALF_D + 0.82),
+        GLASS(), coll, bevel=0.02)
     # Canopy supports
     for s in (-1.5, 1.5):
         box(f"env.canopy.col.{s}", (0.06, 0.3, 0.06), (s, -SLAB_T - 0.3, HALF_D + 0.7),
@@ -329,6 +399,11 @@ def build_context(n_floors):
     # Entrance path
     box("env.path", (2.0, 0.04, 2.5), (0, -SLAB_T - 0.25, HALF_D + 2.0),
         material("mat.path", "2a2a2a", roughness=0.9), coll)
+    for n, x in enumerate((-8.3, -6.4, 6.4, 8.3)):
+        box(f"env.bioswale.base.{n}", (1.0, 0.18, 5.2), (x, -SLAB_T - 0.08, 2.8),
+            material("mat.bioswale.base", "14261d", roughness=0.8), coll, bevel=0.04)
+        box(f"env.bioswale.green.{n}", (0.78, 0.16, 4.5), (x, -SLAB_T + 0.10, 2.8),
+            material("mat.bioswale.green", "5ddc7a", emission=0.25), coll, bevel=0.04)
     # Path lights
     for p in (-1.0, 1.0):
         box(f"env.pathlight.{p}", (0.08, 0.3, 0.08), (p, -SLAB_T - 0.15, HALF_D + 2.8),
@@ -375,6 +450,7 @@ def main():
     for i, (key, need) in enumerate(FLOORS):
         coll = new_collection(key)
         build_floor(i, key, need, coll)
+    build_architectural_exoskeleton(len(FLOORS))
     build_cores(len(FLOORS))
     build_context(len(FLOORS))
 

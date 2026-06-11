@@ -106,7 +106,7 @@ So the demo models the building we can actually permit (not an oversold one):
   *(Applied.)*
 - **Simulator right-sizing (Flaws 5, 7 — applied):** `BuildingSimulator.tsx` now renders the bulk
   reservoir in the **basement** (Reclamation Core level), the **pool only** on the rooftop (Skydeck),
-  and **dual elevators** in the core shaft. The voxel model matches the permitted design. *(Applied.)*
+  and **dual elevators** in the core shaft. The architectural simulator matches the permitted design. *(Applied.)*
 
 ### Flaw → fix status (updated)
 

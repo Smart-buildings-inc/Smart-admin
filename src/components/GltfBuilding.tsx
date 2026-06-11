@@ -1,10 +1,10 @@
 "use client";
 
 // Optional glTF "hero" building, rendered INSIDE the R3F <Canvas> as an
-// alternative to the procedural voxel Tower. This is scaffolding: it loads a
+// alternative to the procedural architectural Tower. This loads a
 // Blender-authored asset from /public/models/atlas-01.glb when present, and
-// gracefully falls back to the voxel tower when the file is missing or fails to
-// decode — so the app behaves identically until a .glb is dropped in.
+// gracefully falls back to the procedural tower when the file is missing or
+// fails to decode.
 //
 // Authoring + binding contract: docs/ATLAS-blender-model-spec.md (collection /
 // node name === Floor.key; +Y up; metric scale matching the BuildingSimulator
@@ -18,9 +18,10 @@ import { useGLTF } from "@react-three/drei";
 export const TWIN_MODEL_URL = "/models/atlas-01.glb";
 
 /**
- * Initial model source, read from the public env at build time. Defaults to the
- * voxel twin so production is unchanged until NEXT_PUBLIC_TWIN_MODEL=gltf is set
- * (or the user flips the in-app "Hero" toggle).
+ * Initial model source, read from the public env at build time. The legacy
+ * `"voxel"` value names the procedural R3F tower; it is now architectural by
+ * default and remains the local-first fallback unless NEXT_PUBLIC_TWIN_MODEL=gltf
+ * is set (or the user flips the in-app "Hero" toggle).
  */
 export function defaultTwinModel(): "voxel" | "gltf" {
   return process.env.NEXT_PUBLIC_TWIN_MODEL === "gltf" ? "gltf" : "voxel";
@@ -29,7 +30,7 @@ export function defaultTwinModel(): "voxel" | "gltf" {
 function GltfScene() {
   // If the .glb is Draco/meshopt-compressed, pass the decoder path here, e.g.
   //   useGLTF(TWIN_MODEL_URL, "/draco/")
-  // A missing decoder simply throws → the boundary below falls back to voxel.
+  // A missing decoder simply throws -> the boundary below falls back to procedural.
   const { scene } = useGLTF(TWIN_MODEL_URL);
   // TODO(model-binding): traverse `scene`, index meshes by Floor.key, and drive
   // emissive accent / incident pulse / presence heat. See the spec §8.
@@ -38,7 +39,7 @@ function GltfScene() {
 
 /**
  * Error boundary usable inside the R3F tree. When the glTF load rejects (e.g.
- * the asset is absent), it renders the provided voxel `fallback` instead of
+ * the asset is absent), it renders the provided procedural `fallback` instead of
  * crashing the scene.
  */
 class ModelBoundary extends Component<
@@ -55,7 +56,7 @@ class ModelBoundary extends Component<
     // Expected when no asset is installed yet — keep it quiet but discoverable.
     if (typeof console !== "undefined") {
       console.warn(
-        `[ATLAS] Hero model not loaded from ${TWIN_MODEL_URL} — falling back to the voxel twin. ` +
+        `[ATLAS] Hero model not loaded from ${TWIN_MODEL_URL} — falling back to the procedural twin. ` +
           "Drop a Blender-exported atlas-01.glb in /public/models (see docs/ATLAS-blender-model-spec.md).",
       );
     }
@@ -67,7 +68,7 @@ class ModelBoundary extends Component<
 }
 
 /**
- * Render the glTF hero building, falling back to `fallback` (the voxel Tower)
+ * Render the glTF hero building, falling back to `fallback` (the procedural Tower)
  * both while loading and on any load error.
  */
 export default function GltfBuilding({ fallback }: { fallback: ReactNode }) {

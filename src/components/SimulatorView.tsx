@@ -132,8 +132,8 @@ export default function SimulatorView({
     detailedModels: true,
     source: defaultTwinModel(),
   });
-  // Single render-mode switch: off = cinematic detailed twin; "Pixel" = retro
-  // voxel figures + pixelation for a deliberate lightweight fallback.
+  // Single render-mode switch: off = architectural detailed twin; "Pixel" =
+  // retro figures + pixelation for a deliberate lightweight fallback.
   const [pixel, setPixel] = useState(false);
   const togglePixel = useCallback(() => {
     setPixel((on) => {
@@ -169,7 +169,7 @@ export default function SimulatorView({
         <div>
           <h1 className="display text-2xl text-white lg:text-3xl">Building Simulator</h1>
           <p className="mt-1 max-w-2xl text-sm text-slate-400">
-            ATLAS‑01, operating live — every floor a human need, rendered as a cinematic building twin.{" "}
+            ATLAS‑01, operating live — every floor a human need, rendered as an architectural building twin.{" "}
             <span className="important">Watch the building breathe.</span>
           </p>
         </div>
@@ -334,11 +334,11 @@ export default function SimulatorView({
           <div className="panel panel-pad text-sm text-slate-400">
             <div className="kpi-label mb-1.5">About this view</div>
             <p>
-              A cinematic operating twin of ATLAS‑01 rendered in three.js — a
-              working elevator, switchback stairs, rooftop solar, detailed floor
-              modules, and residents going about their day. Toggle <span className="text-slate-200">Cut-away</span> for the
+              An architectural operating twin of ATLAS‑01 rendered in three.js — a
+              curtain-wall frame, working elevator, switchback stairs, rooftop solar,
+              detailed floor modules, and residents going about their day. Toggle <span className="text-slate-200">Cut-away</span> for the
               dollhouse view, <span className="text-slate-200">Night</span> to see the windows glow,{" "}
-              <span className="text-slate-200">Pixel</span> only when you want the retro voxel fallback, and{" "}
+              <span className="text-slate-200">Pixel</span> only when you want the retro fallback, and{" "}
               <span className="text-slate-200">ASCII</span> for the signature glyph render.
             </p>
           </div>

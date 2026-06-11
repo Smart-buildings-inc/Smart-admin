@@ -3,8 +3,8 @@
 // Signature ASCII rendering layer.
 //
 // Drops three.js' AsciiEffect over any @react-three/fiber scene: the live WebGL
-// frame is resampled into a grid of monospace glyphs every tick, so our chunky
-// "Minecraft" voxel models read as animated ASCII art — the ATLAS signature
+// frame is resampled into a grid of monospace glyphs every tick, so the active
+// 3D scene reads as animated ASCII art — the ATLAS signature
 // look. Mounted inside a <Canvas>, it takes over the render loop (useFrame
 // priority 1), hides the real canvas, and overlays the glyph table in its
 // place. Pointer events fall through to the (invisible) canvas, so floor
