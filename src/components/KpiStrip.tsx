@@ -36,7 +36,7 @@ function Kpi({
           ? "text-signal-ok"
           : "text-white";
   return (
-    <div className="panel panel-pad min-w-[9.5rem] snap-start flex-1 lg:min-w-[8.5rem]">
+    <div className="panel-elevated panel-pad min-w-[9.5rem] snap-start flex-1 transition-all duration-150 hover:border-ink-600/80 lg:min-w-[8.5rem]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="kpi-label">{label}</div>
@@ -52,7 +52,7 @@ function Kpi({
         <Icon
           aria-hidden
           weight="duotone"
-          className="mt-0.5 h-5 w-5 shrink-0 text-slate-500 opacity-70"
+          className="mt-0.5 h-5 w-5 shrink-0 text-slate-500 opacity-60"
         />
       </div>
       {sub ? (

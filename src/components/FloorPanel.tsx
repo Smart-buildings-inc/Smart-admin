@@ -95,12 +95,12 @@ export default function FloorPanel({
           {(floor.occupancyGroup ?? floor.useScope) ? (
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               {floor.occupancyGroup ? (
-                <span className="inline-block rounded border border-ink-600/60 bg-ink-700/60 px-1.5 py-0.5 text-xs uppercase tracking-wide text-slate-300">
+                <span className="chip chip-subtle">
                   {occupancyGroupLabel[floor.occupancyGroup]}
                 </span>
               ) : null}
               {floor.useScope ? (
-                <span className="inline-block rounded border border-ink-600/60 bg-ink-700/60 px-1.5 py-0.5 text-xs uppercase tracking-wide text-slate-300">
+                <span className="chip chip-subtle">
                   {useScopeLabel[floor.useScope]}
                 </span>
               ) : null}
@@ -124,19 +124,19 @@ export default function FloorPanel({
           return (
             <div
               key={key}
-              className="rounded-lg border border-ink-600/50 bg-ink-800/50 px-3 py-2"
+              className="rounded-lg glass-subtle px-3 py-2 transition-all duration-150 hover:border-white/20"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <div className="kpi-label">{meta.label}</div>
-                  <div className="font-mono text-sm font-semibold text-white">
+                  <div className="font-mono text-sm font-semibold text-white numeric">
                     {meta.fmt(value)}
                   </div>
                 </div>
                 <meta.Icon
                   aria-hidden
                   weight="duotone"
-                  className="mt-0.5 h-4 w-4 shrink-0 text-slate-500 opacity-70"
+                  className="mt-0.5 h-4 w-4 shrink-0 text-slate-500 opacity-60"
                 />
               </div>
             </div>
@@ -205,7 +205,7 @@ export default function FloorPanel({
             {floorIncidents.map((inc) => (
               <li
                 key={inc.id}
-                className="flex items-start gap-2 rounded-md border border-ink-600/50 bg-ink-800/40 px-2.5 py-1.5 text-xs"
+                className="flex items-start gap-2 rounded-md glass-subtle px-2.5 py-1.5 text-xs"
               >
                 <span
                   className="mt-0.5 inline-block h-2 w-2 shrink-0 rounded-full"

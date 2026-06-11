@@ -76,7 +76,7 @@ function ThemeToggleButton({
       aria-pressed={theme === "light"}
       title={label}
       data-testid="theme-toggle"
-      className="theme-toggle-button relative grid h-10 w-10 place-items-center rounded-lg border border-ink-600/70 bg-ink-900/60 text-slate-200 transition-colors hover:bg-ink-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-info"
+      className="theme-toggle-button relative grid h-10 w-10 place-items-center rounded-lg glass text-slate-200 transition-colors hover:bg-white/15 hover:text-white focus-ring"
     >
       <span className="sr-only">{label}</span>
       {theme === "dark" ? (
@@ -161,12 +161,12 @@ export default function NavBar() {
   };
 
   return (
-    <nav className="sticky top-0 z-40 border-b border-ink-600/50 bg-gradient-to-b from-ink-950 to-ink-950/60 backdrop-blur">
+    <nav className="sticky top-0 z-40 border-b border-white/10 bg-ink-950/82 backdrop-blur-2xl">
       <div className="mx-auto flex h-14 max-w-[1500px] items-center justify-between gap-3 px-4 lg:h-16 lg:px-6">
         {/* Brand */}
         <Link
           href="/"
-          className="flex items-center gap-2.5 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-signal-info"
+          className="flex items-center gap-2.5 rounded-lg outline-none focus-ring focus-visible:ring-2 focus-visible:ring-signal-info"
           aria-label="ATLAS OS home"
         >
           <BrandMark className="h-8 w-8 lg:h-9 lg:w-9" />
@@ -184,10 +184,10 @@ export default function NavBar() {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
+                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-150 ${
                   active
-                    ? "bg-white text-ink-950"
-                    : "text-slate-300 hover:bg-ink-800 hover:text-white"
+                    ? "bg-white text-ink-950 shadow-elevation-2"
+                    : "text-slate-300 hover:bg-white/10 hover:text-white"
                 }`}
               >
                 {item.label}
@@ -205,7 +205,7 @@ export default function NavBar() {
             aria-label="View source on GitHub"
             title="View source on GitHub"
             data-testid="github-link"
-            className="relative hidden h-10 w-10 place-items-center rounded-lg border border-ink-600/70 bg-ink-900/60 text-slate-200 transition-colors hover:bg-ink-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-info lg:grid"
+            className="relative hidden h-10 w-10 place-items-center rounded-lg glass text-slate-200 transition-colors hover:bg-white/15 hover:text-white focus-ring lg:grid"
           >
             <span className="sr-only">View source on GitHub</span>
             <GitHubIcon className="h-5 w-5" />
@@ -220,7 +220,7 @@ export default function NavBar() {
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             aria-controls="mobile-nav"
-            className="relative grid h-10 w-10 place-items-center rounded-lg border border-ink-600/70 bg-ink-900/60 text-slate-200 transition-colors hover:bg-ink-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-info lg:hidden"
+            className="relative grid h-10 w-10 place-items-center rounded-lg glass text-slate-200 transition-colors hover:bg-white/15 hover:text-white focus-ring lg:hidden"
           >
             <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
             <span aria-hidden className="relative block h-4 w-5">
@@ -267,7 +267,7 @@ export default function NavBar() {
         {/* Panel */}
         <div
           id="mobile-nav"
-          className={`absolute inset-x-0 top-14 origin-top border-b border-ink-600/50 bg-ink-900/95 px-4 pb-4 pt-2 shadow-2xl backdrop-blur transition-all duration-300 ${
+          className={`absolute inset-x-0 top-14 origin-top border-b border-white/10 glass-strong px-4 pb-4 pt-2 transition-all duration-300 ${
             open
               ? "translate-y-0 opacity-100"
               : "-translate-y-3 opacity-0"

@@ -58,10 +58,10 @@ function StageControlButton({
       aria-label={label}
       aria-pressed={active}
       title={label}
-      className={`grid h-9 w-9 place-items-center rounded-full text-xs font-semibold transition-colors sm:w-auto sm:grid-cols-[auto_auto] sm:gap-1.5 sm:px-3 sm:py-1 ${
+      className={`grid h-9 w-9 place-items-center rounded-full text-xs font-semibold transition-all duration-150 sm:w-auto sm:grid-cols-[auto_auto] sm:gap-1.5 sm:px-3 sm:py-1 ${
         active
-          ? "bg-white text-ink-950"
-          : "text-slate-300 hover:text-white"
+          ? "bg-white text-ink-950 shadow-elevation-2"
+          : "text-slate-300 hover:bg-white/10 hover:text-white"
       }`}
     >
       {children}
@@ -355,20 +355,20 @@ function BlueprintWindow() {
           A2.1 1:100
         </div>
       </div>
-      <div className="min-w-0 overflow-hidden rounded-lg border border-ink-600/50 bg-ink-950/35">
-        <div className="grid grid-cols-[64px_1fr_110px_52px_76px] border-b border-ink-600/50 px-3 py-2 text-[11px] uppercase tracking-wide text-slate-500">
+      <div className="min-w-0 overflow-hidden rounded-lg glass-subtle">
+        <div className="grid grid-cols-[64px_1fr_110px_52px_76px] border-b border-white/10 px-3 py-2 text-[11px] uppercase tracking-wide text-slate-500">
           <span>Sheet</span>
           <span>Name</span>
           <span>Discipline</span>
           <span>Rev.</span>
           <span>Updated</span>
         </div>
-        <div className="divide-y divide-ink-600/35">
+        <div className="divide-y divide-white/6">
           {rows.map((row) => (
             <button
               key={row[0]}
               type="button"
-              className={`grid w-full grid-cols-[64px_1fr_110px_52px_76px] px-3 py-2 text-left text-xs transition-colors hover:bg-ink-800/70 ${
+              className={`grid w-full grid-cols-[64px_1fr_110px_52px_76px] px-3 py-2 text-left text-xs transition-colors hover:bg-white/8 ${
                 row[0] === "A2.1" ? "bg-signal-info/20 text-white" : "text-slate-300"
               }`}
             >
@@ -405,7 +405,7 @@ function BrandAssetsWindow() {
         <a
           href="/api/brand/zip"
           download
-          className="shrink-0 rounded-lg bg-signal-info px-3 py-1.5 text-xs font-bold text-ink-950 transition-opacity hover:opacity-90"
+          className="btn bg-signal-info text-ink-950 rounded-lg px-3 py-1.5 text-xs hover:opacity-90 shadow-elevation-2"
         >
           Download zip
         </a>
@@ -414,7 +414,7 @@ function BrandAssetsWindow() {
         {files.map(([name, type], index) => (
           <div
             key={name}
-            className="flex min-h-[94px] flex-col justify-between rounded-lg border border-ink-600/50 bg-ink-800/55 p-3"
+            className="flex min-h-[94px] flex-col justify-between rounded-lg glass-subtle p-3 transition-all duration-150 hover:border-white/20"
           >
             <div className={`h-8 w-10 rounded ${index % 3 === 0 ? "bg-signal-info/80" : index % 3 === 1 ? "bg-signal-ok/80" : "bg-white/80"}`} />
             <div className="min-w-0">
@@ -449,7 +449,7 @@ function DocumentsWindow() {
           <a
             key={href}
             href={href}
-            className="flex items-center justify-between rounded-lg border border-ink-600/50 bg-ink-800/50 px-3 py-2 text-sm text-slate-200 transition-colors hover:bg-ink-700/60 hover:text-white"
+            className="flex items-center justify-between rounded-lg glass-subtle px-3 py-2 text-sm text-slate-200 transition-all duration-150 hover:bg-white/10 hover:text-white"
           >
             <span className="truncate">{label}</span>
             <span className="font-mono text-[11px] text-slate-500">PDF</span>
@@ -473,7 +473,7 @@ function DesktopFile({
 }) {
   const content = (
     <>
-      <span className="grid h-14 w-14 place-items-center rounded-xl border border-white/15 bg-white/12 text-slate-100 shadow-lg backdrop-blur">
+      <span className="grid h-14 w-14 place-items-center rounded-xl glass text-slate-100 elevation-2">
         <IconGlyph id={id} />
       </span>
       <span className="w-24 text-center text-xs font-semibold leading-tight text-white drop-shadow">
@@ -483,7 +483,7 @@ function DesktopFile({
   );
 
   const classes =
-    "group flex w-28 flex-col items-center gap-2 rounded-xl px-2 py-2 transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-info";
+    "group flex w-28 flex-col items-center gap-2 rounded-xl px-2 py-2 transition-colors hover:bg-white/10 focus-ring";
 
   if (href) {
     return (
@@ -518,10 +518,10 @@ function DockButton({
       aria-label={`Restore ${WINDOW_TITLES[id]} window`}
       data-testid="desktop-dock-item"
       data-window-id={id}
-      className={`group relative grid h-12 w-12 place-items-center rounded-xl border transition-transform hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-info ${
+      className={`group relative grid h-12 w-12 place-items-center rounded-xl transition-all duration-150 hover:-translate-y-1 focus-ring ${
         active
-          ? "border-white/25 bg-white text-ink-950"
-          : "border-white/10 bg-white/12 text-slate-100 hover:bg-white/20"
+          ? "bg-white text-ink-950 shadow-elevation-3"
+          : "glass text-slate-100 hover:bg-white/18"
       }`}
     >
       <IconGlyph id={id} className="h-6 w-6" />
@@ -677,15 +677,15 @@ export default function Console({
           </p>
         </div>
         <span
-          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs ${
+          className={`chip ${
             dbConnected
-              ? "bg-signal-ok/15 text-signal-ok"
-              : "bg-ink-700 text-slate-400"
+              ? "bg-signal-ok/15 text-signal-ok border-signal-ok/20"
+              : "chip-subtle"
           }`}
         >
           <span
-            className={`h-1.5 w-1.5 rounded-full ${
-              dbConnected ? "bg-signal-ok" : "bg-slate-500"
+            className={`status-dot ${
+              dbConnected ? "status-dot--ok" : "opacity-40 bg-slate-500"
             }`}
           />
           {dbConnected ? "Database connected" : "Seed data (local-first)"}
@@ -1129,29 +1129,29 @@ function AtlasDesktop({
 
       <div
         data-testid="desktop-menubar"
-        className="relative z-[70] flex h-10 items-center justify-between border-b border-white/10 bg-ink-950/55 px-5 text-sm text-slate-200 backdrop-blur-xl"
+        className="relative z-[70] flex h-10 items-center justify-between border-b border-white/10 glass-subtle px-5 text-sm text-slate-200"
       >
         <div className="flex items-center gap-6">
           <h1 className="display text-sm font-extrabold text-white">ATLAS OS</h1>
-          <span>File</span>
-          <span>Edit</span>
-          <span>View</span>
-          <span>Spaces</span>
-          <span>Window</span>
+          <span className="text-slate-400">File</span>
+          <span className="text-slate-400">Edit</span>
+          <span className="text-slate-400">View</span>
+          <span className="text-slate-400">Spaces</span>
+          <span className="text-slate-400">Window</span>
         </div>
         <div className="flex items-center gap-4 font-medium">
           <button
             type="button"
             onClick={resetLayout}
-            className="rounded-md px-2 py-1 text-xs text-slate-300 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-info"
+            className="btn btn-ghost rounded-md px-2 py-1 text-xs"
           >
             Reset layout
           </button>
-          <span className="flex items-center gap-1.5">
-            <span className={`h-2 w-2 rounded-full ${dbConnected ? "bg-signal-ok" : "bg-slate-500"}`} />
+          <span className="flex items-center gap-1.5 text-slate-300">
+            <span className={`status-dot ${dbConnected ? "status-dot--ok" : "opacity-40 bg-slate-500"}`} />
             {dbConnected ? "Database connected" : "Seed data (local-first)"}
           </span>
-          <span>Local</span>
+          <span className="text-slate-500">Local</span>
         </div>
       </div>
 
@@ -1175,10 +1175,10 @@ function AtlasDesktop({
               data-window-id={id}
               data-active={active ? "true" : "false"}
               onMouseDown={() => bringToFront(id)}
-              className={`absolute flex min-h-0 flex-col overflow-hidden rounded-xl border shadow-2xl backdrop-blur-xl transition-shadow ${
+              className={`absolute flex min-h-0 flex-col overflow-hidden rounded-xl elevation-4 transition-shadow ${
                 active
-                  ? "border-white/24 bg-ink-900/86 shadow-black/55"
-                  : "border-white/12 bg-ink-900/72 shadow-black/35"
+                  ? "glass-strong"
+                  : "glass"
               }`}
               style={{
                 left: rect.x,
@@ -1197,7 +1197,7 @@ function AtlasDesktop({
                 onPointerMove={onTitlePointerMove}
                 onPointerUp={onTitlePointerUp}
                 onPointerCancel={onTitlePointerUp}
-                className={`flex h-11 shrink-0 select-none items-center gap-3 border-b border-white/10 bg-white/[0.055] px-3 ${
+                className={`flex h-11 shrink-0 select-none items-center gap-3 border-b border-white/10 bg-white/4 px-3 ${
                   state.mode === "normal" ? "cursor-grab active:cursor-grabbing" : "cursor-default"
                 }`}
               >
@@ -1241,7 +1241,7 @@ function AtlasDesktop({
                   data-window-id={id}
                   onPointerDown={(event) => event.stopPropagation()}
                   onClick={() => toggleFullscreen(id)}
-                  className="grid h-7 w-7 place-items-center rounded-md text-slate-400 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-info"
+                  className="btn btn-ghost h-7 w-7 rounded-md text-xs"
                 >
                   <span aria-hidden className="text-base leading-none">□</span>
                 </button>
@@ -1254,7 +1254,7 @@ function AtlasDesktop({
 
       <div
         data-testid="desktop-dock"
-        className="absolute bottom-5 left-1/2 z-[80] flex -translate-x-1/2 items-center gap-2 rounded-2xl border border-white/14 bg-ink-950/48 px-3 py-2 shadow-2xl shadow-black/40 backdrop-blur-xl"
+        className="absolute bottom-5 left-1/2 z-[80] flex -translate-x-1/2 items-center gap-2 rounded-2xl glass-strong elevation-3 px-3 py-2"
       >
         {WINDOW_IDS.map((id) => (
           <DockButton
