@@ -27,6 +27,13 @@ import { floorSlotForNeed } from "@/lib/models";
 import { characters } from "@/lib/character-profiles";
 import CharacterAI from "@/components/three/CharacterAI";
 import { getProcTexture, type ProcTextureType } from "@/lib/procedural-textures";
+import { sceneStore, useSceneField, useSceneSelector, startDemo } from "@/lib/scene-store";
+import SceneTime from "@/components/simulator/SceneTime";
+import BuildingMood from "@/components/simulator/BuildingMood";
+import SolarAnimator from "@/components/simulator/SolarAnimator";
+import WaterAnimator from "@/components/simulator/WaterAnimator";
+import SunsetCascade from "@/components/simulator/SunsetCascade";
+import DemoMode from "@/components/simulator/DemoMode";
 
 type Vec3 = [number, number, number];
 
@@ -1720,10 +1727,18 @@ export default function BuildingSimulator({
       <color attach="background" args={[bg]} />
       <fog attach="fog" args={[bg, 35, 70]} />
 
+      {/* Paradigm 3 — Time driver (runs in useFrame, updates scene store) */}
+      <SceneTime />
+
       <hemisphereLight args={[skyTop, "#0a1117", options.night ? 0.35 : 0.8]} />
       <ambientLight intensity={options.night ? 0.18 : 0.45} />
       <directionalLight position={[12, 20, 10]} intensity={options.night ? 0.35 : 1.1} color={options.night ? "#9fb8ff" : "#fff3da"} />
       <directionalLight position={[-10, 6, -8]} intensity={0.3} color="#4ea8ff" />
+
+      {/* Paradigm 8 — Mood-driven lighting (interpolates existing lights) */}
+      <BuildingMood />
+      {/* Paradigm 4 — Sun follows timeOfDay across the sky */}
+      <SolarAnimator />
 
       {(() => {
         // The procedural tower is the default and the fallback for the optional
@@ -1752,6 +1767,12 @@ export default function BuildingSimulator({
         );
       })()}
 
+      {/* Paradigm 4 — Water shimmer / mist particles (near pool) */}
+      <WaterAnimator />
+
+      {/* Paradigm 7 — Sunset cascade: floor-by-floor light sequence */}
+      <SunsetCascade floors={floors} />
+
       <CreativeResearchLens lens={options.researchLens ?? "ops"} totalHeight={totalHeight} />
 
       <SimulatorOrbitRig
@@ -1759,6 +1780,9 @@ export default function BuildingSimulator({
         selectedIndex={selectedIndex >= 0 ? selectedIndex : null}
         autoRotate={options.autoRotate && !selectedKey}
       />
+
+      {/* Paradigm 10 — Cinematic demo mode camera flythrough */}
+      <DemoMode />
 
       {/* Signature ASCII pass — the active tower resampled into live glyphs. */}
       {ascii && <AsciiRenderer color resolution={0.16} characters=" .:-=+*#%@" />}

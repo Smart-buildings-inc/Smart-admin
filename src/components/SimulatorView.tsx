@@ -14,6 +14,8 @@ import { PARALLAX_SCENES } from "@/lib/marketingParallax";
 import FullscreenLink from "@/components/FullscreenLink";
 import MarketingParallax from "@/components/MarketingParallax";
 import { defaultTwinModel } from "@/components/GltfBuilding";
+import { sceneStore, useSceneField, useSceneSelector, startDemo } from "@/lib/scene-store";
+import type { SceneState } from "@/lib/scene-store";
 
 const BuildingSimulator = dynamic(() => import("@/components/BuildingSimulator"), {
   ssr: false,
@@ -109,6 +111,97 @@ function Toggle({
     >
       {label}
     </button>
+  );
+}
+
+// Paradigm 3 — Time slider overlay.
+function TimeOverlay() {
+  const timeOfDay = useSceneField("timeOfDay");
+  const timeSpeed = useSceneField("timeSpeed");
+  const demoPhase = useSceneField("demoPhase");
+
+  const isNight = timeOfDay < 0.22 || timeOfDay > 0.78;
+  const isDawn = timeOfDay >= 0.22 && timeOfDay < 0.35;
+  const isDusk = timeOfDay >= 0.6 && timeOfDay < 0.78;
+  const isDay = !isNight && !isDawn && !isDusk;
+
+  // Sun/Moon icon
+  let icon: string;
+  if (isNight) icon = "\u{1F319}";
+  else if (isDawn) icon = "\u{1F305}";
+  else if (isDusk) icon = "\u{1F307}";
+  else icon = "\u2600\uFE0F";
+
+  // Format time of day as HH:MM
+  const totalMinutes = Math.round(timeOfDay * 24 * 60);
+  const hh = String(Math.floor(totalMinutes / 60) % 24).padStart(2, "0");
+  const mm = String(totalMinutes % 60).padStart(2, "0");
+  const timeStr = `${hh}:${mm}`;
+
+  const speeds = [
+    { label: "\u23F8", speed: 0 },
+    { label: "1\u00D7", speed: 1 },
+    { label: "10\u00D7", speed: 10 },
+    { label: "60\u00D7", speed: 60 },
+  ];
+
+  return (
+    <div className="absolute bottom-3 left-1/2 z-10 -translate-x-1/2">
+      <div className="flex items-center gap-2 rounded-full border border-ink-600/70 bg-ink-900/85 px-3 py-1.5 text-xs backdrop-blur">
+        <span className="text-base leading-none">{icon}</span>
+        <span className="w-10 font-mono font-semibold text-white">{timeStr}</span>
+
+        {/* Time scrub */}
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.001}
+          value={timeOfDay}
+          onChange={(e) => {
+            const v = parseFloat(e.target.value);
+            sceneStore.setState({ timeOfDay: v, timeSpeed: 0, _prevTimeOfDay: v });
+          }}
+          className="h-1 w-20 cursor-pointer appearance-none rounded-full bg-ink-600 accent-signal-info md:w-28"
+          aria-label="Time of day"
+        />
+
+        {/* Speed buttons */}
+        {speeds.map(({ label, speed }) => (
+          <button
+            key={speed}
+            type="button"
+            onClick={() => {
+              sceneStore.setState({ timeSpeed: speed, isDemoMode: false, demoPhase: null });
+            }}
+            className={`rounded px-1.5 py-0.5 font-mono transition-colors ${
+              Math.abs(timeSpeed - speed) < 0.01
+                ? "bg-white text-ink-950"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+
+        {/* Demo badge */}
+        <DemoBadge phase={demoPhase} />
+      </div>
+    </div>
+  );
+}
+
+function DemoBadge({ phase }: { phase: string | null }) {
+  if (!phase) return null;
+  const labels: Record<string, string> = {
+    intro: "Orbiting\u2026",
+    sunset: "Sunset\u2026",
+    night: "Night glow\u2026",
+  };
+  return (
+    <span className="ml-1 animate-pulse rounded-full bg-signal-info/20 px-2 py-0.5 text-[10px] font-semibold text-signal-info">
+      {labels[phase] ?? "Demo"}
+    </span>
   );
 }
 
@@ -225,6 +318,7 @@ export default function SimulatorView({
                   <Toggle label="Orbit" active={options.autoRotate} onClick={() => set({ autoRotate: !options.autoRotate })} />
                   <Toggle label="Elevator" active={options.elevatorRunning} onClick={() => set({ elevatorRunning: !options.elevatorRunning })} />
                   <Toggle label="Hero" active={options.source === "gltf"} onClick={() => set({ source: options.source === "gltf" ? "voxel" : "gltf" })} />
+                  <Toggle label="🎬 Demo" active={false} onClick={startDemo} />
                 </div>
                 <div
                   aria-label="3D research lens"
@@ -249,6 +343,9 @@ export default function SimulatorView({
               <span className="text-slate-400">Elevator</span>
               <span className="font-mono font-semibold text-white">{elevatorFloorName}</span>
             </div>
+
+            {/* Paradigm 3 — Time slider */}
+            <TimeOverlay />
 
             {/* Legend */}
             <div className="absolute bottom-3 right-3 z-10 hidden flex-wrap justify-end gap-x-3 gap-y-1 rounded-xl border border-ink-600/70 bg-ink-900/80 px-3 py-2 backdrop-blur sm:flex sm:max-w-[18rem]">
