@@ -132,7 +132,9 @@ import { useSyncExternalStore, useCallback } from "react";
 /** Subscribe to a slice of scene state. Re-renders only when that slice changes. */
 export function useSceneSelector<T>(selector: (s: SceneState) => T): T {
   const subscribeFn = useCallback((cb: () => void) => sceneStore.subscribe(cb), []);
-  return useSyncExternalStore(subscribeFn, () => selector(sceneStore.getState()));
+  const getSnapshot = useCallback(() => selector(sceneStore.getState()), [selector]);
+  const getServerSnapshot = useCallback(() => selector(defaultState), [selector]);
+  return useSyncExternalStore(subscribeFn, getSnapshot, getServerSnapshot);
 }
 
 /** Convenience: get a single field */
