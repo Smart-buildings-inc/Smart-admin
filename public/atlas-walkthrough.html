@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATLAS-01 · Habitat Walkthrough</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:#0a0c10;font-family:'Inter',system-ui,-apple-system,sans-serif;color:#e8eaed;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+:root{--ink:#0a0c10;--ink-1:#12141a;--ink-2:#1a1d26;--ink-3:#2a2e3a;--ink-4:#3a3f4e;--text:#e8eaed;--text-dim:#8a8fa0;--water:#3aa0ff;--energy:#ffcf4d;--food:#5ddc7a;--shelter:#c0a4ff;--air:#7fe7e0;--health:#ff8fb1;--restoration:#ffd9a0}
+
+/* ---- layout ---- */
+.viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+
+/* ---- scenes ---- */
+.scene{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;z-index:1}
+.scene.active{pointer-events:auto}
+.scene-inner{position:relative;width:100%;max-width:1280px;height:100%;display:flex;align-items:center;justify-content:center;padding:40px}
+
+/* ---- building tower (persistent) ---- */
+#building-container{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:0;pointer-events:none}
+#building{position:relative;display:flex;flex-direction:column-reverse;align-items:center;gap:3px}
+.floor-bar{position:relative;border-radius:3px;display:flex;align-items:center;justify-content:center;overflow:visible;transition:opacity .4s,box-shadow .4s,transform .4s;min-height:36px;width:220px;background:var(--ink-2);border:1px solid var(--ink-3)}
+.floor-bar .floor-glow{position:absolute;inset:-2px;border-radius:5px;opacity:0;transition:opacity .6s}
+.floor-bar .floor-label{font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;color:var(--text-dim);transition:color .4s;z-index:1}
+.floor-bar .need-dot{position:absolute;left:6px;top:50%;transform:translateY(-50%);width:6px;height:6px;border-radius:50%;opacity:.4;transition:opacity .4s,box-shadow .4s}
+.floor-bar.lit .floor-label{color:var(--text)}
+.floor-bar.lit .need-dot{opacity:1;box-shadow:0 0 8px var(--dot-color)}
+.floor-bar.lit{background:color-mix(in srgb,var(--bar-color) 12%,var(--ink-1));border-color:color-mix(in srgb,var(--bar-color) 30%,var(--ink-3))}
+.floor-bar.lit .floor-glow{opacity:1;background:radial-gradient(ellipse at center,color-mix(in srgb,var(--bar-color) 15%,transparent),transparent 70%)}
+.floor-bar.level--1{width:250px;min-height:42px}
+.floor-bar.level-11{width:250px;min-height:42px}
+.floor-bar.skydeck{background:color-mix(in srgb,var(--restoration) 8%,var(--ink-1));border-color:color-mix(in srgb,var(--restoration) 25%,var(--ink-3))}
+
+/* ---- ground line ---- */
+#ground{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);width:320px;height:1px;background:linear-gradient(90deg,transparent,var(--ink-4),transparent)}
+
+/* ---- scene 1: title ---- */
+#s1 .title-main{font-size:clamp(48px,8vw,96px);font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--text);text-align:center;opacity:0}
+#s1 .title-main span{background:linear-gradient(135deg,var(--water),var(--energy),var(--food),var(--shelter),var(--air),var(--health),var(--restoration));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+#s1 .title-sub{font-size:clamp(14px,2vw,22px);font-weight:400;color:var(--text-dim);text-align:center;margin-top:16px;opacity:0;max-width:720px;line-height:1.5}
+#s1 .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:48px;max-width:800px;width:100%;opacity:0}
+#s1 .kpi-card{background:var(--ink-1);border:1px solid var(--ink-3);border-radius:12px;padding:20px;text-align:center;transition:border-color .3s}
+#s1 .kpi-card .kpi-num{font-size:clamp(24px,3vw,42px);font-weight:700;color:var(--text);line-height:1.1}
+#s1 .kpi-card .kpi-label{font-size:11px;font-weight:500;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
+#s1 .kpi-card:hover{border-color:var(--ink-4)}
+
+/* ---- scene 2: aerial ---- */
+#s2 .building-wrap{position:relative;display:flex;align-items:center;justify-content:center;gap:32px}
+#s2 .floor-legend{display:flex;flex-direction:column-reverse;gap:3px;opacity:0}
+#s2 .legend-item{display:flex;align-items:center;gap:10px;min-height:36px;opacity:0;transform:translateX(-12px)}
+#s2 .legend-swatch{width:14px;height:14px;border-radius:4px;flex-shrink:0}
+#s2 .legend-text{font-size:13px;font-weight:500;color:var(--text-dim);white-space:nowrap}
+#s2 .legend-text strong{color:var(--text)}
+#s2 .aerial-kpi{position:absolute;top:50%;right:-120px;transform:translateY(-50%);opacity:0}
+#s2 .aerial-kpi .big-num{font-size:52px;font-weight:800;line-height:1;color:var(--text)}
+#s2 .aerial-kpi .big-label{font-size:13px;color:var(--text-dim);margin-top:4px}
+
+/* ---- scene 3: rooftop descent ---- */
+#s3 .descent-focus{position:relative;display:flex;align-items:center;justify-content:center;gap:40px}
+#s3 .focus-card{position:absolute;background:var(--ink-1);border:1px solid var(--ink-3);border-radius:16px;padding:24px;max-width:300px;opacity:0;pointer-events:none}
+#s3 .focus-card .fc-title{font-size:20px;font-weight:700;margin-bottom:4px}
+#s3 .focus-card .fc-need{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;opacity:.7;margin-bottom:8px}
+#s3 .focus-card .fc-desc{font-size:13px;line-height:1.5;color:var(--text-dim)}
+#s3 .focus-card .fc-kpi{font-size:28px;font-weight:700;margin-top:8px}
+#s3 .focus-card .fc-kpi small{font-size:12px;font-weight:400;color:var(--text-dim)}
+
+/* ---- scene 4: residential ---- */
+#s4 .res-wrap{display:flex;align-items:center;gap:48px}
+#s4 .res-kpi{padding:32px;background:var(--ink-1);border:1px solid var(--ink-3);border-radius:16px;opacity:0;min-width:200px}
+#s4 .res-kpi .rk-num{font-size:48px;font-weight:800;color:var(--shelter);line-height:1}
+#s4 .res-kpi .rk-label{font-size:13px;color:var(--text-dim);margin-top:4px}
+#s4 .res-kpi+.res-kpi{margin-top:16px}
+#s4 .occ-bar-wrap{opacity:0;display:flex;flex-direction:column;gap:8px;min-width:200px}
+#s4 .occ-bar-item{display:flex;align-items:center;gap:10px}
+#s4 .occ-bar-track{flex:1;height:8px;background:var(--ink-2);border-radius:4px;overflow:hidden}
+#s4 .occ-bar-fill{height:100%;border-radius:4px;width:0%;transition:width 1s}
+#s4 .occ-bar-label{font-size:12px;color:var(--text-dim);min-width:90px}
+#s4 .occ-bar-pct{font-size:12px;font-weight:600;color:var(--text);min-width:32px;text-align:right}
+
+/* ---- scene 5: food ---- */
+#s5 .food-wrap{display:flex;align-items:center;gap:48px}
+#s5 .food-visual{position:relative;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle at 40% 40%,color-mix(in srgb,var(--food) 20%,var(--ink-1)),var(--ink-1));border:1px solid color-mix(in srgb,var(--food) 25%,var(--ink-3));display:flex;align-items:center;justify-content:center;flex-direction:column;opacity:0}
+#s5 .food-visual .fv-icon{font-size:48px;line-height:1;margin-bottom:4px}
+#s5 .food-visual .fv-kpi{font-size:36px;font-weight:800;color:var(--food)}
+#s5 .food-visual .fv-label{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em}
+#s5 .food-info{opacity:0;max-width:360px}
+#s5 .food-info h3{font-size:22px;font-weight:700;margin-bottom:4px;color:var(--food)}
+#s5 .food-info p{font-size:14px;line-height:1.6;color:var(--text-dim);margin-bottom:12px}
+#s5 .food-tag{display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;background:color-mix(in srgb,var(--food) 15%,var(--ink-1));border:1px solid color-mix(in srgb,var(--food) 30%,var(--ink-3));color:var(--food)}
+
+/* ---- scene 6: power ---- */
+#s6 .power-wrap{display:flex;align-items:center;gap:48px}
+#s6 .power-badge{display:flex;align-items:center;gap:24px;padding:20px 28px;background:var(--ink-1);border:1px solid var(--ink-3);border-radius:16px;opacity:0}
+#s6 .power-badge .pb-icon{font-size:36px}
+#s6 .power-badge .pb-text{font-size:14px;font-weight:600;line-height:1.4}
+#s6 .power-badge .pb-text small{display:block;font-weight:400;color:var(--text-dim);font-size:12px}
+#s6 .power-kpi{text-align:center;opacity:0}
+#s6 .power-kpi .pk-num{font-size:64px;font-weight:800;color:var(--energy);line-height:1}
+#s6 .power-kpi .pk-label{font-size:14px;color:var(--text-dim);margin-top:4px}
+#s6 .power-metrics{display:grid;grid-template-columns:1fr 1fr;gap:12px;opacity:0}
+#s6 .power-metrics .pm-item{text-align:center;padding:12px;background:var(--ink-2);border-radius:8px}
+#s6 .power-metrics .pm-item .pm-num{font-size:20px;font-weight:700}
+#s6 .power-metrics .pm-item .pm-label{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em}
+
+/* ---- scene 7: water ---- */
+#s7 .water-wrap{display:flex;align-items:center;gap:48px}
+#s7 .water-kpi{text-align:center;opacity:0}
+#s7 .water-kpi .wk-num{font-size:64px;font-weight:800;color:var(--water);line-height:1}
+#s7 .water-kpi .wk-label{font-size:14px;color:var(--text-dim);margin-top:4px}
+#s7 .water-detail{opacity:0;max-width:380px}
+#s7 .water-detail h3{font-size:22px;font-weight:700;margin-bottom:4px;color:var(--water)}
+#s7 .water-detail p{font-size:14px;line-height:1.6;color:var(--text-dim);margin-bottom:12px}
+#s7 .water-tag{display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;background:color-mix(in srgb,var(--water) 15%,var(--ink-1));border:1px solid color-mix(in srgb,var(--water) 30%,var(--ink-3));color:var(--water)}
+
+/* ---- scene 8: final reveal ---- */
+#s8 .final-wrap{display:flex;flex-direction:column;align-items:center;gap:24px;text-align:center}
+#s8 .final-building{position:relative;display:flex;flex-direction:column-reverse;align-items:center;gap:2px;opacity:0}
+#s8 .final-bar{min-height:24px;display:flex;align-items:center;justify-content:center;border-radius:2px;opacity:0;width:200px;font-size:9px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text);transition:opacity .3s}
+#s8 .resilience-wrap{display:flex;align-items:center;gap:20px;opacity:0}
+#s8 .resilience-ring{width:100px;height:100px;border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center}
+#s8 .resilience-ring svg{position:absolute;inset:0;transform:rotate(-90deg);width:100%;height:100%}
+#s8 .resilience-ring .rr-bg{fill:none;stroke:var(--ink-3);stroke-width:4}
+#s8 .resilience-ring .rr-fill{fill:none;stroke:var(--food);stroke-width:4;stroke-linecap:round;stroke-dasharray:283;stroke-dashoffset:283}
+#s8 .resilience-num{font-size:28px;font-weight:800;z-index:1}
+#s8 .resilience-label{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-top:-4px}
+#s8 .closing-text{font-size:clamp(24px,3.5vw,48px);font-weight:800;letter-spacing:-.02em;opacity:0;background:linear-gradient(135deg,var(--water),var(--energy),var(--food),var(--shelter),var(--air),var(--health),var(--restoration));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+#s8 .closing-sub{font-size:14px;color:var(--text-dim);opacity:0;font-weight:400}
+
+/* ---- caption ---- */
+.caption{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);font-size:12px;font-weight:500;color:var(--text-dim);letter-spacing:.04em;text-align:center;z-index:10;padding:8px 20px;background:color-mix(in srgb,var(--ink) 80%,transparent);border:1px solid var(--ink-3);border-radius:20px;backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .6s;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+.caption.visible{opacity:1}
+
+/* ---- controls ---- */
+#controls{position:fixed;bottom:0;left:0;right:0;height:56px;z-index:100;background:color-mix(in srgb,var(--ink) 90%,transparent);backdrop-filter:blur(12px);border-top:1px solid var(--ink-3);display:flex;align-items:center;padding:0 20px;gap:14px}
+#controls .ctrl-btn{background:none;border:none;color:var(--text);cursor:pointer;font-size:18px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:background .2s;flex-shrink:0}
+#controls .ctrl-btn:hover{background:var(--ink-2)}
+#controls .ctrl-btn:disabled{opacity:.3;cursor:default}
+#controls .progress-track{flex:1;height:4px;background:var(--ink-3);border-radius:2px;cursor:pointer;position:relative;overflow:hidden}
+#controls .progress-fill{height:100%;background:linear-gradient(90deg,var(--water),var(--energy),var(--food),var(--shelter),var(--air),var(--health),var(--restoration));border-radius:2px;width:0%;transition:width .1s linear}
+#controls .time-label{font-size:12px;font-weight:500;color:var(--text-dim);min-width:80px;text-align:right;font-variant-numeric:tabular-nums}
+#controls .scene-label{font-size:11px;font-weight:500;color:var(--text-dim);min-width:80px;text-align:center;text-transform:uppercase;letter-spacing:.06em}
+
+/* ---- responsive ---- */
+@media(max-width:900px){
+  .floor-bar{width:160px;min-height:28px}
+  .floor-bar.level--1,.floor-bar.level-11{width:180px;min-height:32px}
+  .floor-bar .floor-label{font-size:9px;max-width:120px}
+  #s1 .kpi-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  #s1 .kpi-card{padding:14px}
+  #s2 .aerial-kpi{position:static;transform:none;margin-top:20px}
+  #s2 .building-wrap{flex-direction:column}
+  #s2 .floor-legend{flex-direction:row;flex-wrap:wrap;justify-content:center}
+  #s2 .legend-item{min-height:auto;font-size:11px}
+  #s3 .descent-focus{flex-direction:column}
+  #s3 .focus-card{position:relative;max-width:100%}
+  #s4 .res-wrap{flex-direction:column;gap:20px}
+  #s5 .food-wrap{flex-direction:column;gap:24px}
+  #s5 .food-visual{width:160px;height:160px}
+  #s6 .power-wrap{flex-direction:column;gap:20px}
+  #s7 .water-wrap{flex-direction:column;gap:20px}
+  #s8 .final-bar{width:140px;min-height:18px;font-size:7px}
+  .caption{font-size:10px;padding:6px 14px;bottom:68px}
+}
+
+@media(max-width:500px){
+  .floor-bar{width:120px;min-height:22px}
+  .floor-bar.level--1,.floor-bar.level-11{width:140px;min-height:26px}
+  .floor-bar .floor-label{font-size:7px;max-width:80px}
+  #s1 .kpi-grid{grid-template-columns:1fr 1fr;gap:8px}
+  #s1 .kpi-card{padding:10px}
+  #s1 .kpi-card .kpi-num{font-size:20px}
+  #s8 .final-bar{width:100px;min-height:16px;font-size:6px}
+}
+</style>
+</head>
+<body>
+
+<div id="building-container">
+  <div id="building"></div>
+</div>
+
+<section class="scene" data-duration="8" id="s1">
+  <div class="scene-inner" style="flex-direction:column">
+    <div class="title-main"><span>ATLAS-01</span></div>
+    <div class="title-sub">A Self-Sufficient Habitat — One Floor Per Human Need</div>
+    <div class="kpi-grid" id="s1-kpis">
+      <div class="kpi-card"><div class="kpi-num" data-target="64">0</div><div class="kpi-label">Dwellings</div></div>
+      <div class="kpi-card"><div class="kpi-num" data-target="140">0</div><div class="kpi-label">Beds</div></div>
+      <div class="kpi-card"><div class="kpi-num" data-target="128">0</div><div class="kpi-label">Residents</div></div>
+      <div class="kpi-card"><div class="kpi-num" data-target="87">0</div><div class="kpi-label">Resilience Index</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="scene" data-duration="8" id="s2">
+  <div class="scene-inner">
+    <div class="building-wrap">
+      <div class="floor-legend" id="s2-legend"></div>
+      <div class="aerial-kpi" id="s2-kpi">
+        <div class="big-num">7</div>
+        <div class="big-label">Human Needs Served</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="scene" data-duration="10" id="s3">
+  <div class="scene-inner">
+    <div class="descent-focus">
+      <div class="focus-card" data-floor="skydeck-reservoir" style="right:calc(50% + 160px);top:10%">
+        <div class="fc-title">Skydeck</div>
+        <div class="fc-need" style="color:var(--restoration)">Restoration</div>
+        <div class="fc-desc">Rooftop pool, PV array, and resident deck. Pool-only rooftop per permitted design.</div>
+        <div class="fc-kpi" style="color:var(--restoration)">100%<small>&nbsp;pool water recirculated</small></div>
+      </div>
+      <div class="focus-card" data-floor="penthouses" style="left:calc(50% + 160px);top:30%">
+        <div class="fc-title">The Penthouses</div>
+        <div class="fc-need" style="color:var(--shelter)">Shelter</div>
+        <div class="fc-desc">12 premium dwellings sharing the rooftop Skydeck. Market-rate multi-unit.</div>
+        <div class="fc-kpi" style="color:var(--shelter)">12<small>&nbsp;premium units</small></div>
+      </div>
+      <div class="focus-card" data-floor="the-lung" style="right:calc(50% + 160px);bottom:10%">
+        <div class="fc-title">The Lung</div>
+        <div class="fc-need" style="color:var(--air)">Air</div>
+        <div class="fc-desc">Biofiltration wall + AHUs. Airtight separation under residences per code.</div>
+        <div class="fc-kpi" style="color:var(--air)">410<small>&nbsp;ppm CO₂</small></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="scene" data-duration="10" id="s4">
+  <div class="scene-inner">
+    <div class="res-wrap">
+      <div class="res-kpi" id="s4-kpi-1">
+        <div class="rk-num" data-target="52">0</div>
+        <div class="rk-label">Dwellings (Residences A–D)</div>
+      </div>
+      <div class="res-kpi" id="s4-kpi-2">
+        <div class="rk-num" data-target="116">0</div>
+        <div class="rk-label">Beds</div>
+      </div>
+      <div class="occ-bar-wrap" id="s4-occ">
+        <div class="occ-bar-item"><span class="occ-bar-label">Residences A</span><div class="occ-bar-track"><div class="occ-bar-fill" data-pct="86" style="background:var(--shelter)"></div></div><span class="occ-bar-pct">0%</span></div>
+        <div class="occ-bar-item"><span class="occ-bar-label">Residences B</span><div class="occ-bar-track"><div class="occ-bar-fill" data-pct="75" style="background:var(--shelter)"></div></div><span class="occ-bar-pct">0%</span></div>
+        <div class="occ-bar-item"><span class="occ-bar-label">Residences C</span><div class="occ-bar-track"><div class="occ-bar-fill" data-pct="88" style="background:var(--shelter)"></div></div><span class="occ-bar-pct">0%</span></div>
+        <div class="occ-bar-item"><span class="occ-bar-label">Residences D</span><div class="occ-bar-track"><div class="occ-bar-fill" data-pct="75" style="background:var(--shelter)"></div></div><span class="occ-bar-pct">0%</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="scene" data-duration="10" id="s5">
+  <div class="scene-inner">
+    <div class="food-wrap">
+      <div class="food-visual" id="s5-circle">
+        <div class="fv-icon">&#127807;</div>
+        <div class="fv-kpi" data-target="127">0</div>
+        <div class="fv-label">kg / day amenity produce</div>
+      </div>
+      <div class="food-info" id="s5-info">
+        <h3>Aquaponics Bay + Vertical Farm</h3>
+        <p>Closed-loop food production: fish-tank effluent fertilizes grow beds, LED-lit vertical racks cycle 24/7. 127 kg/day of amenity produce for residents — no external sale.</p>
+        <div class="food-tag">&#9679; Resident amenity &mdash; no external sale</div>
+        <div style="margin-top:16px;display:flex;gap:20px">
+          <div><div style="font-size:24px;font-weight:700;color:var(--food)">41</div><div style="font-size:11px;color:var(--text-dim)">kg fish protein</div></div>
+          <div><div style="font-size:24px;font-weight:700;color:var(--food)">86</div><div style="font-size:11px;color:var(--text-dim)">kg produce</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="scene" data-duration="6" id="s6">
+  <div class="scene-inner">
+    <div class="power-wrap">
+      <div class="power-kpi" id="s6-kpi">
+        <div class="pk-num" data-target="96">0</div>
+        <div class="pk-label">Energy Autonomy</div>
+      </div>
+      <div class="power-badge" id="s6-badge">
+        <div class="pb-icon">&#9889;</div>
+        <div class="pb-text">Grid-Tied + Island-Capable<small>ESS fire-compliant · NEC 706</small></div>
+      </div>
+      <div class="power-metrics" id="s6-metrics">
+        <div class="pm-item"><div class="pm-num" style="color:var(--energy)">148</div><div class="pm-label">PV Capacity (kW)</div></div>
+        <div class="pm-item"><div class="pm-num" style="color:var(--energy)">78</div><div class="pm-label">Battery SoC (%)</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="scene" data-duration="6" id="s7">
+  <div class="scene-inner">
+    <div class="water-wrap">
+      <div class="water-kpi" id="s7-kpi">
+        <div class="wk-num" data-target="92">0</div>
+        <div class="wk-label">Non-Potable Water Reuse</div>
+      </div>
+      <div class="water-detail" id="s7-info">
+        <h3>Reclamation Core</h3>
+        <p>Bulk reservoir, treatment tanks, and purple dual-plumbing pipe distribute reclaimed water for toilet flushing, irrigation, and cooling tower makeup. Separated from potable supply per code.</p>
+        <div class="water-tag">&#9679; Non-potable reuse only &mdash; CSA B128</div>
+        <div style="margin-top:16px"><div style="font-size:13px;color:var(--text-dim)">MECP ECA pre-consultation &middot; Reservoir in basement</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="scene" data-duration="7" id="s8">
+  <div class="scene-inner">
+    <div class="final-wrap">
+      <div class="final-building" id="s8-building"></div>
+      <div class="resilience-wrap" id="s8-resilience">
+        <div class="resilience-ring">
+          <svg viewBox="0 0 100 100"><circle class="rr-bg" cx="50" cy="50" r="45"/><circle class="rr-fill" cx="50" cy="50" r="45"/></svg>
+          <div class="resilience-num" data-target="87">0</div>
+        </div>
+        <div style="text-align:left">
+          <div style="font-size:13px;font-weight:600;color:var(--text)">Overall Resilience Index</div>
+          <div class="resilience-label">energy 96% &middot; water 92% &middot; food 127 kg/day</div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <span style="font-size:10px;padding:3px 8px;border-radius:4px;background:color-mix(in srgb,var(--water) 20%,var(--ink-1));color:var(--water);border:1px solid color-mix(in srgb,var(--water) 30%,var(--ink-3))">Grid-Tied</span>
+            <span style="font-size:10px;padding:3px 8px;border-radius:4px;background:color-mix(in srgb,var(--energy) 20%,var(--ink-1));color:var(--energy);border:1px solid color-mix(in srgb,var(--energy) 30%,var(--ink-3))">Island-Capable</span>
+          </div>
+        </div>
+      </div>
+      <div class="closing-text">Resilience. Not sovereignty.</div>
+      <div class="closing-sub">ATLAS OS &mdash; One floor per human need<sup>&#8480;</sup></div>
+    </div>
+  </div>
+</section>
+
+<div class="caption" id="caption"></div>
+
+<div id="controls">
+  <button class="ctrl-btn" id="play-btn" title="Play/Pause">&#9654;</button>
+  <span class="scene-label" id="scene-label">Scene 1 / 8</span>
+  <div class="progress-track" id="progress-track">
+    <div class="progress-fill" id="progress-fill"></div>
+  </div>
+  <span class="time-label" id="time-label">0:00 / 1:05</span>
+</div>
+
+<script>
+const FLOORS = [
+  {key:"reclamation-core",   name:"Reclamation Core",   need:"water",       color:"#3aa0ff",  level:-1, label:"Water & Waste"},
+  {key:"commons-clinic",     name:"Commons & Clinic",    need:"health",      color:"#ff8fb1",  level:1,  label:"Community & Health"},
+  {key:"power-ops-core",     name:"Power & Ops Core",     need:"energy",      color:"#ffcf4d",  level:2,  label:"Energy & Intelligence"},
+  {key:"aquaponics-bay",     name:"Aquaponics Bay",       need:"food",        color:"#5ddc7a",  level:3,  label:"Protein (Food)"},
+  {key:"vertical-farm",      name:"Vertical Farm",        need:"food",        color:"#5ddc7a",  level:4,  label:"Produce (Food)"},
+  {key:"residences-a",       name:"Residences A",         need:"shelter",     color:"#c0a4ff",  level:5,  label:"Shelter"},
+  {key:"residences-b",       name:"Residences B",         need:"shelter",     color:"#c0a4ff",  level:6,  label:"Shelter"},
+  {key:"residences-c",       name:"Residences C",         need:"shelter",     color:"#c0a4ff",  level:7,  label:"Shelter"},
+  {key:"residences-d",       name:"Residences D",         need:"shelter",     color:"#c0a4ff",  level:8,  label:"Shelter"},
+  {key:"the-lung",           name:"The Lung",             need:"air",         color:"#7fe7e0",  level:9,  label:"Air & Restoration"},
+  {key:"penthouses",         name:"The Penthouses",       need:"shelter",     color:"#c0a4ff",  level:10, label:"Shelter · Premium"},
+  {key:"skydeck-reservoir",  name:"Skydeck & Reservoir",  need:"restoration", color:"#ffd9a0",  level:11, label:"Restoration / Reserve"},
+];
+
+// ---- build tower ----
+const buildingEl = document.getElementById('building');
+FLOORS.forEach(f => {
+  const bar = document.createElement('div');
+  bar.className = 'floor-bar';
+  bar.dataset.floor = f.key;
+  bar.style.setProperty('--bar-color', f.color);
+  bar.style.setProperty('--dot-color', f.color);
+  if (f.level === -1 || f.level === 11) bar.classList.add('level-'+f.level);
+  if (f.key === 'skydeck-reservoir') bar.classList.add('skydeck');
+  const dot = document.createElement('div');
+  dot.className = 'need-dot';
+  dot.style.background = f.color;
+  bar.appendChild(dot);
+  const glow = document.createElement('div');
+  glow.className = 'floor-glow';
+  bar.appendChild(glow);
+  const label = document.createElement('div');
+  label.className = 'floor-label';
+  label.textContent = f.name;
+  bar.appendChild(label);
+  buildingEl.appendChild(bar);
+});
+
+// ---- S2 legend ----
+const legendEl = document.getElementById('s2-legend');
+FLOORS.forEach(f => {
+  const item = document.createElement('div');
+  item.className = 'legend-item';
+  item.dataset.floor = f.key;
+  const swatch = document.createElement('div');
+  swatch.className = 'legend-swatch';
+  swatch.style.background = f.color;
+  item.appendChild(swatch);
+  const txt = document.createElement('div');
+  txt.className = 'legend-text';
+  txt.innerHTML = `<strong>${f.name}</strong> &middot; ${f.label}`;
+  item.appendChild(txt);
+  legendEl.appendChild(item);
+});
+
+// ---- S8 final building ----
+const s8Building = document.getElementById('s8-building');
+FLOORS.forEach(f => {
+  const bar = document.createElement('div');
+  bar.className = 'final-bar';
+  bar.textContent = f.name;
+  bar.style.background = f.color;
+  bar.style.border = '1px solid '+f.color;
+  s8Building.appendChild(bar);
+});
+
+// ---- scene captions ----
+const CAPTIONS = {
+  s1: null,
+  s2: null,
+  s3: "Pool-only rooftop &middot; Premium penthouses &middot; Biofiltration + AHUs",
+  s4: "52 market dwellings &middot; OBC Group C residential &middot; 116 beds",
+  s5: "Closed-loop amenity food &middot; No external sale &middot; 127 kg/day combined",
+  s6: "Grid-tied + islanding &middot; ESS fire-compliant &middot; 96% energy autonomy",
+  s7: "Non-potable reuse only &middot; CSA B128 dual-plumbing &middot; MECP ECA required",
+  s8: null,
+};
+
+// ---- scene durations ----
+const SCENE_ORDER = ['s1','s2','s3','s4','s5','s6','s7','s8'];
+const SCENE_DURATIONS = {s1:8,s2:8,s3:10,s4:10,s5:10,s6:6,s7:6,s8:7};
+const TOTAL_DURATION = Object.values(SCENE_DURATIONS).reduce((a,b)=>a+b,0);
+
+let playing = true;
+let sceneTimelines = {};
+let masterTL;
+
+function animateKpiNum(el, target) {
+  const dur = target > 50 ? 1.8 : 1.2;
+  const obj = {v:0};
+  gsap.to(obj, {
+    v: target, duration: dur, ease: 'power2.out',
+    onUpdate: () => { el.textContent = Math.round(obj.v); }
+  });
+}
+
+function animateKpiNumSmooth(el, target) {
+  const obj = {v:0};
+  gsap.to(obj, {
+    v: target, duration: 2, ease: 'power2.out',
+    onUpdate: () => { el.textContent = Math.round(obj.v); }
+  });
+}
+
+function buildSceneTimeline(sid) {
+  const tl = gsap.timeline();
+
+  function at(pos) { return pos; }
+
+  if (sid === 's1') {
+    tl.call(() => { gsap.set('.caption', {opacity:0}); gsap.set('#s1 .title-main', {opacity:0, y:30}); gsap.set('#s1 .title-sub', {opacity:0, y:20}); gsap.set('#s1-kpis', {opacity:0, y:20}); gsap.set('#s1 .kpi-card .kpi-num', {textContent:'0'}); }, [], 0);
+    tl.to('#s1 .title-main', {opacity:1, y:0, duration:0.8, ease:'power2.out'}, at(0.05));
+    tl.to('#s1 .title-sub', {opacity:1, y:0, duration:0.6, ease:'power2.out'}, at(0.65));
+    tl.to('#s1-kpis', {opacity:1, y:0, duration:0.6, ease:'power2.out'}, at(1.2));
+    tl.call(() => { document.querySelectorAll('#s1 .kpi-card .kpi-num').forEach(el => animateKpiNum(el, parseInt(el.dataset.target))); }, [], at(1.9));
+    tl.to({}, {duration:7.5});
+  }
+
+  else if (sid === 's2') {
+    tl.call(() => { gsap.set('#s2 .legend-item', {opacity:0, x:-12}); gsap.set('#s2-kpi', {opacity:0, scale:0.8}); document.querySelectorAll('.floor-bar').forEach(b => b.classList.remove('lit')); gsap.set('#s2 .aerial-kpi .big-num', {textContent:'7'}); showCaption('s2'); }, [], 0);
+    FLOORS.forEach((f, i) => {
+      tl.to(`.legend-item[data-floor="${f.key}"]`, {opacity:1, x:0, duration:0.35, ease:'power2.out'}, at(0.15 * i));
+      tl.call(() => { const bar = document.querySelector(`.floor-bar[data-floor="${f.key}"]`); if (bar) bar.classList.add('lit'); }, [], at(0.15 * i + 0.05));
+    });
+    tl.to('#s2-kpi', {opacity:1, scale:1, duration:0.6, ease:'back.out(1.7)'}, at(FLOORS.length * 0.15 + 0.3));
+    tl.to({}, {duration:3.5});
+  }
+
+  else if (sid === 's3') {
+    tl.call(() => { gsap.set('#s3 .focus-card', {opacity:0, y:20, scale:0.95}); document.querySelectorAll('.floor-bar').forEach(b => b.classList.remove('lit')); const sky = document.querySelector('.floor-bar[data-floor="skydeck-reservoir"]'); if (sky) sky.style.boxShadow = ''; showCaption('s3'); }, [], 0);
+    tl.to('.floor-bar[data-floor="skydeck-reservoir"]', {boxShadow:'0 0 24px rgba(255,217,160,0.35)', duration:0.5}, at(0));
+    tl.to('#s3 .focus-card[data-floor="skydeck-reservoir"]', {opacity:1, y:0, scale:1, duration:0.6, ease:'power2.out'}, at(0.2));
+    tl.to('.floor-bar[data-floor="penthouses"]', {boxShadow:'0 0 24px rgba(192,164,255,0.35)', duration:0.5}, at(3));
+    tl.to('#s3 .focus-card[data-floor="penthouses"]', {opacity:1, y:0, scale:1, duration:0.6, ease:'power2.out'}, at(3.2));
+    tl.to('.floor-bar[data-floor="the-lung"]', {boxShadow:'0 0 24px rgba(127,231,224,0.35)', duration:0.5}, at(6));
+    tl.to('#s3 .focus-card[data-floor="the-lung"]', {opacity:1, y:0, scale:1, duration:0.6, ease:'power2.out'}, at(6.2));
+    tl.to({}, {duration:3});
+  }
+
+  else if (sid === 's4') {
+    tl.call(() => { gsap.set('#s4 .res-kpi', {opacity:0, y:20}); gsap.set('#s4-occ', {opacity:0}); gsap.set('#s4 .occ-bar-fill', {width:'0%'}); gsap.set('#s4 .occ-bar-pct', {textContent:'0%'}); document.querySelectorAll('.floor-bar').forEach(b => b.classList.remove('lit')); document.querySelectorAll('.floor-bar[data-floor^="residences-"]').forEach(b => b.classList.add('lit')); showCaption('s4'); }, [], 0);
+    tl.to('#s4 .res-kpi', {opacity:1, y:0, stagger:0.2, duration:0.5, ease:'power2.out'}, at(0));
+    tl.call(() => { document.querySelectorAll('#s4 .rk-num').forEach(el => animateKpiNum(el, parseInt(el.dataset.target))); }, [], at(0.5));
+    tl.to('#s4-occ', {opacity:1, duration:0.5, ease:'power2.out'}, at(1.5));
+    tl.call(() => { document.querySelectorAll('#s4 .occ-bar-fill').forEach(el => { const pct = parseFloat(el.dataset.pct); gsap.to(el, {width:pct+'%', duration:1.2, ease:'power2.out'}); const pctLabel = el.closest('.occ-bar-item').querySelector('.occ-bar-pct'); const obj = {v:0}; gsap.to(obj, {v:pct, duration:1.2, ease:'power2.out', onUpdate:()=>{pctLabel.textContent=Math.round(obj.v)+'%'}}); }); }, [], at(2));
+    tl.to({}, {duration:7});
+  }
+
+  else if (sid === 's5') {
+    tl.call(() => { gsap.set('#s5-circle', {opacity:0, scale:0.7, boxShadow:'none'}); gsap.set('#s5-info', {opacity:0, x:20}); document.querySelectorAll('.floor-bar').forEach(b => b.classList.remove('lit')); document.querySelectorAll('.floor-bar[data-floor="aquaponics-bay"],.floor-bar[data-floor="vertical-farm"]').forEach(b => b.classList.add('lit')); showCaption('s5'); }, [], 0);
+    tl.to('#s5-circle', {opacity:1, scale:1, duration:0.8, ease:'back.out(1.7)'}, at(0));
+    tl.call(() => { const el = document.querySelector('#s5-circle .fv-kpi'); if (el) animateKpiNumSmooth(el, parseInt(el.dataset.target)); }, [], at(0.5));
+    tl.to('#s5-info', {opacity:1, x:0, duration:0.6, ease:'power2.out'}, at(0.7));
+    tl.call(() => { gsap.to('#s5-circle', {boxShadow:'0 0 40px rgba(93,220,122,0.3), 0 0 80px rgba(93,220,122,0.15)', duration:2, repeat:-1, yoyo:true, ease:'sine.inOut'}); }, [], at(1.2));
+    tl.to({}, {duration:8});
+  }
+
+  else if (sid === 's6') {
+    tl.call(() => { gsap.set('#s6-kpi', {opacity:0, scale:0.7}); gsap.set('#s6-badge', {opacity:0, x:-20}); gsap.set('#s6-metrics', {opacity:0, y:15}); gsap.set('#s6-kpi .pk-num', {textContent:'0'}); document.querySelectorAll('.floor-bar').forEach(b => b.classList.remove('lit')); document.querySelector('.floor-bar[data-floor="power-ops-core"]')?.classList.add('lit'); showCaption('s6'); }, [], 0);
+    tl.to('#s6-kpi', {opacity:1, scale:1, duration:0.6, ease:'back.out(1.7)'}, at(0));
+    tl.call(() => {animateKpiNumSmooth(document.querySelector('#s6-kpi .pk-num'), 96);}, [], at(0.3));
+    tl.to('#s6-badge', {opacity:1, x:0, duration:0.5, ease:'power2.out'}, at(0.5));
+    tl.to('#s6-metrics', {opacity:1, y:0, duration:0.5, ease:'power2.out'}, at(1));
+    tl.to({}, {duration:4.5});
+  }
+
+  else if (sid === 's7') {
+    tl.call(() => { gsap.set('#s7-kpi', {opacity:0, scale:0.7}); gsap.set('#s7-info', {opacity:0, x:20}); gsap.set('#s7-kpi .wk-num', {textContent:'0'}); document.querySelectorAll('.floor-bar').forEach(b => b.classList.remove('lit')); document.querySelector('.floor-bar[data-floor="reclamation-core"]')?.classList.add('lit'); showCaption('s7'); }, [], 0);
+    tl.to('#s7-kpi', {opacity:1, scale:1, duration:0.6, ease:'back.out(1.7)'}, at(0));
+    tl.call(() => {animateKpiNumSmooth(document.querySelector('#s7-kpi .wk-num'), 92);}, [], at(0.3));
+    tl.to('#s7-info', {opacity:1, x:0, duration:0.5, ease:'power2.out'}, at(0.5));
+    tl.to({}, {duration:5});
+  }
+
+  else if (sid === 's8') {
+    tl.call(() => { gsap.set('#s8-building', {opacity:0, scale:0.85}); gsap.set('#s8 .final-bar', {opacity:0, y:-8}); gsap.set('#s8-resilience', {opacity:0, y:15}); gsap.set('#s8 .closing-text', {opacity:0, y:20}); gsap.set('#s8 .closing-sub', {opacity:0, y:10}); gsap.set('#s8 .resilience-num', {textContent:'0'}); document.querySelectorAll('.floor-bar').forEach(b => b.classList.remove('lit')); showCaption('s8'); }, [], 0);
+    tl.to('#s8-building', {opacity:1, scale:1, duration:0.8, ease:'power2.out'}, at(0));
+    tl.to('#s8 .final-bar', {opacity:1, y:0, stagger:0.06, duration:0.3, ease:'power2.out'}, at(0.3));
+    tl.to('#s8-resilience', {opacity:1, y:0, duration:0.6, ease:'power2.out'}, at(2.2));
+    tl.call(() => { const el = document.querySelector('#s8 .resilience-num'); animateKpiNum(el, 87); const circle = document.querySelector('#s8 .rr-fill'); if (circle) gsap.to(circle, {strokeDashoffset:283 - (283*87/100), duration:2, ease:'power2.out'}); }, [], at(2.6));
+    tl.to('#s8 .closing-text', {opacity:1, y:0, duration:0.8, ease:'power2.out'}, at(3.8));
+    tl.to('#s8 .closing-sub', {opacity:1, y:0, duration:0.6, ease:'power2.out'}, at(4.6));
+    tl.to({}, {duration:2.5});
+  }
+
+  return tl;
+}
+
+function buildMasterTimeline() {
+  const tl = gsap.timeline({paused:true});
+
+  SCENE_ORDER.forEach((sid, idx) => {
+    if (idx > 0) {
+      tl.to('#'+SCENE_ORDER[idx-1], {opacity:0, duration:0.4, ease:'power2.in'});
+    }
+    tl.call(() => { gsap.set('#'+sid, {opacity:1, pointerEvents:'auto'}); });
+    tl.add(buildSceneTimeline(sid));
+  });
+
+  return tl;
+}
+
+// ---- caption helper ----
+function showCaption(sceneId) {
+  const captionEl = document.getElementById('caption');
+  const text = CAPTIONS[sceneId];
+  if (text) {
+    captionEl.innerHTML = text;
+    captionEl.classList.add('visible');
+  } else {
+    captionEl.classList.remove('visible');
+  }
+}
+
+// ---- controls ----
+const playBtn = document.getElementById('play-btn');
+const progressFill = document.getElementById('progress-fill');
+const timeLabel = document.getElementById('time-label');
+const sceneLabel = document.getElementById('scene-label');
+const progressTrack = document.getElementById('progress-track');
+
+function formatTime(s) {
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return m + ':' + (sec < 10 ? '0' : '') + sec;
+}
+
+function updateUI() {
+  if (!masterTL) return;
+  const t = masterTL.time();
+  const total = TOTAL_DURATION;
+  const pct = Math.min(t / total * 100, 100);
+  progressFill.style.width = pct + '%';
+  timeLabel.textContent = formatTime(t) + ' / ' + formatTime(total);
+
+  let accum = 0;
+  let currentSceneIdx = 0;
+  for (let i = 0; i < SCENE_ORDER.length; i++) {
+    accum += SCENE_DURATIONS[SCENE_ORDER[i]];
+    if (t < accum) { currentSceneIdx = i; break; }
+    if (i === SCENE_ORDER.length - 1) currentSceneIdx = i;
+  }
+  sceneLabel.textContent = 'Scene ' + (currentSceneIdx + 1) + ' / ' + SCENE_ORDER.length;
+}
+
+function togglePlay() {
+  if (!masterTL) return;
+  if (playing) {
+    masterTL.pause();
+    playBtn.innerHTML = '&#9654;';
+  } else {
+    if (masterTL.progress() >= 1) {
+      masterTL.progress(0).play();
+    } else {
+      masterTL.play();
+    }
+    playBtn.innerHTML = '&#10074;&#10074;';
+  }
+  playing = !playing;
+}
+
+playBtn.addEventListener('click', togglePlay);
+
+progressTrack.addEventListener('click', (e) => {
+  if (!masterTL) return;
+  const rect = progressTrack.getBoundingClientRect();
+  const pct = (e.clientX - rect.left) / rect.width;
+  masterTL.progress(pct).pause();
+  if (!playing) { /* stay paused */ } else { playing = false; playBtn.innerHTML = '&#9654;'; }
+  updateUI();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+});
+
+// ---- init ----
+gsap.registerEffect && gsap.registerEffect({name:'fade',effect:(t,el)=>{gsap.to(el,{opacity:t.opacity})}});
+
+masterTL = buildMasterTimeline();
+masterTL.eventCallback('onUpdate', updateUI);
+playBtn.innerHTML = '&#10074;&#10074;';
+masterTL.play();
+
+// S1 caption on start
+setTimeout(() => showCaption('s1'), 100);
+
+console.log('ATLAS-01 Walkthrough · ' + TOTAL_DURATION + 's total');
+</script>
+</body>
+</html>

@@ -16,7 +16,32 @@
 
 import type { Need } from "@/lib/types";
 
-export type FloorSlot = `floor-${Need}` | "floor-basement" | "floor-rooftop";
+/**
+ * Floor slot naming follows the data model's Floor.key convention (seed-data.ts).
+ * The Blender pipeline (_blender/build_atlas_floors.py) exports one GLB per key
+ * via FLOOR_KEY_MAP. Legacy need-based names (floor-water, floor-energy, …) and
+ * basement/rooftop are kept for backward compatibility with the procedural twin.
+ *
+ * Sync: FLOOR_KEY_MAP in build_atlas_floors.py  ↔  seedFloors in seed-data.ts  ↔  this type.
+ */
+export type FloorSlot =
+  // Canonical data-model keys (12 floors)
+  | "floor-reclamation-core"
+  | "floor-commons-clinic"
+  | "floor-power-ops-core"
+  | "floor-aquaponics-bay"
+  | "floor-vertical-farm"
+  | "floor-residences-a"
+  | "floor-residences-b"
+  | "floor-residences-c"
+  | "floor-residences-d"
+  | "floor-the-lung"
+  | "floor-penthouses"
+  | "floor-skydeck-reservoir"
+  // Legacy need-based aliases (backward compat, served by the same GLB via build_atlas_floors.py)
+  | `floor-${Need}`
+  | "floor-basement"
+  | "floor-rooftop";
 export type ModelSlot = FloorSlot | "rooftopProp";
 
 export interface ModelAsset {
@@ -59,6 +84,20 @@ function floorModule(slot: FloorSlot): ModelAsset {
 }
 
 export const MODELS: Record<ModelSlot, ModelAsset> = {
+  // Canonical data-model slots (12 floors — will be populated after next Blender pipeline run)
+  "floor-reclamation-core": floorModule("floor-reclamation-core"),
+  "floor-commons-clinic": floorModule("floor-commons-clinic"),
+  "floor-power-ops-core": floorModule("floor-power-ops-core"),
+  "floor-aquaponics-bay": floorModule("floor-aquaponics-bay"),
+  "floor-vertical-farm": floorModule("floor-vertical-farm"),
+  "floor-residences-a": floorModule("floor-residences-a"),
+  "floor-residences-b": floorModule("floor-residences-b"),
+  "floor-residences-c": floorModule("floor-residences-c"),
+  "floor-residences-d": floorModule("floor-residences-d"),
+  "floor-the-lung": floorModule("floor-the-lung"),
+  "floor-penthouses": floorModule("floor-penthouses"),
+  "floor-skydeck-reservoir": floorModule("floor-skydeck-reservoir"),
+  // Legacy need-based alias slots (backward compat — same geometry via build_atlas_floors.py)
   "floor-water": floorModule("floor-water"),
   "floor-energy": floorModule("floor-energy"),
   "floor-food": floorModule("floor-food"),
@@ -81,6 +120,15 @@ export const MODELS: Record<ModelSlot, ModelAsset> = {
 
 export function getModel(slot: ModelSlot): ModelAsset {
   return MODELS[slot];
+}
+
+/**
+ * Canonical floor-slot key for a data-model floor — resolves the exact slot matching
+ * the floor's `key` first, then falls back to the need-based alias.
+ */
+export function floorSlotForKey(key: string): FloorSlot | null {
+  const slot = `floor-${key}` as FloorSlot;
+  return slot in MODELS ? slot : null;
 }
 
 /** Resolve the detailed interior slot for a floor's need (null when none). */
