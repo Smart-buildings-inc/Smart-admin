@@ -34,6 +34,13 @@ import SolarAnimator from "@/components/simulator/SolarAnimator";
 import WaterAnimator from "@/components/simulator/WaterAnimator";
 import SunsetCascade from "@/components/simulator/SunsetCascade";
 import DemoMode from "@/components/simulator/DemoMode";
+import PhysicsWater from "@/components/simulator/PhysicsWater";
+import BuildingSoundscape from "@/components/simulator/BuildingSoundscape";
+import { InSceneHotspot, buildHotspots } from "@/components/simulator/InSceneHotspot";
+import { prewarmSimulator } from "@/lib/simulator-optimizations";
+
+// Prewarm textures at module load — zero first-frame hitch
+if (typeof window !== "undefined") prewarmSimulator();
 
 type Vec3 = [number, number, number];
 
@@ -1676,6 +1683,7 @@ export default function BuildingSimulator({
   ascii,
   onSelect,
   onElevatorArrive,
+  elevatorFloor = 0,
 }: {
   floors: Floor[];
   incidents: Incident[];
@@ -1685,6 +1693,7 @@ export default function BuildingSimulator({
   ascii: boolean;
   onSelect: (key: string | null) => void;
   onElevatorArrive: (floorIndex: number) => void;
+  elevatorFloor?: number; // for soundscape ding
 }) {
   const totalHeight = floors.length * STEP;
   const target = useMemo<Vec3>(() => [0, totalHeight * 0.46, 0], [totalHeight]);
@@ -1772,6 +1781,17 @@ export default function BuildingSimulator({
 
       {/* Paradigm 7 — Sunset cascade: floor-by-floor light sequence */}
       <SunsetCascade floors={floors} />
+
+      {/* Paradigm 6 — Physics: reservoir water rises/falls with flow */}
+      <PhysicsWater floors={floors} />
+
+      {/* Paradigm 1+2 — In-scene data hotspots (click building elements) */}
+      {buildHotspots(floors).map((h, i) => (
+        <InSceneHotspot key={i} hotspot={h} />
+      ))}
+
+      {/* Paradigm 5 — Generative soundscape (hum, water trickle, elevator ding) */}
+      <BuildingSoundscape floors={floors} elevatorFloor={elevatorFloor} />
 
       <CreativeResearchLens lens={options.researchLens ?? "ops"} totalHeight={totalHeight} />
 

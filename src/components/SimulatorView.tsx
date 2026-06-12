@@ -299,6 +299,7 @@ export default function SimulatorView({
               ascii={ascii}
               onSelect={setSelectedKey}
               onElevatorArrive={setElevatorFloor}
+              elevatorFloor={elevatorFloor}
             />
 
             {/* Title chip */}
