@@ -6,7 +6,7 @@ import * as THREE from "three";
 
 type Vec3 = [number, number, number];
 
-const BASE_HEIGHT = 1.16;
+const BASE_HEIGHT = 1.12;
 
 const SKIN = ["#f2c7a3", "#c88a65", "#9a6a4e"];
 const HAIR = ["#171311", "#3a2a20", "#8c6239"];

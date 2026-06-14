@@ -446,7 +446,7 @@ function SimPerson({
   color,
   pace = 0,
   detailed,
-  height = 1,
+  height = 0.8,
   rotationY,
   variant = "resident",
 }: {
@@ -1424,8 +1424,8 @@ function ElevatorB({ stops }: { stops: number[] }) {
 function Staircase({ floorCount }: { floorCount: number }) {
   const steps = useMemo(() => {
     const out: { pos: Vec3; size: Vec3 }[] = [];
-    const n = 7; // steps per flight
-    const zSpan = 2.4;
+    const n = 10; // steps per flight (was 7 — rise was 0.237, too steep)
+    const zSpan = 2.2; // total horizontal span per flight (was 2.4 — tread was 0.403, too deep)
     for (let f = 0; f < floorCount; f++) {
       const baseY = f * STEP;
       const flip = f % 2 === 0 ? 1 : -1;

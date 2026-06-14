@@ -339,7 +339,7 @@ function Character({
     }
   });
 
-  const CHAR_SCALE = 0.7; // scale to ~0.77 units tall (proportional to a 5.5ft person in a 10ft floor)
+  const CHAR_SCALE = 0.714; // scale to 0.8 units tall (53% of 1.5-unit floor, matching real-world 1.7m person in 3.2m floor)
 
   return (
     <group ref={root}>
