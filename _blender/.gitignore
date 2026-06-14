@@ -1,0 +1,17 @@
+# Blender Linux runtime — macOS users use the app binary
+.runtime/
+
+# Build artifacts / cache
+__pycache__/
+*.pyc
+atlas_floors.blend
+atlas_floors.blend1
+*.json
+check.png
+fleet_render.png
+
+# Renders (produced on-demand)
+renders/
+
+# Build logs
+build.log

@@ -16,6 +16,7 @@
     "db:push": "drizzle-kit push",
     "db:seed": "tsx src/lib/db/seed.ts",
     "validate:models": "npx tsx scripts/validate-model-slots.ts",
+    "validate:blender": "python3 _blender/validate_naming_alignment.py",
     "docs:build": "node --import tsx scripts/generate-doc-pdfs.ts"
   },
   "dependencies": {
