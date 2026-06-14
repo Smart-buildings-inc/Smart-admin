@@ -990,7 +990,7 @@ body {
   width: 100%;
   contain: layout paint;
   content-visibility: auto;
-  contain-intrinsic-size: 360px;
+  contain-intrinsic-size: 240px;
 }
 
 .marketing-parallax__viewport {
@@ -999,9 +999,9 @@ body {
   overflow: hidden;
   width: 100%;
   max-width: 100%;
-  min-height: 300px;
-  aspect-ratio: 16 / 7.2;
-  border-radius: 24px;
+  min-height: 200px;
+  aspect-ratio: 16 / 6.2;
+  border-radius: 20px;
   border: 1px solid rgba(34, 50, 63, 0.72);
   background: #05080d;
   box-shadow:
@@ -1010,8 +1010,8 @@ body {
 }
 
 .marketing-parallax--compact .marketing-parallax__viewport {
-  min-height: 250px;
-  aspect-ratio: 16 / 6.6;
+  min-height: 160px;
+  aspect-ratio: 16 / 5;
 }
 
 .marketing-parallax__image {
@@ -1119,15 +1119,17 @@ body {
     --parallax-twin-scale: 1.08;
     --parallax-front-scale: 1.22;
     --parallax-back-blur: 3.5px;
-    --parallax-back-opacity: 0.5;
-    --parallax-front-opacity: 0.9;
+    --parallax-back-opacity: 0.45;
+    --parallax-front-opacity: 0.88;
+    --parallax-grid-opacity: 0.12;
+    --parallax-veil-opacity: 0.8;
   }
 
   .marketing-parallax__viewport,
   .marketing-parallax--compact .marketing-parallax__viewport {
     min-height: 0;
-    aspect-ratio: 20 / 19;
-    border-radius: 18px;
+    aspect-ratio: 4 / 3;
+    border-radius: 14px;
   }
 
   .marketing-parallax__backdrop {
@@ -1141,6 +1143,20 @@ body {
 
   .marketing-parallax__foreground {
     object-position: 50% 100%;
+    -webkit-mask-image: linear-gradient(
+      to top,
+      #000 0%,
+      #000 22%,
+      rgba(0, 0, 0, 0.55) 38%,
+      transparent 68%
+    );
+    mask-image: linear-gradient(
+      to top,
+      #000 0%,
+      #000 22%,
+      rgba(0, 0, 0, 0.55) 38%,
+      transparent 68%
+    );
   }
 }
 
