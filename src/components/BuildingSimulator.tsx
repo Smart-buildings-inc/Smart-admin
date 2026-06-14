@@ -23,7 +23,7 @@ import AsciiRenderer from "@/components/AsciiRenderer";
 import GltfBuilding from "@/components/GltfBuilding";
 import HumanCharacter from "@/components/three/HumanCharacter";
 import { FloorDetail, GltfProp } from "@/components/three/gltf";
-import { floorSlotForNeed } from "@/lib/models";
+import { floorSlotForNeed, floorSlotForKey } from "@/lib/models";
 import { characters } from "@/lib/character-profiles";
 import CharacterAI from "@/components/three/CharacterAI";
 import { getProcTexture, type ProcTextureType } from "@/lib/procedural-textures";
@@ -57,6 +57,12 @@ const CAR_H = FLOOR_H * 0.86;
 const FACADE_MULLIONS = [-4.35, -3.35, -2.35, -1.35, -0.35, 0.65, 1.65, 2.65, 3.65, 4.45];
 const SIDE_MULLIONS = [-2.65, -1.55, -0.45, 0.65, 1.75, 2.85];
 
+const OCCUPANCY_COLORS: Record<string, string> = {
+  C: "#4ecdc4",
+  D: "#9b59b6",
+  F: "#f39c12",
+};
+
 function selectedSimulatorTarget(index: number): THREE.Vector3 {
   return new THREE.Vector3(0, index * STEP + FLOOR_H * 0.58, 0);
 }
@@ -76,6 +82,8 @@ export interface SimOptions {
    * See docs/ATLAS-blender-model-spec.md.
    */
   source?: "voxel" | "gltf";
+  /** Show code-compliance overlays (occupancy groups, fire separations, egress) */
+  compliance?: boolean;
 }
 
 function seededWave(i: number, salt = 0) {
@@ -1168,7 +1176,9 @@ function FloorBlock({
 
   const wallColor = "#16222d";
   const isResidential = floor.need === "shelter";
-  const detailSlot = detailed ? floorSlotForNeed(floor.need) : null;
+  const detailSlot = detailed
+    ? (floorSlotForKey(floor.key) ?? floorSlotForNeed(floor.need))
+    : null;
 
   return (
     <group position={[0, baseY, 0]}>
@@ -1563,6 +1573,52 @@ function Tower({
           onSelect={onSelect}
         />
       ))}
+
+      {/* Code-compliance overlays */}
+      {options.compliance && (
+        <group>
+          {floors.map((floor, index) => {
+            const y = index * STEP;
+            const occGroup = floor.occupancyGroup;
+            const color = OCCUPANCY_COLORS[occGroup] ?? "#ffffff";
+            return (
+              <group key={`compliance-bar-${floor.key}`}>
+                <Vox
+                  position={[HALF_W + 0.3, y + FLOOR_H / 2, 0]}
+                  size={[0.08, FLOOR_H * 0.7, HALF_D * 2 - 0.4]}
+                  color={color}
+                  opacity={0.35}
+                />
+                <Html position={[HALF_W + 0.6, y + FLOOR_H / 2, 0]} center distanceFactor={14} style={{ pointerEvents: "none" }}>
+                  <div className="text-[10px] font-bold tracking-wider" style={{ color }}>
+                    {occGroup}
+                  </div>
+                </Html>
+              </group>
+            );
+          })}
+          {floors.slice(1).map((floor, i) => {
+            const prev = floors[i];
+            if (prev.occupancyGroup !== floor.occupancyGroup) {
+              const y = (i + 1) * STEP;
+              return (
+                <Vox
+                  key={`trans-line-${i}`}
+                  position={[0, y, 0]}
+                  size={[HALF_W * 2 + 0.5, 0.04, HALF_D * 2 + 0.5]}
+                  color="#ff5d5d"
+                  emissive="#ff5d5d"
+                  emissiveIntensity={0.5}
+                />
+              );
+            }
+            return null;
+          })}
+          <Vox position={[STAIR_X, totalHeight / 2, 0]} size={[0.5, totalHeight, 0.5]} color="#5ddc7a" opacity={0.12} />
+          <Vox position={[CORE_X, totalHeight / 2, CORE_Z]} size={[0.4, totalHeight, 0.4]} color="#4ea8ff" opacity={0.12} />
+          <Vox position={[CORE_X, totalHeight / 2, CORE_Z2]} size={[0.4, totalHeight, 0.4]} color="#4ea8ff" opacity={0.12} />
+        </group>
+      )}
 
       <ArchitecturalSkin floors={floors} cutaway={options.cutaway} night={options.night} />
 

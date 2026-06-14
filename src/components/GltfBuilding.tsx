@@ -11,8 +11,11 @@
 // constants). Full telemetry binding (emissive accent, incident pulse, presence
 // heat, floor selection) is the next step once a real asset exists.
 
-import { Component, Suspense, type ReactNode } from "react";
+import { Component, Suspense, useEffect, useMemo, type ReactNode } from "react";
 import { useGLTF } from "@react-three/drei";
+import * as THREE from "three";
+import { needColor } from "@/lib/ui";
+import type { Need } from "@/lib/types";
 
 /** Where the Blender → glTF hero asset lives (committed via Git LFS). */
 export const TWIN_MODEL_URL = "/models/atlas-01.glb";
@@ -27,13 +30,62 @@ export function defaultTwinModel(): "voxel" | "gltf" {
   return process.env.NEXT_PUBLIC_TWIN_MODEL === "gltf" ? "gltf" : "voxel";
 }
 
+// Temporary inline map — should sync with seed-data.ts
+const FLOOR_NEED_MAP: Record<string, string> = {
+  "reclamation-core": "water",
+  "commons-clinic": "health",
+  "power-ops-core": "energy",
+  "aquaponics-bay": "food",
+  "vertical-farm": "food",
+  "residences-a": "shelter",
+  "residences-b": "shelter",
+  "residences-c": "shelter",
+  "residences-d": "shelter",
+  "the-lung": "air",
+  "penthouses": "shelter",
+  "skydeck-reservoir": "restoration",
+};
+
 function GltfScene() {
-  // If the .glb is Draco/meshopt-compressed, pass the decoder path here, e.g.
-  //   useGLTF(TWIN_MODEL_URL, "/draco/")
-  // A missing decoder simply throws -> the boundary below falls back to procedural.
-  const { scene } = useGLTF(TWIN_MODEL_URL);
-  // TODO(model-binding): traverse `scene`, index meshes by Floor.key, and drive
-  // emissive accent / incident pulse / presence heat. See the spec §8.
+  const gltf = useGLTF(TWIN_MODEL_URL);
+  const { scene } = gltf;
+
+  // Build floor-key indexed map for telemetry binding
+  const floorMap = useMemo(() => {
+    const map = new Map<string, THREE.Object3D>();
+    scene.traverse((child) => {
+      // Match collection/group names to Floor.key
+      if (child.parent === scene || (child as THREE.Group).isGroup) {
+        for (const [key] of Object.entries(FLOOR_NEED_MAP)) {
+          if (child.name === key || child.name.startsWith(key)) {
+            map.set(key, child);
+          }
+        }
+      }
+    });
+    return map;
+  }, [scene]);
+
+  // Apply need accent as emissive glow
+  useEffect(() => {
+    floorMap.forEach((root, key) => {
+      root.traverse((child) => {
+        const mesh = child as THREE.Mesh;
+        if (mesh.isMesh && mesh.material) {
+          const mat = mesh.material as THREE.MeshStandardMaterial;
+          const need = FLOOR_NEED_MAP[key] as Need | undefined;
+          if (need && mat.name?.includes?.("emissive")) {
+            const hex = needColor[need];
+            const color = new THREE.Color(hex);
+            mat.emissive = color;
+            mat.emissiveIntensity = 0.3;
+            mat.needsUpdate = true;
+          }
+        }
+      });
+    });
+  }, [floorMap]);
+
   return <primitive object={scene} />;
 }
 

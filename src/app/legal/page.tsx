@@ -70,6 +70,18 @@ export default function LegalIndexPage() {
           </li>
         ))}
       </ul>
+
+      {/* Pre-consultation briefing (cross-disciplinary council deliverable) */}
+      <div className="mt-8 panel p-4">
+        <p className="text-sm signal-ok font-medium">Building Permit Pre-Consultation</p>
+        <p className="text-sm ink-60 mt-1">
+          View the{" "}
+          <a href="/docs/PRE_CONSULTATION_BRIEFING.md" className="signal-ok underline">
+            ATLAS-01 Pre-Consultation Briefing
+          </a>{" "}
+          prepared for CBO and MECP meetings.
+        </p>
+      </div>
     </main>
   );
 }

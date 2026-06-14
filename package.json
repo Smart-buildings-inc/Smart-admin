@@ -15,6 +15,7 @@
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:seed": "tsx src/lib/db/seed.ts",
+    "validate:models": "npx tsx scripts/validate-model-slots.ts",
     "docs:build": "node --import tsx scripts/generate-doc-pdfs.ts"
   },
   "dependencies": {

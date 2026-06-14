@@ -319,6 +319,7 @@ export default function SimulatorView({
                   <Toggle label="Orbit" active={options.autoRotate} onClick={() => set({ autoRotate: !options.autoRotate })} />
                   <Toggle label="Elevator" active={options.elevatorRunning} onClick={() => set({ elevatorRunning: !options.elevatorRunning })} />
                   <Toggle label="Hero" active={options.source === "gltf"} onClick={() => set({ source: options.source === "gltf" ? "voxel" : "gltf" })} />
+                  <Toggle label={options.compliance ? "✓ Code" : "Code"} active={!!options.compliance} onClick={() => set({ compliance: !options.compliance })} />
                   <Toggle label="🎬 Demo" active={false} onClick={startDemo} />
                 </div>
                 <div

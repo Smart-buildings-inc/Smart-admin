@@ -12,7 +12,7 @@ import AsciiRenderer from "@/components/AsciiRenderer";
 import { createChamferedBoxGeometry } from "@/lib/geometry";
 import HumanCharacter from "@/components/three/HumanCharacter";
 import { FloorDetail } from "@/components/three/gltf";
-import { floorSlotForNeed } from "@/lib/models";
+import { floorSlotForNeed, floorSlotForKey } from "@/lib/models";
 
 export type TwinMode = "orbit" | "walkthrough";
 
@@ -177,7 +177,9 @@ function FloorSlab({
   // In detailed (non-pixel) mode, selecting a floor reveals its full PBR
   // interior module (Blender-exported GLB). The slab becomes a faint glass
   // shell that stays the click target; the GLB fails soft to nothing.
-  const detailSlot = detailed && selected ? floorSlotForNeed(floor.need) : null;
+  const detailSlot = detailed && selected
+    ? (floorSlotForKey(floor.key) ?? floorSlotForNeed(floor.need))
+    : null;
 
   useFrame((state) => {
     const mat = meshRef.current?.material as THREE.MeshStandardMaterial | undefined;

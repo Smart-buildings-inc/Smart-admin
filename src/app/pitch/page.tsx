@@ -31,10 +31,24 @@ export default async function PitchPage({
   const [floors, incidents] = await Promise.all([getFloors(), getIncidents()]);
 
   return (
-    <PitchGame
-      floors={floors}
-      incidents={incidents}
-      initialQuality={parseQuality(params?.quality)}
-    />
+    <>
+      <PitchGame
+        floors={floors}
+        incidents={incidents}
+        initialQuality={parseQuality(params?.quality)}
+      />
+      {/* Cross-disciplinary council deliverable: guided walk-through animation */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <a
+          href="/atlas-walkthrough.html"
+          target="_blank"
+          className="panel px-4 py-2 text-sm signal-ok hover:signal-ok/80 transition-colors inline-flex items-center gap-2"
+          aria-label="Open guided walk-through animation"
+        >
+          <span className="text-lg">▶</span>
+          Walk-through
+        </a>
+      </div>
+    </>
   );
 }

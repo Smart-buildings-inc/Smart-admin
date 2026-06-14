@@ -18,6 +18,17 @@ jobs:
       - run: npm run lint
       - run: npm run build
 
+  models:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx tsx scripts/validate-model-slots.ts
+
   # Runs in parallel with `build`. Playwright's webServer builds + starts the
   # app on port 3000, so this job needs only the Chromium download.
   e2e:
