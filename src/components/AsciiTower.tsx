@@ -11,6 +11,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import AsciiRenderer from "@/components/AsciiRenderer";
+import MainHdrEnvironment from "@/components/three/MainHdrEnvironment";
 
 type Vec3 = [number, number, number];
 
@@ -158,6 +159,7 @@ export default function AsciiTower({
       style={{ background: "transparent" }}
       frameloop={reduced ? "demand" : "always"}
     >
+      <MainHdrEnvironment intensity={0.75} />
       <ambientLight intensity={0.7} />
       <directionalLight position={[6, 10, 6]} intensity={1.2} />
       <directionalLight position={[-6, -2, -6]} intensity={0.4} color="#4ea8ff" />

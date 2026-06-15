@@ -12,6 +12,7 @@ import AsciiRenderer from "@/components/AsciiRenderer";
 import { createChamferedBoxGeometry } from "@/lib/geometry";
 import HumanCharacter from "@/components/three/HumanCharacter";
 import { FloorDetail } from "@/components/three/gltf";
+import MainHdrEnvironment from "@/components/three/MainHdrEnvironment";
 import { floorSlotForNeed, floorSlotForKey } from "@/lib/models";
 
 export type TwinMode = "orbit" | "walkthrough";
@@ -511,6 +512,7 @@ export default function HabitatTwin({
         frameloop="always"
         onPointerMissed={() => mode === "orbit" && onSelect(null)}
       >
+        <MainHdrEnvironment intensity={0.88} />
         <ambientLight intensity={0.6} />
         <directionalLight position={[6, 10, 6]} intensity={1.1} />
         <directionalLight position={[-6, -4, -6]} intensity={0.3} color="#4ea8ff" />

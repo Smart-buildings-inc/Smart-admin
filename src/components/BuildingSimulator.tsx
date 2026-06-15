@@ -23,6 +23,7 @@ import AsciiRenderer from "@/components/AsciiRenderer";
 import GltfBuilding from "@/components/GltfBuilding";
 import HumanCharacter from "@/components/three/HumanCharacter";
 import { FloorDetail, GltfProp } from "@/components/three/gltf";
+import MainHdrEnvironment from "@/components/three/MainHdrEnvironment";
 import { floorSlotForNeed, floorSlotForKey } from "@/lib/models";
 import { characters } from "@/lib/character-profiles";
 import CharacterAI from "@/components/three/CharacterAI";
@@ -1580,7 +1581,7 @@ function Tower({
           {floors.map((floor, index) => {
             const y = index * STEP;
             const occGroup = floor.occupancyGroup;
-            const color = OCCUPANCY_COLORS[occGroup] ?? "#ffffff";
+            const color = occGroup ? OCCUPANCY_COLORS[occGroup] ?? "#ffffff" : "#ffffff";
             return (
               <group key={`compliance-bar-${floor.key}`}>
                 <Vox
@@ -1591,7 +1592,7 @@ function Tower({
                 />
                 <Html position={[HALF_W + 0.6, y + FLOOR_H / 2, 0]} center distanceFactor={14} style={{ pointerEvents: "none" }}>
                   <div className="text-[10px] font-bold tracking-wider" style={{ color }}>
-                    {occGroup}
+                    {occGroup ?? "NA"}
                   </div>
                 </Html>
               </group>
@@ -1791,6 +1792,7 @@ export default function BuildingSimulator({
     >
       <color attach="background" args={[bg]} />
       <fog attach="fog" args={[bg, 35, 70]} />
+      <MainHdrEnvironment intensity={options.night ? 0.68 : 0.92} />
 
       {/* Paradigm 3 — Time driver (runs in useFrame, updates scene store) */}
       <SceneTime />

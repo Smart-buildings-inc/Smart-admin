@@ -32,6 +32,7 @@ test.describe("ATLAS OS building simulator", () => {
   test("page loads with header, controls and telemetry panel", async ({ page }) => {
     await page.goto("/simulator");
     await waitForSplashToStopBlocking(page);
+    await waitForRouteLoadingToClear(page);
 
     await expect(
       page.getByRole("heading", { level: 1, name: "Building Simulator" }),
@@ -68,6 +69,7 @@ test.describe("ATLAS OS building simulator", () => {
 
     await page.goto("/simulator");
     await waitForSplashToStopBlocking(page);
+    await waitForRouteLoadingToClear(page);
 
     const pixel = page.getByRole("button", { name: "Pixel", exact: true });
     await expect(pixel).toHaveAttribute("aria-pressed", "false");
@@ -82,6 +84,7 @@ test.describe("ATLAS OS building simulator", () => {
     test.setTimeout(60_000);
     await page.goto("/simulator");
     await waitForSplashToStopBlocking(page);
+    await waitForRouteLoadingToClear(page);
 
     await page.getByRole("link", { name: "Open fullscreen viewer" }).click();
     await expect(page).toHaveURL(/\/simulate\/atlas-01$/);
@@ -105,6 +108,7 @@ test.describe("ATLAS OS building simulator", () => {
     test.setTimeout(60_000);
     await page.goto("/simulate/atlas-01");
     await waitForSplashToStopBlocking(page);
+    await waitForRouteLoadingToClear(page);
     const viewport = page.viewportSize();
     if (!viewport) throw new Error("no viewport size");
 
