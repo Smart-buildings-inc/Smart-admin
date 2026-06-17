@@ -180,6 +180,8 @@ Beyond the software, the venture is documented in [`docs/`](./docs/README.md):
 - [Business Plan](./docs/BUSINESS_PLAN.md)
 - [Budget & Fundraising](./docs/BUDGET_AND_FUNDRAISING.md)
 - [Investor & Donor Pitch Deck](./docs/PITCH_DECK.md)
+- [Enterprise Sales Playbook](./docs/ENTERPRISE_SALES_PLAYBOOK.md)
+- [Enterprise Offer Sheet](./docs/ENTERPRISE_OFFER_SHEET.md)
 - [Legal & Compliance Framework](./docs/LEGAL_COMPLIANCE.md)
 
 ## Safety model

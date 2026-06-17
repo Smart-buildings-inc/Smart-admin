@@ -8,6 +8,8 @@ Planning and fundraising documents for the ATLAS Habitat Initiative. The softwar
 | [Business Plan](./BUSINESS_PLAN.md) | Vision, problem, solution, product line, market, business model, unit economics, phasing, the ask |
 | [Budget & Fundraising](./BUDGET_AND_FUNDRAISING.md) | Capital + operating budgets, the P1 raise, the capital stack, why charitable capital fits, fundraising roadmap |
 | [Pitch Deck](./PITCH_DECK.md) | 14-slide investor/donor deck outline (works for impact investors *and* philanthropy/CSR) |
+| [Enterprise Sales Playbook](./ENTERPRISE_SALES_PLAYBOOK.md) | Internal commercial positioning, million-dollar deal shapes, 90-second cold-call script, objections, and meeting strategy |
+| [Enterprise Offer Sheet](./ENTERPRISE_OFFER_SHEET.md) | External-facing one-page summary for developers, owners, portfolio teams, and cities |
 | [Legal & Compliance](./LEGAL_COMPLIANCE.md) | Corporate structure options, codes/zoning, water/food/health regimes, privacy, cybersecurity, AI governance, SR&ED, securities, international |
 
 ### Requirements
