@@ -28,6 +28,16 @@ import FullscreenLink from "@/components/FullscreenLink";
 import LogoLoader from "@/components/LogoLoader";
 import AnalyticsPanel from "@/components/AnalyticsPanel";
 import Copilot from "@/components/Copilot";
+import ModelInspector, {
+  type InspectorTransform,
+  type InspectorMaterial,
+  type InspectorAnimation,
+  type FloorModelInfo,
+  type InspectorActions,
+  DEFAULT_TRANSFORM,
+  DEFAULT_MATERIAL,
+  DEFAULT_ANIMATION,
+} from "@/components/ModelInspector";
 
 // The twin is client/WebGL-only — load it without SSR.
 const HabitatTwin = dynamic(() => import("@/components/HabitatTwin"), {
@@ -573,6 +583,22 @@ export default function Console({
     [floors, selectedKey],
   );
 
+  // Inspector state (read-only floor nav in Console; full rigging in Simulator)
+  const [inspectorOpen, setInspectorOpen] = useState(false);
+  const [inspectorTransform] = useState<InspectorTransform>(DEFAULT_TRANSFORM);
+  const [inspectorMaterial] = useState<InspectorMaterial>(DEFAULT_MATERIAL);
+  const [inspectorAnimation] = useState<InspectorAnimation>(DEFAULT_ANIMATION);
+  const [modelInfo] = useState<FloorModelInfo>({
+    triangles: 0, textureMemMB: 0, objectCount: 0, materialCount: 0,
+  });
+  const noopInspectorSet = useCallback(() => {}, []);
+  const inspectorActions: InspectorActions = {
+    onScreenshot: () => {},
+    onResetCamera: () => {},
+    onToggleAutoRotate: () => {},
+    autoRotate: false,
+  };
+
   const refresh = useCallback(async () => {
     try {
       const [incRes, kpiFloors] = await Promise.all([
@@ -659,6 +685,12 @@ export default function Console({
         onSetAscii={setAscii}
         onStartWalkthrough={startWalkthrough}
         onRefresh={refresh}
+        inspectorOpen={inspectorOpen}
+        onToggleInspector={() => setInspectorOpen((v) => !v)}
+        inspectorTransform={inspectorTransform}
+        inspectorMaterial={inspectorMaterial}
+        inspectorAnimation={inspectorAnimation}
+        modelInfo={modelInfo}
       />
     );
   }
@@ -711,6 +743,24 @@ export default function Console({
               ascii={ascii}
               onSelect={setSelectedKey}
               onWalkthroughEnd={() => setMode("orbit")}
+            />
+
+            {/* Model Inspector overlay — floor navigator */}
+            <ModelInspector
+              floors={floors}
+              incidents={incidents}
+              selectedKey={selectedKey}
+              onSelectFloor={setSelectedKey}
+              transform={inspectorTransform}
+              onChangeTransform={noopInspectorSet}
+              material={inspectorMaterial}
+              onChangeMaterial={noopInspectorSet}
+              animation={inspectorAnimation}
+              onChangeAnimation={noopInspectorSet}
+              modelInfo={modelInfo}
+              actions={inspectorActions}
+              open={inspectorOpen}
+              onToggleOpen={() => setInspectorOpen((v) => !v)}
             />
 
             {/* Controls — iOS-style segmented mode buttons + fullscreen toggle */}
@@ -816,6 +866,12 @@ function AtlasDesktop({
   onSetAscii,
   onStartWalkthrough,
   onRefresh,
+  inspectorOpen,
+  onToggleInspector,
+  inspectorTransform,
+  inspectorMaterial,
+  inspectorAnimation,
+  modelInfo,
 }: {
   floors: Floor[];
   incidents: Incident[];
@@ -835,7 +891,20 @@ function AtlasDesktop({
   onSetAscii: React.Dispatch<React.SetStateAction<boolean>>;
   onStartWalkthrough: () => void;
   onRefresh: () => void;
+  inspectorOpen: boolean;
+  onToggleInspector: () => void;
+  inspectorTransform: InspectorTransform;
+  inspectorMaterial: InspectorMaterial;
+  inspectorAnimation: InspectorAnimation;
+  modelInfo: FloorModelInfo;
 }) {
+  const noopInspectorSet = useCallback(() => {}, []);
+  const inspectorActions: InspectorActions = {
+    onScreenshot: () => {},
+    onResetCamera: () => {},
+    onToggleAutoRotate: () => {},
+    autoRotate: false,
+  };
   const shellRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{
     id: WindowId;
@@ -1036,6 +1105,22 @@ function AtlasDesktop({
             ascii={ascii}
             onSelect={onSelectFloor}
             onWalkthroughEnd={() => onSetMode("orbit")}
+          />
+          <ModelInspector
+            floors={floors}
+            incidents={incidents}
+            selectedKey={selectedKey}
+            onSelectFloor={onSelectFloor}
+            transform={inspectorTransform}
+            onChangeTransform={noopInspectorSet}
+            material={inspectorMaterial}
+            onChangeMaterial={noopInspectorSet}
+            animation={inspectorAnimation}
+            onChangeAnimation={noopInspectorSet}
+            modelInfo={modelInfo}
+            actions={inspectorActions}
+            open={inspectorOpen}
+            onToggleOpen={onToggleInspector}
           />
           <div className="absolute right-3 top-3 z-10 flex items-center gap-2">
             <div className="flex gap-1 rounded-full border border-ink-600/70 bg-ink-900/80 p-1 backdrop-blur">

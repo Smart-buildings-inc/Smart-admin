@@ -27,7 +27,9 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npx tsx scripts/validate-model-slots.ts
+      - run: npm run validate:gltf
+      - run: npm run validate:models
+      - run: npm run validate:blender
 
   # Runs in parallel with `build`. Playwright's webServer builds + starts the
   # app on port 3000, so this job needs only the Chromium download.

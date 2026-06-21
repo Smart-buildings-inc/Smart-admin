@@ -1,9 +1,9 @@
 # ATLAS-01 — Blender 3D Model Spec & Migration Brief
 
-> **Status / honest framing.** Today the twin (`src/components/BuildingSimulator.tsx`,
-> ~1,700 lines) is **procedural architectural geometry authored directly in three.js** — there are
-> no required Blender or glTF assets in the repo, by design (see `CLAUDE.md`). This document is the
-> brief for (1) the **geometry changes** the right-sized, permittable design demands
+> **Status / honest framing.** The twin (`src/components/BuildingSimulator.tsx`)
+> retains its procedural three.js implementation as the default, and the repo
+> now also ships a validated Blender-authored hero GLB plus optional floor
+> modules. This document is the brief for (1) the **geometry changes** the right-sized, permittable design demands
 > (`docs/ATLAS-derisking-plan.md`), and (2) a **Blender → glTF (.glb)** asset that slots into
 > the existing React-Three-Fiber pipeline. We **cannot run Blender in CI**, so the `.blend`
 > source and exported `.glb` are committed binaries (use **Git LFS**).
@@ -31,10 +31,11 @@ python3 scripts/blender/build_atlas01.py   # → public/models/atlas-01.glb
 (basement reservoir, pool-only roof, dual passenger elevators + a firefighter
 car, two stair cores, ESS room, per-need emissive accents) using boxes + Array
 modifiers + a 1-segment bevel, names every floor collection by `Floor.key`, and
-exports `public/models/atlas-01.glb` — **~6.2k triangles, ~0.5 MB**, no textures,
-no Draco (so no decoder needed). Flip the **"Hero"** toggle in the simulator /
+exports `public/models/atlas-01.glb` — currently **~1.6 MB and fewer than 150 glTF
+primitives**, no texture files and no Draco (so no decoder needed). Flip the **"Hero"** toggle in the simulator /
 fullscreen viewer to load it (falls back to the procedural twin on any error). Re-run
-the script to regenerate after editing geometry. The sections below are the full
+the script to regenerate after editing geometry, then run
+`npm run validate:gltf`. The sections below are the full
 authoring reference for hand-modelling or extending it.
 
 ## 1. Coordinate system, scale & origin (must match the app)
@@ -54,8 +55,10 @@ can replace procedural geometry with zero re-fitting:
 | `STAIR_X` | `-3.5` | exit-stair core centre (−X side) |
 | floor `i` base Y | `i * STEP` | level `i` (0 = basement −1 … 12 = roof) |
 
-> **Blender is Z-up; glTF export converts to Y-up** (`+Y Up ✓`). Model in Blender Z-up; the
-> exporter handles the swap. Keep **1 Blender metre = 1 app unit** (the model is stylized: the
+> The generator authors coordinates in the app's native Y-up layout and exports
+> with `export_yup=False`; this avoids a second axis conversion and preserves the
+> required ~21.27-unit Y extent. Hand-authored Blender files may use the normal
+> Z-up workflow, but their final GLB must validate as Y-up. Keep **1 Blender metre = 1 app unit** (the model is stylized: the
 > "real" tower is larger, but the twin reads as ~10 × 7 × 21.6 m). If you prefer true scale
 > (e.g. a 28 × 20 m floorplate), model real and apply a uniform scale on import — but matching
 > the constants above is the zero-friction path.

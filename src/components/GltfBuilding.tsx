@@ -13,9 +13,10 @@
 
 import { Component, Suspense, useEffect, useMemo, type ReactNode } from "react";
 import { useGLTF } from "@react-three/drei";
+import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import { needColor } from "@/lib/ui";
-import type { Need } from "@/lib/types";
+import type { Floor, Incident, Need } from "@/lib/types";
 
 /** Where the Blender → glTF hero asset lives (committed via Git LFS). */
 export const TWIN_MODEL_URL = "/models/atlas-01.glb";
@@ -30,63 +31,146 @@ export function defaultTwinModel(): "voxel" | "gltf" {
   return process.env.NEXT_PUBLIC_TWIN_MODEL === "gltf" ? "gltf" : "voxel";
 }
 
-// Temporary inline map — should sync with seed-data.ts
-const FLOOR_NEED_MAP: Record<string, string> = {
-  "reclamation-core": "water",
-  "commons-clinic": "health",
-  "power-ops-core": "energy",
-  "aquaponics-bay": "food",
-  "vertical-farm": "food",
-  "residences-a": "shelter",
-  "residences-b": "shelter",
-  "residences-c": "shelter",
-  "residences-d": "shelter",
-  "the-lung": "air",
-  "penthouses": "shelter",
-  "skydeck-reservoir": "restoration",
+const HERO_STEP = 1.66;
+const HERO_CAR_HALF_HEIGHT = (1.5 * 0.86) / 2;
+
+type HeroSceneProps = {
+  cutaway: boolean;
+  elevatorFloor: number;
+  floors: Floor[];
+  incidents: Incident[];
+  onSelect: (key: string | null) => void;
+  selectedKey: string | null;
 };
 
-function GltfScene() {
+function materialsFor(mesh: THREE.Mesh): THREE.MeshStandardMaterial[] {
+  const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+  return materials.filter(
+    (material): material is THREE.MeshStandardMaterial =>
+      material instanceof THREE.MeshStandardMaterial,
+  );
+}
+
+function GltfScene({
+  cutaway,
+  elevatorFloor,
+  floors,
+  incidents,
+  onSelect,
+  selectedKey,
+}: HeroSceneProps) {
   const gltf = useGLTF(TWIN_MODEL_URL);
   const { scene } = gltf;
 
-  // Build floor-key indexed map for telemetry binding
-  const floorMap = useMemo(() => {
-    const map = new Map<string, THREE.Object3D>();
-    scene.traverse((child) => {
-      // Match collection/group names to Floor.key
-      if (child.parent === scene || (child as THREE.Group).isGroup) {
-        for (const [key] of Object.entries(FLOOR_NEED_MAP)) {
-          if (child.name === key || child.name.startsWith(key)) {
-            map.set(key, child);
-          }
-        }
-      }
+  const model = useMemo(() => {
+    const clone = scene.clone(true);
+    clone.traverse((child) => {
+      const mesh = child as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      mesh.material = Array.isArray(mesh.material)
+        ? mesh.material.map((material) => material.clone())
+        : mesh.material.clone();
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
     });
-    return map;
+    return clone;
   }, [scene]);
 
-  // Apply need accent as emissive glow
+  const floorNeedMap = useMemo(
+    () => new Map(floors.map((floor) => [floor.key, floor.need])),
+    [floors],
+  );
+  const floorMap = useMemo(() => {
+    const map = new Map<string, THREE.Object3D>();
+    for (const floor of floors) {
+      const root = model.getObjectByName(floor.key);
+      if (root) map.set(floor.key, root);
+    }
+    return map;
+  }, [floors, model]);
+
   useEffect(() => {
+    const incidentKeys = new Set(
+      incidents
+        .filter((incident) => incident.severity === "warn" || incident.severity === "crit")
+        .map((incident) => incident.floorKey)
+        .filter((key): key is string => Boolean(key)),
+    );
+
     floorMap.forEach((root, key) => {
+      root.userData.floorKey = key;
+      const front = root.getObjectByName(`${key}.shell.front`);
+      if (front) front.visible = !cutaway;
       root.traverse((child) => {
         const mesh = child as THREE.Mesh;
-        if (mesh.isMesh && mesh.material) {
-          const mat = mesh.material as THREE.MeshStandardMaterial;
-          const need = FLOOR_NEED_MAP[key] as Need | undefined;
-          if (need && mat.name?.includes?.("emissive")) {
-            const hex = needColor[need];
-            const color = new THREE.Color(hex);
-            mat.emissive = color;
-            mat.emissiveIntensity = 0.3;
+        if (!mesh.isMesh) return;
+        const need = floorNeedMap.get(key) as Need | undefined;
+        if (!need) return;
+        for (const mat of materialsFor(mesh)) {
+          if (mat.name.startsWith("mat.need.")) {
+            mat.emissive.set(incidentKeys.has(key) ? "#ff5d5d" : needColor[need]);
+            mat.emissiveIntensity =
+              key === selectedKey ? 0.85 : incidentKeys.has(key) ? 0.65 : 0.22;
             mat.needsUpdate = true;
           }
         }
       });
     });
-  }, [floorMap]);
+  }, [cutaway, floorMap, floorNeedMap, incidents, selectedKey]);
 
-  return <primitive object={scene} />;
+  useFrame((state, delta) => {
+    const targetY = elevatorFloor * HERO_STEP + HERO_CAR_HALF_HEIGHT;
+    for (const name of ["car.a", "car.b", "car.ff"]) {
+      const car = model.getObjectByName(name);
+      if (car) car.position.y = THREE.MathUtils.damp(car.position.y, targetY, 5, delta);
+    }
+
+    const incidentKeys = new Set(
+      incidents
+        .filter((incident) => incident.severity === "warn" || incident.severity === "crit")
+        .map((incident) => incident.floorKey),
+    );
+    const pulse = 0.58 + Math.sin(state.clock.elapsedTime * 4.2) * 0.2;
+    for (const key of incidentKeys) {
+      const root = key ? floorMap.get(key) : undefined;
+      root?.traverse((child) => {
+        const mesh = child as THREE.Mesh;
+        if (!mesh.isMesh) return;
+        for (const material of materialsFor(mesh)) {
+          if (material.name.startsWith("mat.need.")) {
+            material.emissiveIntensity = pulse;
+          }
+        }
+      });
+    }
+  });
+
+  const floorKeyForEvent = (event: ThreeEvent<MouseEvent>) => {
+    let object: THREE.Object3D | null = event.object;
+    while (object && object !== model) {
+      if (floorNeedMap.has(object.name)) return object.name;
+      object = object.parent;
+    }
+    return null;
+  };
+
+  return (
+    <primitive
+      object={model}
+      onClick={(event: ThreeEvent<MouseEvent>) => {
+        event.stopPropagation();
+        onSelect(floorKeyForEvent(event));
+      }}
+      onPointerOver={(event: ThreeEvent<PointerEvent>) => {
+        if (floorKeyForEvent(event as unknown as ThreeEvent<MouseEvent>)) {
+          document.body.style.cursor = "pointer";
+        }
+      }}
+      onPointerOut={() => {
+        document.body.style.cursor = "auto";
+      }}
+    />
+  );
 }
 
 /**
@@ -123,11 +207,14 @@ class ModelBoundary extends Component<
  * Render the glTF hero building, falling back to `fallback` (the procedural Tower)
  * both while loading and on any load error.
  */
-export default function GltfBuilding({ fallback }: { fallback: ReactNode }) {
+export default function GltfBuilding({
+  fallback,
+  ...sceneProps
+}: { fallback: ReactNode } & HeroSceneProps) {
   return (
     <ModelBoundary fallback={fallback}>
       <Suspense fallback={fallback}>
-        <GltfScene />
+        <GltfScene {...sceneProps} />
       </Suspense>
     </ModelBoundary>
   );

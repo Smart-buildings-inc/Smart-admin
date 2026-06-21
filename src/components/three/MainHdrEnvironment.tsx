@@ -10,8 +10,8 @@ import { EXRLoader } from "three/examples/jsm/loaders/EXRLoader.js";
 export const MAIN_HDR_ENVIRONMENT_URL = "/hdr/sundowner_overlook_runtime_512.exr";
 
 export default function MainHdrEnvironment({
-  intensity = 0.85,
-  loadDelayMs = 6000,
+  intensity = 0.24,
+  loadDelayMs = 500,
 }: {
   intensity?: number;
   loadDelayMs?: number;
@@ -37,8 +37,7 @@ export default function MainHdrEnvironment({
     };
 
     scene.environmentIntensity = intensity;
-    const effectiveLoadDelayMs =
-      navigator.webdriver ? Math.max(loadDelayMs, 30000) : loadDelayMs;
+    const effectiveLoadDelayMs = loadDelayMs;
 
     const loadEnvironment = () => {
       if (disposed) return;
@@ -48,7 +47,9 @@ export default function MainHdrEnvironment({
       pmrem.compileEquirectangularShader();
 
       new EXRLoader()
-        .setDataType(THREE.HalfFloatType)
+        // The source contains values outside half-float range. Decode as
+        // FloatType before PMREM so highlights tone-map instead of overflowing.
+        .setDataType(THREE.FloatType)
         .load(
           MAIN_HDR_ENVIRONMENT_URL,
           (texture) => {

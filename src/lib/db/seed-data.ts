@@ -14,6 +14,23 @@ import type {
 /** ATLAS-01 floor stack, ordered bottom → top by physical level. */
 export const seedFloors: Floor[] = [
   {
+    key: "parking-p1",
+    name: "Parking P1",
+    need: "shelter",
+    category: "Infrastructure",
+    level: -2,
+    residents: 0,
+    metrics: { occupancy: 6, energyKw: 8, loadKw: 4 },
+    occupancyGroup: "F",
+    useScope: "industrial",
+    regulatoryNotes: [
+      "Below-grade parking per OBC 3.3.5",
+      "EV-ready stalls (CSA C22.2 No. 280)",
+      "Mechanical ventilation per OBC 6.2.2",
+      "Sprinklered per NFPA 13",
+    ],
+  },
+  {
     key: "reclamation-core",
     name: "Reclamation Core",
     need: "water",

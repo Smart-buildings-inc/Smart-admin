@@ -6,9 +6,19 @@
 // the live elevator indicator, and lazy-loads the WebGL building (no SSR).
 
 import dynamic from "next/dynamic";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type { Floor, FloorMetrics, Incident } from "@/lib/types";
 import type { SimOptions } from "@/components/BuildingSimulator";
+import ModelInspector, {
+  type InspectorTransform,
+  type InspectorMaterial,
+  type InspectorAnimation,
+  type FloorModelInfo,
+  type InspectorActions,
+  DEFAULT_TRANSFORM,
+  DEFAULT_MATERIAL,
+  DEFAULT_ANIMATION,
+} from "@/components/ModelInspector";
 import { needColor, occupancyGroupLabel, useScopeLabel } from "@/lib/ui";
 import { PARALLAX_SCENES } from "@/lib/marketingParallax";
 import FullscreenLink from "@/components/FullscreenLink";
@@ -105,7 +115,7 @@ function Toggle({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+      className={`min-h-9 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
         active ? "bg-white text-ink-950" : "text-slate-300 hover:text-white"
       }`}
     >
@@ -236,6 +246,43 @@ export default function SimulatorView({
     });
   }, []);
   const [ascii, setAscii] = useState(false);
+  const [inspectorOpen, setInspectorOpen] = useState(false);
+
+  // Inspector state
+  const [inspectorTransform, setInspectorTransform] = useState<InspectorTransform>(DEFAULT_TRANSFORM);
+  const [inspectorMaterial, setInspectorMaterial] = useState<InspectorMaterial>(DEFAULT_MATERIAL);
+  const [inspectorAnimation, setInspectorAnimation] = useState<InspectorAnimation>(DEFAULT_ANIMATION);
+  const [modelInfo] = useState<FloorModelInfo>({
+    triangles: 0,
+    textureMemMB: 0,
+    objectCount: 0,
+    materialCount: 0,
+  });
+  const stageRef = useRef<HTMLDivElement>(null);
+
+  // Screenshot: capture the canvas inside the stage
+  const onScreenshot = useCallback(() => {
+    const canvas = stageRef.current?.querySelector("canvas");
+    if (!canvas) return;
+    const dataUrl = canvas.toDataURL("image/png");
+    const link = document.createElement("a");
+    link.download = `atlas-screenshot-${Date.now()}.png`;
+    link.href = dataUrl;
+    link.click();
+  }, []);
+
+  // Reset camera: toggle autoRotate off/on to reset orbit
+  const onResetCamera = useCallback(() => {
+    setOptions((o) => ({ ...o, autoRotate: false }));
+    setTimeout(() => setOptions((o) => ({ ...o, autoRotate: options.autoRotate })), 50);
+  }, [options.autoRotate]);
+
+  const inspectorActions: InspectorActions = {
+    onScreenshot,
+    onResetCamera,
+    onToggleAutoRotate: () => set({ autoRotate: !options.autoRotate }),
+    autoRotate: options.autoRotate,
+  };
 
   const set = useCallback(
     (patch: Partial<SimOptions>) => setOptions((o) => ({ ...o, ...patch })),
@@ -287,8 +334,9 @@ export default function SimulatorView({
         {/* Stage */}
         <section className="flex flex-col gap-4">
           <div
+            ref={stageRef}
             data-testid="sim-stage"
-            className="panel relative h-[1040px] overflow-hidden bg-ink-950 lg:h-[820px]"
+            className="panel relative h-[min(78dvh,760px)] min-h-[560px] overflow-hidden bg-ink-950 sm:h-[760px] lg:h-[820px]"
           >
             <BuildingSimulator
               floors={floors}
@@ -300,6 +348,27 @@ export default function SimulatorView({
               onSelect={setSelectedKey}
               onElevatorArrive={setElevatorFloor}
               elevatorFloor={elevatorFloor}
+              inspectorTransform={inspectorTransform}
+              inspectorMaterial={inspectorMaterial}
+              inspectorAnimation={inspectorAnimation}
+            />
+
+            {/* Model Inspector — rigging panel overlay */}
+            <ModelInspector
+              floors={floors}
+              incidents={incidents}
+              selectedKey={selectedKey}
+              onSelectFloor={setSelectedKey}
+              transform={inspectorTransform}
+              onChangeTransform={setInspectorTransform}
+              material={inspectorMaterial}
+              onChangeMaterial={setInspectorMaterial}
+              animation={inspectorAnimation}
+              onChangeAnimation={setInspectorAnimation}
+              modelInfo={modelInfo}
+              actions={inspectorActions}
+              open={inspectorOpen}
+              onToggleOpen={() => setInspectorOpen((v) => !v)}
             />
 
             {/* Title chip */}

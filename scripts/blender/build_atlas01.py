@@ -31,6 +31,7 @@ FACADE_MULLIONS = [-4.35, -3.35, -2.35, -1.35, -0.35, 0.65, 1.65, 2.65, 3.65, 4.
 SIDE_MULLIONS = [-2.65, -1.55, -0.45, 0.65, 1.75, 2.85]
 
 FLOORS = [
+    ("parking-p1", "shelter"),
     ("reclamation-core", "water"),
     ("commons-clinic", "health"),
     ("power-ops-core", "energy"),
@@ -120,6 +121,44 @@ def new_collection(name):
     c = bpy.data.collections.new(name)
     bpy.context.scene.collection.children.link(c)
     return c
+
+def apply_modifiers(obj):
+    if obj.type != "MESH":
+        return
+    bpy.ops.object.select_all(action="DESELECT")
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+    for modifier in list(obj.modifiers):
+        bpy.ops.object.modifier_apply(modifier=modifier.name)
+
+def join_collection_meshes(coll, joined_name, preserve_names=()):
+    """Collapse static detail while keeping interactive meshes addressable."""
+    preserved = set(preserve_names)
+    candidates = [
+        obj for obj in list(coll.objects)
+        if obj.type == "MESH" and obj.name not in preserved
+    ]
+    if not candidates:
+        return None
+    for obj in candidates:
+        apply_modifiers(obj)
+    bpy.ops.object.select_all(action="DESELECT")
+    for obj in candidates:
+        obj.select_set(True)
+    bpy.context.view_layer.objects.active = candidates[0]
+    bpy.ops.object.join()
+    joined = bpy.context.active_object
+    joined.name = joined_name
+    return joined
+
+def add_hierarchy_root(coll, name):
+    """Create the stable glTF transform root used by the R3F data binding."""
+    root = bpy.data.objects.new(name, None)
+    coll.objects.link(root)
+    for obj in list(coll.objects):
+        if obj is not root and obj.parent is None:
+            obj.parent = root
+    return root
 
 
 # --- materials -------------------------------------------------------------
@@ -232,7 +271,36 @@ def build_floor(i, key, need, coll):
                 material("mat.terrace.green", "5ddc7a", emission=0.3), coll, bevel=0.03)
 
     # --- per-need interior detail ---
-    if key == "reclamation-core":
+    if key == "parking-p1":
+        # Parking P1: structural bays, lane markings, and EV charging points.
+        for x in (-3.4, 0.0, 3.4):
+            for z in (-1.8, 1.8):
+                box(
+                    f"{key}.column.{x}.{z}",
+                    (0.28, FLOOR_H * 0.92, 0.28),
+                    (x, y + FLOOR_H * 0.46, z),
+                    METAL(),
+                    coll,
+                    bevel=0.02,
+                )
+        for n, x in enumerate((-3.6, -1.2, 1.2, 3.6)):
+            box(
+                f"{key}.stall.line.{n}",
+                (0.05, 0.02, 4.5),
+                (x, y + 0.03, 0.5),
+                LIGHT(),
+                coll,
+            )
+        for n, x in enumerate((-2.4, 0.0, 2.4)):
+            box(
+                f"{key}.ev.{n}",
+                (0.26, 0.9, 0.22),
+                (x, y + 0.45, -HALF_D + 0.45),
+                acc,
+                coll,
+                bevel=0.03,
+            )
+    elif key == "reclamation-core":
         # Basement bulk reservoir + greywater tanks
         box(f"{key}.reservoir", (3.6, 1.1, 0.6), (0, y + 0.55, -1.9), WATERM(), coll, bevel=0.04)
         for n, x in enumerate((-1.4, 0.0, 1.4)):
@@ -322,7 +390,7 @@ def build_cores(n_floors):
         box(f"elevator.{name}.shaft", (1.0, h, 1.0), (CORE_X, cy, z), GLASS(), coll, bevel=0.02)
         box(f"elevator.{name}.rail", (0.08, h, 0.08), (CORE_X, cy, z), METAL(), coll)
         car_h = FLOOR_H * 0.86
-        box(f"elevator.{name}.car", (0.8, car_h, 0.8),
+        box(f"car.{name}", (0.8, car_h, 0.8),
             (CORE_X, (n_floors // 2) * STEP + car_h / 2, z),
             material(f"mat.car.{name}", "ffcf4d" if name != "ff" else "ff5d5d", emission=0.5), coll, bevel=0.03)
         # Door openings at each floor
@@ -339,6 +407,8 @@ def build_cores(n_floors):
         for f in range(0, n_floors, 2):
             box(f"stair.{name}.landing.{f}", (1.2, 0.06, 0.5),
                 (STAIR_X, f * STEP + FLOOR_H * 0.8, z - 0.3), CONCRETE(), coll)
+    join_collection_meshes(coll, "sys.vertical-transport.static", preserve_names=("car.a", "car.b", "car.ff"))
+    add_hierarchy_root(coll, "sys.vertical-transport")
 
 
 def build_architectural_exoskeleton(n_floors):
@@ -373,6 +443,8 @@ def build_architectural_exoskeleton(n_floors):
     brace_b = box("exo.diagonal.brace.b", (0.11, h * 0.74, 0.12),
                   (2.8, h * 0.43, HALF_D + 0.62), METAL(), coll, bevel=0.015)
     brace_b.rotation_euler = (0, 0, math.radians(-12))
+    join_collection_meshes(coll, "sys.architectural-envelope.static")
+    add_hierarchy_root(coll, "sys.architectural-envelope")
 
 
 def build_context(n_floors):
@@ -383,8 +455,9 @@ def build_context(n_floors):
     box("env.podium", (HALF_W * 2 + 4.5, 0.5, HALF_D * 2 + 4.4),
         (0, -SLAB_T - 0.25, 0), DARK(), coll, bevel=0.1)
 
-    # Ground plane
-    box("env.ground", (40, 0.1, 40), (0, -SLAB_T - 0.55, 0),
+    # Ground plane matches the procedural plaza footprint so both render
+    # sources share the same responsive camera framing contract.
+    box("env.ground", (26, 0.1, 22), (0, -SLAB_T - 0.55, 0),
         material("mat.ground", "101a24", roughness=1.0), coll)
 
     # Entrance canopy
@@ -423,6 +496,8 @@ def build_context(n_floors):
         box(f"env.perim.light.{p}", (0.05, 0.05, 0.3),
             (-HALF_W - 0.2 + p * 3.4, -SLAB_T + 0.05, -HALF_D - 0.2),
             material("mat.perim", "ffddaa", emission=0.6), coll)
+    join_collection_meshes(coll, "env.static")
+    add_hierarchy_root(coll, "env")
 
 
 def optimize_and_export():
@@ -433,16 +508,15 @@ def optimize_and_export():
     kwargs = dict(
         filepath=os.path.abspath(OUT),
         export_format="GLB",
-        export_yup=True,
+        # This generator already authors app-native X/Y/Z coordinates with Y
+        # as height. Blender's default +Y conversion would rotate height into Z.
+        export_yup=False,
         export_apply=True,
         use_selection=False,
         export_cameras=False,
         export_lights=False,
     )
-    try:
-        bpy.ops.export_scene.gltf(**kwargs)
-    except TypeError:
-        bpy.ops.export_scene.gltf(filepath=os.path.abspath(OUT), export_format="GLB")
+    bpy.ops.export_scene.gltf(**kwargs)
 
 
 def main():
@@ -450,6 +524,12 @@ def main():
     for i, (key, need) in enumerate(FLOORS):
         coll = new_collection(key)
         build_floor(i, key, need, coll)
+        join_collection_meshes(
+            coll,
+            f"{key}.static",
+            preserve_names=(f"{key}.shell.front",),
+        )
+        add_hierarchy_root(coll, key)
     build_architectural_exoskeleton(len(FLOORS))
     build_cores(len(FLOORS))
     build_context(len(FLOORS))

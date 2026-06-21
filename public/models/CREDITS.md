@@ -8,15 +8,16 @@ and **CC-BY** (attribution required — list it here) assets.
 
 | File | Used for | License | Author | Source |
 |---|---|---|---|---|
-| `atlas-01.glb` | Whole-building "hero" tower (Simulator/viewer "Hero" toggle) | Original (this repo) | Generated procedurally in Blender by `scripts/blender/build_atlas01.py` | own work — current export ~1.0 MB |
+| `atlas-01.glb` | Whole-building "hero" tower (Simulator/viewer "Hero" toggle) | Original (this repo) | Generated procedurally in Blender by `scripts/blender/build_atlas01.py` | own work — current export ~1.6 MB |
 
 ## Active bundled assets
 
 The per-floor habitat interior modules are **original, procedurally generated**
 ATLAS assets — built and exported by `_blender/build_atlas_floors.py` (Blender
 4.5 Eevee Next, Principled-BSDF metallic-roughness PBR + emissive accents). They
-are released **CC0-1.0**. The whole set is ~370 KB — well under the PRD's 2.5 MB
-live-model budget. Rebuild/extend them with the `atlas-blender` skill.
+are released **CC0-1.0**. The 22-file floor set is approximately 2.6 MB.
+Rebuild it with `_blender/build_atlas_floors.py`; validate it with
+`npm run validate:gltf`.
 
 | File | Slot (`src/lib/models.ts`) | Need / level | License | Author |
 |---|---|---|---|---|

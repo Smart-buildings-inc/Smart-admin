@@ -14,20 +14,23 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { OrbitControls, Html } from "@react-three/drei";
+import { OrbitControls, Html, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import type { Floor, Incident, Need } from "@/lib/types";
 import { needColor } from "@/lib/ui";
+import type { InspectorTransform, InspectorMaterial, InspectorAnimation } from "@/components/ModelInspector";
+import { DEFAULT_TRANSFORM, DEFAULT_MATERIAL, DEFAULT_ANIMATION } from "@/components/ModelInspector";
 import AsciiRenderer from "@/components/AsciiRenderer";
 import GltfBuilding from "@/components/GltfBuilding";
 import HumanCharacter from "@/components/three/HumanCharacter";
 import { FloorDetail, GltfProp } from "@/components/three/gltf";
 import MainHdrEnvironment from "@/components/three/MainHdrEnvironment";
-import { floorSlotForNeed, floorSlotForKey } from "@/lib/models";
+import { floorSlotForNeed, floorSlotForKey, getModel } from "@/lib/models";
+import type { FloorSlot } from "@/lib/models";
 import { characters } from "@/lib/character-profiles";
 import CharacterAI from "@/components/three/CharacterAI";
-import { getProcTexture, type ProcTextureType } from "@/lib/procedural-textures";
+import { getProcTextureSet, type ProcTextureType } from "@/lib/procedural-textures";
 import { sceneStore, useSceneField, useSceneSelector, startDemo } from "@/lib/scene-store";
 import SceneTime from "@/components/simulator/SceneTime";
 import BuildingMood from "@/components/simulator/BuildingMood";
@@ -39,6 +42,7 @@ import PhysicsWater from "@/components/simulator/PhysicsWater";
 import BuildingSoundscape from "@/components/simulator/BuildingSoundscape";
 import { InSceneHotspot, buildHotspots } from "@/components/simulator/InSceneHotspot";
 import { prewarmSimulator } from "@/lib/simulator-optimizations";
+import { simulatorCameraForViewport } from "@/lib/simulator-camera";
 
 // Prewarm textures at module load — zero first-frame hitch
 if (typeof window !== "undefined") prewarmSimulator();
@@ -63,6 +67,8 @@ const OCCUPANCY_COLORS: Record<string, string> = {
   D: "#9b59b6",
   F: "#f39c12",
 };
+
+const PBR_NORMAL_SCALE = new THREE.Vector2(0.2, 0.2);
 
 function selectedSimulatorTarget(index: number): THREE.Vector3 {
   return new THREE.Vector3(0, index * STEP + FLOOR_H * 0.58, 0);
@@ -323,16 +329,35 @@ function Vox({
   /** UV repeat multiplier (default 1) */
   textureScale?: number;
 }) {
-  const texMap = useMemo(() => {
+  const pbrMaps = useMemo(() => {
     if (!texture) return undefined;
-    const cached = getProcTexture(texture);
-    // Clone so each Vox gets its own repeat — never mutating the shared cache.
-    const t = cached.clone();
-    t.wrapS = t.wrapT = THREE.RepeatWrapping;
-    t.repeat.set(textureScale, textureScale);
-    t.needsUpdate = true;
-    return t;
+    const cached = getProcTextureSet(texture);
+    const clone = (source: THREE.Texture) => {
+      const map = source.clone();
+      map.wrapS = map.wrapT = THREE.RepeatWrapping;
+      map.repeat.set(textureScale, textureScale);
+      map.needsUpdate = true;
+      return map;
+    };
+    const aoMap = clone(cached.aoMap);
+    aoMap.channel = 0;
+    return {
+      map: clone(cached.map),
+      aoMap,
+      normalMap: clone(cached.normalMap),
+      roughnessMap: clone(cached.roughnessMap),
+    };
   }, [texture, textureScale]);
+  const surfaceColor = useMemo(() => {
+    const base = new THREE.Color(color ?? "#ffffff");
+    if (!texture) return base;
+
+    // Preserve the authored material colour without multiplying the albedo
+    // map into near-black values. The mostly neutral procedural maps provide
+    // surface variation; this restrained tint keeps concrete, paving, and
+    // panels visually related to the architectural palette.
+    return base.lerp(new THREE.Color("#ffffff"), 0.72);
+  }, [color, texture]);
 
   return (
     <mesh
@@ -345,8 +370,13 @@ function Vox({
     >
       <boxGeometry args={size} />
       <meshStandardMaterial
-        map={texMap}
-        color={texture ? "#ffffff" : (color ?? "#ffffff")}
+        map={pbrMaps?.map}
+        aoMap={pbrMaps?.aoMap}
+        aoMapIntensity={pbrMaps ? 0.22 : 0}
+        normalMap={pbrMaps?.normalMap}
+        normalScale={pbrMaps ? PBR_NORMAL_SCALE : undefined}
+        roughnessMap={pbrMaps?.roughnessMap}
+        color={surfaceColor}
         emissive={emissive ?? "#000000"}
         emissiveIntensity={emissiveIntensity}
         transparent={opacity < 1}
@@ -1139,6 +1169,78 @@ function ArchitecturalPlaza({ night }: { night: boolean }) {
 }
 
 // --------------------------------------------------------------------------
+// Inspector material overrides — traverses the parent group's descendants
+// and applies wireframe, opacity, and accent tint each frame so the user
+// sees real-time feedback without recreating the scene graph.
+// --------------------------------------------------------------------------
+function InspectorMaterialOverrides({
+  wireframe,
+  opacity,
+  accentTint,
+}: {
+  wireframe: boolean;
+  opacity: number;
+  accentTint: string;
+}) {
+  const tintColor = useRef(new THREE.Color(accentTint));
+
+  useFrame(() => {
+    tintColor.current.set(accentTint);
+    // The group is the parent — traverse its descendants
+    // We find it via the three.js scene; this component is inside the group
+    // so we traverse from the parent.
+  });
+
+  return (
+    <InspectorMaterialApplier
+      wireframe={wireframe}
+      opacity={opacity}
+      accentTint={accentTint}
+    />
+  );
+}
+
+function InspectorMaterialApplier({
+  wireframe,
+  opacity,
+  accentTint,
+}: {
+  wireframe: boolean;
+  opacity: number;
+  accentTint: string;
+}) {
+  const groupRef = useRef<THREE.Group>(null);
+  const tintRef = useRef(new THREE.Color(accentTint));
+
+  useFrame(() => {
+    const group = groupRef.current;
+    if (!group || !group.parent) return;
+    tintRef.current.set(accentTint);
+    group.parent.traverse((child) => {
+      const mesh = child as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      const materials = Array.isArray(mesh.material)
+        ? mesh.material
+        : [mesh.material];
+      for (const mat of materials) {
+        if (mat instanceof THREE.MeshStandardMaterial) {
+          mat.wireframe = wireframe;
+          mat.transparent = true;
+          mat.opacity = opacity < 0.99 ? opacity : 1;
+          mat.depthWrite = opacity > 0.95;
+          if (accentTint !== "#ffffff" && wireframe) {
+            mat.emissive.copy(tintRef.current);
+            mat.emissiveIntensity = 0.6;
+          }
+        }
+      }
+    });
+  });
+
+  return <group ref={groupRef} />;
+}
+
+// --------------------------------------------------------------------------
 // One floor: slab, three walls (front cut away), side windows, selector hit-
 // box, incident rim, and the interior recipe.
 // --------------------------------------------------------------------------
@@ -1151,6 +1253,9 @@ function FloorBlock({
   cutaway,
   detailed,
   onSelect,
+  inspectorTransform,
+  inspectorMaterial,
+  inspectorAnimation,
 }: {
   floor: Floor;
   index: number;
@@ -1160,11 +1265,15 @@ function FloorBlock({
   cutaway: boolean;
   detailed: boolean;
   onSelect: (key: string) => void;
+  inspectorTransform?: InspectorTransform;
+  inspectorMaterial?: InspectorMaterial;
+  inspectorAnimation?: InspectorAnimation;
 }) {
   const baseY = index * STEP;
   const accent = needColor[floor.need];
   const [hovered, setHovered] = useState(false);
   const rim = useRef<THREE.MeshStandardMaterial>(null);
+  const detailGroupRef = useRef<THREE.Group>(null);
 
   useFrame((s) => {
     if (!rim.current) return;
@@ -1242,8 +1351,8 @@ function FloorBlock({
           Selecting a floor brightens its own light so the active floor pops. */}
       <pointLight
         position={[0, FLOOR_H * 0.78, HALF_D * 0.25]}
-        intensity={(night ? 1.5 : 2.6) * (selected ? 1.7 : 1)}
-        distance={HALF_W * 2.3}
+        intensity={(night ? 0.4 : 0.55) * (selected ? 1.45 : 1)}
+        distance={STEP * 2.05}
         decay={2}
         color={night ? "#aebfe6" : "#fff1d6"}
       />
@@ -1251,8 +1360,8 @@ function FloorBlock({
           racks, beds) is shaded rather than silhouetted. */}
       <pointLight
         position={[0, FLOOR_H * 0.5, -HALF_D * 0.55]}
-        intensity={night ? 0.6 : 1.0}
-        distance={HALF_W * 1.7}
+        intensity={night ? 0.16 : 0.18}
+        distance={STEP * 1.8}
         decay={2}
         color={night ? "#7f93c4" : "#dfe9ff"}
       />
@@ -1260,12 +1369,31 @@ function FloorBlock({
       {/* interior */}
       <FloorInterior floor={floor} accent={accent} night={night} detailed={detailed} />
 
-      {/* Detailed GLB floor dressing. The procedural geometry stays present as
-          the telemetry-safe fallback, while the compact PBR modules lift the
-          default art direction out of the blocky prototype look. */}
+      {/* Detailed GLB floor dressing — inspector-driven transform */}
       {detailSlot && (
-        <group position={[0, 0.04, 0]} scale={1.35}>
+        <group
+          ref={detailGroupRef}
+          position={[
+            inspectorTransform?.positionX ?? 0,
+            inspectorTransform?.positionY ?? 0.04,
+            inspectorTransform?.positionZ ?? 0,
+          ]}
+          rotation={[
+            0,
+            (inspectorTransform?.rotationY ?? 0) * (Math.PI / 180),
+            0,
+          ]}
+          scale={inspectorTransform?.scale ?? 1.35}
+        >
           <FloorDetail slot={detailSlot} />
+          {/* Material overrides applied via useFrame traversal */}
+          {inspectorMaterial && selected && (
+            <InspectorMaterialOverrides
+              wireframe={inspectorMaterial.wireframe}
+              opacity={inspectorMaterial.opacity}
+              accentTint={inspectorMaterial.accentTint}
+            />
+          )}
         </group>
       )}
 
@@ -1541,6 +1669,9 @@ function Tower({
   selectedCharacter,
   onSelectCharacter,
   activityRef,
+  inspectorTransform,
+  inspectorMaterial,
+  inspectorAnimation,
 }: {
   floors: Floor[];
   incidents: Incident[];
@@ -1552,6 +1683,9 @@ function Tower({
   selectedCharacter: string | null;
   onSelectCharacter: (id: string | null) => void;
   activityRef: React.MutableRefObject<Map<string, string>>;
+  inspectorTransform: InspectorTransform;
+  inspectorMaterial: InspectorMaterial;
+  inspectorAnimation: InspectorAnimation;
 }) {
   const totalHeight = floors.length * STEP;
   const stops = useMemo(() => floors.map((_, i) => i * STEP + CAR_H / 2), [floors]);
@@ -1572,6 +1706,9 @@ function Tower({
           cutaway={options.cutaway}
           detailed={options.detailedModels}
           onSelect={onSelect}
+          inspectorTransform={floor.key === selectedKey ? inspectorTransform : undefined}
+          inspectorMaterial={floor.key === selectedKey ? inspectorMaterial : undefined}
+          inspectorAnimation={floor.key === selectedKey ? inspectorAnimation : undefined}
         />
       ))}
 
@@ -1673,18 +1810,35 @@ function Tower({
 }
 
 function SimulatorOrbitRig({
-  defaultTarget,
+  totalHeight,
   selectedIndex,
   autoRotate,
 }: {
-  defaultTarget: Vec3;
+  totalHeight: number;
   selectedIndex: number | null;
   autoRotate: boolean;
 }) {
   const controls = useRef<OrbitControlsImpl>(null);
-  const { camera } = useThree();
+  const { camera, size } = useThree();
+  const layout = simulatorCameraForViewport(size.width, size.height, totalHeight);
   const releasedByUser = useRef(false);
   const lastSelectedIndex = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (selectedIndex !== null || !controls.current) return;
+    const perspective = camera as THREE.PerspectiveCamera;
+    perspective.fov = layout.fov;
+    perspective.position.set(...layout.position);
+    perspective.updateProjectionMatrix();
+    controls.current.target.set(...layout.target);
+    controls.current.update();
+  }, [
+    camera,
+    layout.fov,
+    layout.position,
+    layout.target,
+    selectedIndex,
+  ]);
 
   useEffect(() => {
     if (lastSelectedIndex.current !== selectedIndex) {
@@ -1708,7 +1862,7 @@ function SimulatorOrbitRig({
   return (
     <OrbitControls
       ref={controls}
-      target={defaultTarget}
+      target={layout.target}
       enablePan
       screenSpacePanning
       enableDamping
@@ -1716,14 +1870,26 @@ function SimulatorOrbitRig({
       panSpeed={0.9}
       autoRotate={autoRotate}
       autoRotateSpeed={0.6}
-      minDistance={8}
-      maxDistance={48}
+      minDistance={layout.minDistance}
+      maxDistance={layout.maxDistance}
       maxPolarAngle={Math.PI / 1.95}
       onStart={() => {
         if (selectedIndex !== null) releasedByUser.current = true;
       }}
     />
   );
+}
+
+function RendererColorManagement({ night }: { night: boolean }) {
+  const { gl } = useThree();
+
+  useEffect(() => {
+    gl.outputColorSpace = THREE.SRGBColorSpace;
+    gl.toneMapping = THREE.ACESFilmicToneMapping;
+    gl.toneMappingExposure = night ? 1.05 : 0.95;
+  }, [gl, night]);
+
+  return null;
 }
 
 // --------------------------------------------------------------------------
@@ -1741,6 +1907,9 @@ export default function BuildingSimulator({
   onSelect,
   onElevatorArrive,
   elevatorFloor = 0,
+  inspectorTransform,
+  inspectorMaterial,
+  inspectorAnimation,
 }: {
   floors: Floor[];
   incidents: Incident[];
@@ -1750,16 +1919,31 @@ export default function BuildingSimulator({
   ascii: boolean;
   onSelect: (key: string | null) => void;
   onElevatorArrive: (floorIndex: number) => void;
-  elevatorFloor?: number; // for soundscape ding
+  elevatorFloor?: number;
+  inspectorTransform?: InspectorTransform;
+  inspectorMaterial?: InspectorMaterial;
+  inspectorAnimation?: InspectorAnimation;
 }) {
   const totalHeight = floors.length * STEP;
-  const target = useMemo<Vec3>(() => [0, totalHeight * 0.46, 0], [totalHeight]);
   const selectedIndex = selectedKey
     ? floors.findIndex((floor) => floor.key === selectedKey)
     : -1;
 
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
+  const [qualityDpr, setQualityDpr] = useState(1);
   const characterActivities = useRef<Map<string, string>>(new Map());
+
+  useEffect(() => {
+    const updateDpr = () => {
+      const compactViewport = window.innerWidth < 1024;
+      setQualityDpr(
+        compactViewport ? 1 : Math.min(window.devicePixelRatio || 1, 1.6),
+      );
+    };
+    updateDpr();
+    window.addEventListener("resize", updateDpr);
+    return () => window.removeEventListener("resize", updateDpr);
+  }, []);
 
   const incidentFloorKeys = useMemo(
     () =>
@@ -1772,8 +1956,8 @@ export default function BuildingSimulator({
     [incidents],
   );
 
-  const bg = options.night ? "#05080c" : "#0b1622";
-  const skyTop: string = options.night ? "#0a1830" : "#1d3a5f";
+  const bg = options.night ? "#0c1b2a" : "#0b1622";
+  const skyTop: string = options.night ? "#142b4a" : "#1d3a5f";
 
   return (
     <Canvas
@@ -1781,9 +1965,9 @@ export default function BuildingSimulator({
       // upscales with nearest-neighbour. R3F updates the renderer's pixel ratio
       // reactively from `dpr` — no Canvas remount (which would recreate the
       // WebGL context) needed.
-      dpr={ascii ? 1 : pixel ? 0.4 : 1.6}
+      dpr={ascii ? 1 : pixel ? 0.4 : qualityDpr}
       className={pixel && !ascii ? "[image-rendering:pixelated]" : ""}
-      gl={{ antialias: true }}
+      gl={{ antialias: true, powerPreference: "high-performance" }}
       // 3/4 view from the open (cut-away) front-right so interiors, the
       // elevator core and the stair core all read; pulled back to frame the
       // whole tower including the rooftop.
@@ -1791,21 +1975,22 @@ export default function BuildingSimulator({
       onPointerMissed={() => { onSelect(null); setSelectedCharacter(null); }}
     >
       <color attach="background" args={[bg]} />
-      <fog attach="fog" args={[bg, 35, 70]} />
-      <MainHdrEnvironment intensity={options.night ? 0.68 : 0.92} />
+      <fog attach="fog" args={[bg, 85, 150]} />
+      <RendererColorManagement night={options.night} />
+      <MainHdrEnvironment intensity={options.night ? 0.32 : 0.34} loadDelayMs={500} />
 
       {/* Paradigm 3 — Time driver (runs in useFrame, updates scene store) */}
       <SceneTime />
 
-      <hemisphereLight args={[skyTop, "#0a1117", options.night ? 0.35 : 0.8]} />
-      <ambientLight intensity={options.night ? 0.18 : 0.45} />
-      <directionalLight position={[12, 20, 10]} intensity={options.night ? 0.35 : 1.1} color={options.night ? "#9fb8ff" : "#fff3da"} />
-      <directionalLight position={[-10, 6, -8]} intensity={0.3} color="#4ea8ff" />
+      <hemisphereLight args={[skyTop, "#0a1117", options.night ? 0.5 : 0.72]} />
+      <ambientLight intensity={options.night ? 0.18 : 0.28} />
+      <directionalLight position={[12, 20, 10]} intensity={options.night ? 0.6 : 1.05} color={options.night ? "#9fb8ff" : "#fff3da"} />
+      <directionalLight position={[-10, 6, -8]} intensity={options.night ? 0.28 : 0.28} color="#4ea8ff" />
 
       {/* Paradigm 8 — Mood-driven lighting (interpolates existing lights) */}
-      <BuildingMood />
+      <BuildingMood night={options.night} />
       {/* Paradigm 4 — Sun follows timeOfDay across the sky */}
-      <SolarAnimator />
+      <SolarAnimator forcedNight={options.night} />
 
       {(() => {
         // The procedural tower is the default and the fallback for the optional
@@ -1825,10 +2010,21 @@ export default function BuildingSimulator({
               if (id) onSelect(null);
             }}
             activityRef={characterActivities}
+            inspectorTransform={inspectorTransform ?? DEFAULT_TRANSFORM}
+            inspectorMaterial={inspectorMaterial ?? DEFAULT_MATERIAL}
+            inspectorAnimation={inspectorAnimation ?? DEFAULT_ANIMATION}
           />
         );
         return (options.source ?? "voxel") === "gltf" ? (
-          <GltfBuilding fallback={proceduralTower} />
+          <GltfBuilding
+            fallback={proceduralTower}
+            floors={floors}
+            incidents={incidents}
+            selectedKey={selectedKey}
+            cutaway={options.cutaway}
+            elevatorFloor={elevatorFloor}
+            onSelect={onSelect}
+          />
         ) : (
           proceduralTower
         );
@@ -1854,7 +2050,7 @@ export default function BuildingSimulator({
       <CreativeResearchLens lens={options.researchLens ?? "ops"} totalHeight={totalHeight} />
 
       <SimulatorOrbitRig
-        defaultTarget={target}
+        totalHeight={totalHeight}
         selectedIndex={selectedIndex >= 0 ? selectedIndex : null}
         autoRotate={options.autoRotate && !selectedKey}
       />

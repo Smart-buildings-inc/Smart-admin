@@ -25,7 +25,8 @@ import type { Need } from "@/lib/types";
  * Sync: FLOOR_KEY_MAP in build_atlas_floors.py  ↔  seedFloors in seed-data.ts  ↔  this type.
  */
 export type FloorSlot =
-  // Canonical data-model keys (12 floors)
+  // Canonical data-model keys (13 floors)
+  | "floor-parking-p1"
   | "floor-reclamation-core"
   | "floor-commons-clinic"
   | "floor-power-ops-core"
@@ -84,7 +85,8 @@ function floorModule(slot: FloorSlot): ModelAsset {
 }
 
 export const MODELS: Record<ModelSlot, ModelAsset> = {
-  // Canonical data-model slots (12 floors — will be populated after next Blender pipeline run)
+  // Canonical data-model slots (13 floors)
+  "floor-parking-p1": floorModule("floor-parking-p1"),
   "floor-reclamation-core": floorModule("floor-reclamation-core"),
   "floor-commons-clinic": floorModule("floor-commons-clinic"),
   "floor-power-ops-core": floorModule("floor-power-ops-core"),

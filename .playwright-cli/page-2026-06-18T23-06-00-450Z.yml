@@ -1,0 +1,95 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main"
+  - status "Loading ATLAS OS" [ref=e3]:
+    - generic [ref=e4]:
+      - img [ref=e6]
+      - generic [ref=e18]: ATLAS OS
+    - generic [ref=e21]: Loading ATLAS OS
+  - navigation [ref=e22]:
+    - generic [ref=e23]:
+      - link "ATLAS OS home" [ref=e24] [cursor=pointer]:
+        - /url: /
+        - img [ref=e25]
+        - generic [ref=e36]: ATLAS OS
+      - generic [ref=e37]:
+        - link "Console" [ref=e38] [cursor=pointer]:
+          - /url: /
+        - link "Simulator" [ref=e39] [cursor=pointer]:
+          - /url: /simulator
+        - link "Fleet" [ref=e40] [cursor=pointer]:
+          - /url: /fleet
+        - link "Pitch" [ref=e41] [cursor=pointer]:
+          - /url: /pitch
+        - link "Portfolio" [ref=e42] [cursor=pointer]:
+          - /url: /portfolio
+        - link "Carbon" [ref=e43] [cursor=pointer]:
+          - /url: /carbon
+        - link "Overview" [ref=e44] [cursor=pointer]:
+          - /url: /landing
+        - link "Solutions" [ref=e45] [cursor=pointer]:
+          - /url: /for
+        - link "Brand" [ref=e46] [cursor=pointer]:
+          - /url: /brand
+        - link "Documents" [ref=e47] [cursor=pointer]:
+          - /url: /documents
+        - link "Site Map" [ref=e48] [cursor=pointer]:
+          - /url: /sitemap
+      - generic [ref=e49]:
+        - link "View source on GitHub" [ref=e50] [cursor=pointer]:
+          - /url: https://github.com/Smart-buildings-inc/Smart-admin
+          - generic [ref=e51]: View source on GitHub
+          - img [ref=e52]
+        - button "Switch to dark mode" [pressed] [ref=e54] [cursor=pointer]:
+          - generic [ref=e55]: Switch to dark mode
+          - img [ref=e56]
+  - status "Loading ATLAS OS" [ref=e58]:
+    - generic [ref=e59]:
+      - img [ref=e61]
+      - generic [ref=e73]: ATLAS OS
+    - generic [ref=e76]: Loading ATLAS OS
+  - contentinfo [ref=e77]:
+    - generic [ref=e78]:
+      - generic [ref=e79]:
+        - paragraph [ref=e80]: ATLAS OS
+        - paragraph [ref=e81]: The Habitat Twin — building operations for self-sufficient ATLAS habitats.
+      - generic [ref=e82]:
+        - paragraph [ref=e83]: Product
+        - list [ref=e84]:
+          - listitem [ref=e85]:
+            - link "Console" [ref=e86] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=e87]:
+            - link "Simulator" [ref=e88] [cursor=pointer]:
+              - /url: /simulator
+          - listitem [ref=e89]:
+            - link "Fleet" [ref=e90] [cursor=pointer]:
+              - /url: /fleet
+          - listitem [ref=e91]:
+            - link "Solutions" [ref=e92] [cursor=pointer]:
+              - /url: /for
+      - generic [ref=e93]:
+        - paragraph [ref=e94]: Documents
+        - list [ref=e95]:
+          - listitem [ref=e96]:
+            - link "Document library" [ref=e97] [cursor=pointer]:
+              - /url: /documents
+          - listitem [ref=e98]:
+            - link "Legal & compliance" [ref=e99] [cursor=pointer]:
+              - /url: /legal
+      - generic [ref=e100]:
+        - paragraph [ref=e101]: Legal
+        - list [ref=e102]:
+          - listitem [ref=e103]:
+            - link "Privacy Policy" [ref=e104] [cursor=pointer]:
+              - /url: /legal/privacy
+          - listitem [ref=e105]:
+            - link "Terms of Service" [ref=e106] [cursor=pointer]:
+              - /url: /legal/terms
+          - listitem [ref=e107]:
+            - link "Data Processing Addendum" [ref=e108] [cursor=pointer]:
+              - /url: /legal/dpa
+    - generic [ref=e109]:
+      - paragraph [ref=e110]: © 2026 Smart Buildings Inc. · ATLAS Habitat Initiative.
+      - paragraph [ref=e111]: ATLAS is operationally independent, not legally exempt · AI optimizes, never overrides safety.
+  - alert [ref=e112]

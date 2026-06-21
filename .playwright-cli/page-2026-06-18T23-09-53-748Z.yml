@@ -1,0 +1,149 @@
+- generic [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main"
+  - navigation [ref=e22]:
+    - generic [ref=e23]:
+      - link "ATLAS OS home" [ref=e24] [cursor=pointer]:
+        - /url: /
+        - img [ref=e25]
+        - generic [ref=e36]: ATLAS OS
+      - generic [ref=e37]:
+        - link "Console" [ref=e38] [cursor=pointer]:
+          - /url: /
+        - link "Simulator" [ref=e39] [cursor=pointer]:
+          - /url: /simulator
+        - link "Fleet" [ref=e40] [cursor=pointer]:
+          - /url: /fleet
+        - link "Pitch" [ref=e41] [cursor=pointer]:
+          - /url: /pitch
+        - link "Portfolio" [ref=e42] [cursor=pointer]:
+          - /url: /portfolio
+        - link "Carbon" [ref=e43] [cursor=pointer]:
+          - /url: /carbon
+        - link "Overview" [ref=e44] [cursor=pointer]:
+          - /url: /landing
+        - link "Solutions" [ref=e45] [cursor=pointer]:
+          - /url: /for
+        - link "Brand" [ref=e46] [cursor=pointer]:
+          - /url: /brand
+        - link "Documents" [ref=e47] [cursor=pointer]:
+          - /url: /documents
+        - link "Site Map" [ref=e48] [cursor=pointer]:
+          - /url: /sitemap
+      - generic [ref=e49]:
+        - link "View source on GitHub" [ref=e50] [cursor=pointer]:
+          - /url: https://github.com/Smart-buildings-inc/Smart-admin
+          - generic [ref=e51]: View source on GitHub
+          - img [ref=e52]
+        - button "Switch to dark mode" [pressed] [ref=e54] [cursor=pointer]:
+          - generic [ref=e55]: Switch to dark mode
+          - img [ref=e56]
+  - main [ref=e113]:
+    - generic [ref=e114]:
+      - generic [ref=e115]:
+        - heading "Building Simulator" [level=1] [ref=e116]
+        - paragraph [ref=e117]: ATLAS‑01, operating live — every floor a human need, rendered as an architectural building twin. Watch the building breathe.
+      - generic [ref=e118]: Seed data (local-first)
+    - img "ATLAS simulator habitat systems visual" [ref=e121]
+    - generic [ref=e122]:
+      - generic [ref=e124]:
+        - generic:
+          - generic: ATLAS‑01 · Live Twin
+          - generic: Orbit to inspect · tap a floor for telemetry
+        - generic [ref=e128]:
+          - generic [ref=e129]:
+            - generic [ref=e130]:
+              - button "Day" [ref=e131] [cursor=pointer]
+              - button "Cut-away" [pressed] [ref=e132] [cursor=pointer]
+              - button "Pixel" [ref=e133] [cursor=pointer]
+              - button "ASCII" [ref=e134] [cursor=pointer]
+              - button "Orbit" [active] [ref=e135] [cursor=pointer]
+              - button "Elevator" [pressed] [ref=e136] [cursor=pointer]
+              - button "Hero" [ref=e137] [cursor=pointer]
+              - button "Code" [ref=e138] [cursor=pointer]
+              - button "🎬 Demo" [ref=e139] [cursor=pointer]
+            - generic "3D research lens" [ref=e140]:
+              - button "Ops" [pressed] [ref=e141] [cursor=pointer]
+              - button "Fluid" [ref=e142] [cursor=pointer]
+              - button "SDF" [ref=e143] [cursor=pointer]
+              - button "Holo" [ref=e144] [cursor=pointer]
+          - link "Open fullscreen viewer" [ref=e145] [cursor=pointer]:
+            - /url: /simulate/atlas-01
+            - img [ref=e146]
+        - generic [ref=e149]:
+          - generic [ref=e151]: Elevator
+          - generic [ref=e152]: Residences C
+        - generic [ref=e154]:
+          - generic [ref=e155]: ☀️
+          - generic [ref=e156]: 09:54
+          - slider "Time of day" [ref=e157] [cursor=pointer]: "0.412"
+          - button "⏸" [ref=e158] [cursor=pointer]
+          - button "1×" [ref=e159] [cursor=pointer]
+          - button "10×" [ref=e160] [cursor=pointer]
+          - button "60×" [ref=e161] [cursor=pointer]
+        - generic [ref=e162]:
+          - generic [ref=e163]: Water
+          - generic [ref=e165]: Energy
+          - generic [ref=e167]: Food
+          - generic [ref=e169]: Shelter
+          - generic [ref=e171]: Air
+          - generic [ref=e173]: Health
+          - generic [ref=e175]: Restoration
+      - generic [ref=e177]:
+        - generic [ref=e178]:
+          - generic [ref=e179]: Floor telemetry
+          - paragraph [ref=e180]: Select a floor in the simulator to inspect its live metrics, or watch the elevator make its rounds.
+        - generic [ref=e181]:
+          - generic [ref=e182]: About this view
+          - paragraph [ref=e183]: An architectural operating twin of ATLAS‑01 rendered in three.js — a curtain-wall frame, working elevator, switchback stairs, rooftop solar, detailed floor modules, and residents going about their day. Toggle Cut-away for the dollhouse view, Night to see the windows glow, Pixel only when you want the retro fallback, and ASCII for the signature glyph render.
+        - generic [ref=e184]:
+          - generic [ref=e185]: 3D research lens
+          - generic [ref=e186]: Operational twin
+          - generic [ref=e187]: R3F + Drei production baseline
+          - paragraph [ref=e188]: The plain ATLAS operating view keeps telemetry, people, elevator movement, and floor selection visually dominant.
+    - generic [ref=e189]: ATLAS is operationally independent, not legally exempt · AI optimizes, but never overrides safety.
+  - contentinfo [ref=e77]:
+    - generic [ref=e78]:
+      - generic [ref=e79]:
+        - paragraph [ref=e80]: ATLAS OS
+        - paragraph [ref=e81]: The Habitat Twin — building operations for self-sufficient ATLAS habitats.
+      - generic [ref=e82]:
+        - paragraph [ref=e83]: Product
+        - list [ref=e84]:
+          - listitem [ref=e85]:
+            - link "Console" [ref=e86] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=e87]:
+            - link "Simulator" [ref=e88] [cursor=pointer]:
+              - /url: /simulator
+          - listitem [ref=e89]:
+            - link "Fleet" [ref=e90] [cursor=pointer]:
+              - /url: /fleet
+          - listitem [ref=e91]:
+            - link "Solutions" [ref=e92] [cursor=pointer]:
+              - /url: /for
+      - generic [ref=e93]:
+        - paragraph [ref=e94]: Documents
+        - list [ref=e95]:
+          - listitem [ref=e96]:
+            - link "Document library" [ref=e97] [cursor=pointer]:
+              - /url: /documents
+          - listitem [ref=e98]:
+            - link "Legal & compliance" [ref=e99] [cursor=pointer]:
+              - /url: /legal
+      - generic [ref=e100]:
+        - paragraph [ref=e101]: Legal
+        - list [ref=e102]:
+          - listitem [ref=e103]:
+            - link "Privacy Policy" [ref=e104] [cursor=pointer]:
+              - /url: /legal/privacy
+          - listitem [ref=e105]:
+            - link "Terms of Service" [ref=e106] [cursor=pointer]:
+              - /url: /legal/terms
+          - listitem [ref=e107]:
+            - link "Data Processing Addendum" [ref=e108] [cursor=pointer]:
+              - /url: /legal/dpa
+    - generic [ref=e109]:
+      - paragraph [ref=e110]: © 2026 Smart Buildings Inc. · ATLAS Habitat Initiative.
+      - paragraph [ref=e111]: ATLAS is operationally independent, not legally exempt · AI optimizes, never overrides safety.
+  - alert [ref=e112]

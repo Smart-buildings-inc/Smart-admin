@@ -41,6 +41,13 @@ interface TextureSpec {
   repeat?: [number, number];
 }
 
+export interface ProcTextureSet {
+  map: THREE.CanvasTexture;
+  aoMap: THREE.CanvasTexture;
+  normalMap: THREE.CanvasTexture;
+  roughnessMap: THREE.CanvasTexture;
+}
+
 // ── Noise helpers ─────────────────────────────────────────────────────
 function fillNoise(
   ctx: CanvasRenderingContext2D,
@@ -318,7 +325,7 @@ const TEXTURE_SPECS: Record<ProcTextureType, TextureSpec> = {
 };
 
 // ── Generate a single canvas texture ──────────────────────────────────
-function generateTextureCanvas(key: ProcTextureType, seed: number): THREE.CanvasTexture {
+function generateTextureCanvas(key: ProcTextureType, seed: number): HTMLCanvasElement {
   const spec = TEXTURE_SPECS[key];
   const canvas = document.createElement("canvas");
   canvas.width = spec.w;
@@ -326,28 +333,158 @@ function generateTextureCanvas(key: ProcTextureType, seed: number): THREE.Canvas
   const ctx = canvas.getContext("2d")!;
   const rng = mulberry32(seed);
   spec.paint(ctx, spec.w, spec.h, rng);
+  return canvas;
+}
+
+const ROUGHNESS_BASE: Record<ProcTextureType, number> = {
+  concrete: 0.78,
+  concreteDark: 0.84,
+  metalPanel: 0.38,
+  brick: 0.8,
+  tile: 0.58,
+  solar: 0.28,
+  gravel: 0.92,
+  plaster: 0.72,
+  glassGrid: 0.2,
+  roofing: 0.88,
+};
+
+function derivedPbrCanvases(
+  source: HTMLCanvasElement,
+  type: ProcTextureType,
+): {
+  ao: HTMLCanvasElement;
+  normal: HTMLCanvasElement;
+  roughness: HTMLCanvasElement;
+} {
+  const sourceCtx = source.getContext("2d")!;
+  const pixels = sourceCtx.getImageData(0, 0, source.width, source.height);
+  const luminance = new Float32Array(source.width * source.height);
+
+  for (let i = 0, p = 0; i < pixels.data.length; i += 4, p += 1) {
+    luminance[p] =
+      (pixels.data[i] * 0.2126 +
+        pixels.data[i + 1] * 0.7152 +
+        pixels.data[i + 2] * 0.0722) /
+      255;
+  }
+
+  const makeCanvas = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = source.width;
+    canvas.height = source.height;
+    return canvas;
+  };
+  const ao = makeCanvas();
+  const normal = makeCanvas();
+  const roughness = makeCanvas();
+  const aoImage = ao.getContext("2d")!.createImageData(source.width, source.height);
+  const normalImage = normal
+    .getContext("2d")!
+    .createImageData(source.width, source.height);
+  const roughnessImage = roughness
+    .getContext("2d")!
+    .createImageData(source.width, source.height);
+  const baseRoughness = ROUGHNESS_BASE[type];
+  const at = (x: number, y: number) =>
+    luminance[
+      ((y + source.height) % source.height) * source.width +
+        ((x + source.width) % source.width)
+    ];
+
+  for (let y = 0; y < source.height; y += 1) {
+    for (let x = 0; x < source.width; x += 1) {
+      const pixel = y * source.width + x;
+      const offset = pixel * 4;
+      const luma = luminance[pixel];
+
+      // AO is intentionally compressed near white. It adds contact variation
+      // without multiplying the albedo into muddy, over-dark surfaces.
+      const aoValue = Math.round(226 + luma * 29);
+      aoImage.data[offset] = aoValue;
+      aoImage.data[offset + 1] = aoValue;
+      aoImage.data[offset + 2] = aoValue;
+      aoImage.data[offset + 3] = 255;
+
+      const roughnessValue = Math.round(
+        THREE.MathUtils.clamp(baseRoughness + (0.5 - luma) * 0.12, 0.08, 0.96) *
+          255,
+      );
+      roughnessImage.data[offset] = roughnessValue;
+      roughnessImage.data[offset + 1] = roughnessValue;
+      roughnessImage.data[offset + 2] = roughnessValue;
+      roughnessImage.data[offset + 3] = 255;
+
+      const dx = at(x + 1, y) - at(x - 1, y);
+      const dy = at(x, y + 1) - at(x, y - 1);
+      const normalVector = new THREE.Vector3(-dx * 0.3, dy * 0.3, 1).normalize();
+      normalImage.data[offset] = Math.round((normalVector.x * 0.5 + 0.5) * 255);
+      normalImage.data[offset + 1] = Math.round(
+        (normalVector.y * 0.5 + 0.5) * 255,
+      );
+      normalImage.data[offset + 2] = Math.round(
+        (normalVector.z * 0.5 + 0.5) * 255,
+      );
+      normalImage.data[offset + 3] = 255;
+    }
+  }
+
+  ao.getContext("2d")!.putImageData(aoImage, 0, 0);
+  normal.getContext("2d")!.putImageData(normalImage, 0, 0);
+  roughness.getContext("2d")!.putImageData(roughnessImage, 0, 0);
+  return { ao, normal, roughness };
+}
+
+function makeTexture(
+  canvas: HTMLCanvasElement,
+  repeat: [number, number],
+  colorSpace: THREE.ColorSpace,
+): THREE.CanvasTexture {
   const texture = new THREE.CanvasTexture(canvas);
   texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-  const [ru, rv] = spec.repeat ?? [1, 1];
+  const [ru, rv] = repeat;
   texture.repeat.set(ru, rv);
+  texture.colorSpace = colorSpace;
   texture.needsUpdate = true;
   return texture;
 }
 
 // ── Cache ─────────────────────────────────────────────────────────────
-const textureCache = new Map<string, THREE.CanvasTexture>();
+const textureCache = new Map<string, ProcTextureSet>();
+
+export function getProcTextureSet(
+  type: ProcTextureType,
+  seed = 42,
+): ProcTextureSet {
+  const key = `${type}__${seed}`;
+  let set = textureCache.get(key);
+  if (!set) {
+    const canvas = generateTextureCanvas(type, seed);
+    const derived = derivedPbrCanvases(canvas, type);
+    const repeat = textureRepeat(type);
+    set = {
+      map: makeTexture(canvas, repeat, THREE.SRGBColorSpace),
+      aoMap: makeTexture(derived.ao, repeat, THREE.NoColorSpace),
+      normalMap: makeTexture(derived.normal, repeat, THREE.NoColorSpace),
+      roughnessMap: makeTexture(
+        derived.roughness,
+        repeat,
+        THREE.NoColorSpace,
+      ),
+    };
+    // Recent three.js versions allow AO to consume UV0 explicitly. BoxGeometry
+    // already supplies UV0, avoiding a redundant UV channel per procedural mesh.
+    set.aoMap.channel = 0;
+    textureCache.set(key, set);
+  }
+  return set;
+}
 
 /**
  * Get (or create) a procedural texture. Textures are cached by type + seed.
  */
 export function getProcTexture(type: ProcTextureType, seed = 42): THREE.CanvasTexture {
-  const key = `${type}__${seed}`;
-  let tex = textureCache.get(key);
-  if (!tex) {
-    tex = generateTextureCanvas(type, seed);
-    textureCache.set(key, tex);
-  }
-  return tex;
+  return getProcTextureSet(type, seed).map;
 }
 
 /**
@@ -356,7 +493,7 @@ export function getProcTexture(type: ProcTextureType, seed = 42): THREE.CanvasTe
  */
 export function prewarmTextures(): void {
   const types = Object.keys(TEXTURE_SPECS) as ProcTextureType[];
-  types.forEach((t) => getProcTexture(t));
+  types.forEach((t) => getProcTextureSet(t));
 }
 
 /**
@@ -375,10 +512,15 @@ export function procMaterial(
   color?: string,
   overrides?: Partial<THREE.MeshStandardMaterialParameters>,
 ): THREE.MeshStandardMaterial {
-  const tex = getProcTexture(type);
+  const textures = getProcTextureSet(type);
   const mat = new THREE.MeshStandardMaterial({
-    map: tex,
-    roughness: 0.85,
+    map: textures.map,
+    aoMap: textures.aoMap,
+    aoMapIntensity: 0.22,
+    normalMap: textures.normalMap,
+    normalScale: new THREE.Vector2(0.2, 0.2),
+    roughnessMap: textures.roughnessMap,
+    roughness: 0.9,
     metalness: 0.05,
     flatShading: false,
     ...overrides,

@@ -14,21 +14,21 @@ import { sceneStore, type SceneMood } from "@/lib/scene-store";
 // Mood → colour/intensity targets
 const MOOD_LIGHT: Record<
   SceneMood,
-  { hemiTop: string; hemiIntensity: number; ambIntensity: number; fogColour: string }
+  { hemiTop: string; lightMultiplier: number; fogColour: string }
 > = {
-  serene: { hemiTop: "#4fc3f7", hemiIntensity: 1.0, ambIntensity: 0.55, fogColour: "#1a3a5c" },
-  calm: { hemiTop: "#3a8ecf", hemiIntensity: 0.85, ambIntensity: 0.45, fogColour: "#0b1622" },
-  concerned: { hemiTop: "#c98a3a", hemiIntensity: 0.7, ambIntensity: 0.35, fogColour: "#1a1410" },
-  critical: { hemiTop: "#cf3a3a", hemiIntensity: 0.5, ambIntensity: 0.22, fogColour: "#1a0a0a" },
+  serene: { hemiTop: "#4fc3f7", lightMultiplier: 1.05, fogColour: "#122942" },
+  calm: { hemiTop: "#3a8ecf", lightMultiplier: 1, fogColour: "#0b1622" },
+  concerned: { hemiTop: "#c98a3a", lightMultiplier: 0.88, fogColour: "#1a1410" },
+  critical: { hemiTop: "#cf3a3a", lightMultiplier: 0.72, fogColour: "#1a0a0a" },
 };
 
-export default function BuildingMood() {
+export default function BuildingMood({ night }: { night: boolean }) {
   const { scene } = useThree();
   const hemiRef = useRef<THREE.HemisphereLight>(null);
   const ambRef = useRef<THREE.AmbientLight>(null);
   const fogRef = useRef<THREE.Fog | null>(null);
   const targetRef = useRef(MOOD_LIGHT.calm);
-  const currentRef = useRef(MOOD_LIGHT.calm);
+  const currentMultiplier = useRef(1);
 
   // Grab the lights that the Canvas already sets up — they won't have refs
   // in BuildingSimulator, so we locate the first hemisphere/ambient in the scene.
@@ -56,22 +56,18 @@ export default function BuildingMood() {
   useFrame((_, delta) => {
     const speed = Math.min(delta * 2.5, 0.12);
     const t = targetRef.current;
-    const c = currentRef.current;
-
-    // Lerp each numeric field
-    c.hemiIntensity += (t.hemiIntensity - c.hemiIntensity) * speed;
-    c.ambIntensity += (t.ambIntensity - c.ambIntensity) * speed;
+    currentMultiplier.current +=
+      (t.lightMultiplier - currentMultiplier.current) * speed;
+    const baseHemi = night ? 0.5 : 0.72;
+    const baseAmbient = night ? 0.18 : 0.28;
 
     // Apply to lights
     if (hemiRef.current) {
-      hemiRef.current.intensity = c.hemiIntensity;
-      if (c.hemiTop !== t.hemiTop) {
-        c.hemiTop = t.hemiTop;
-        hemiRef.current.color.set(t.hemiTop);
-      }
+      hemiRef.current.intensity = baseHemi * currentMultiplier.current;
+      hemiRef.current.color.lerp(new THREE.Color(t.hemiTop), speed);
     }
     if (ambRef.current) {
-      ambRef.current.intensity = c.ambIntensity;
+      ambRef.current.intensity = baseAmbient * currentMultiplier.current;
     }
     // Fog
     if (fogRef.current) {

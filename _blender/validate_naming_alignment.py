@@ -74,6 +74,7 @@ def parse_floor_key_map(text: str) -> set[str]:
 
 
 NEED_TO_FLOORS = {
+    "parking":     ["parking-p1"],
     "water":       ["reclamation-core"],
     "energy":      ["power-ops-core"],
     "food":        ["aquaponics-bay", "vertical-farm"],
@@ -133,7 +134,7 @@ def main():
     for sk in sorted(all_seed):
         need = seed_to_need.get(sk, "???")
         in_blender = need in all_blender
-        in_models = f"floor-{need}" in all_models
+        in_models = f"floor-{sk}" in all_models or f"floor-{need}" in all_models
 
         notes = []
         if not in_blender:

@@ -10,11 +10,12 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "verify": "npm run typecheck && npm run lint && npm run build && npm run test:e2e",
+    "verify": "npm run validate:gltf && npm run validate:models && npm run validate:blender && npm run typecheck && npm run lint && npm run build && npm run test:e2e",
     "test:e2e": "playwright test",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:seed": "tsx src/lib/db/seed.ts",
+    "validate:gltf": "node scripts/validate-gltf-assets.mjs",
     "validate:models": "npx tsx scripts/validate-model-slots.ts",
     "validate:blender": "python3 _blender/validate_naming_alignment.py",
     "docs:build": "node --import tsx scripts/generate-doc-pdfs.ts"
@@ -44,6 +45,7 @@
     "eslint": "^8.57.1",
     "eslint-config-next": "^15.5.19",
     "postcss": "^8.4.47",
+    "sharp": "^0.34.5",
     "tailwindcss": "^3.4.13",
     "tsx": "^4.19.1",
     "typescript": "^5.6.3"

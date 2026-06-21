@@ -58,7 +58,7 @@ function Toggle({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+      className={`min-h-9 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
         active ? "bg-white text-ink-950" : "text-slate-300 hover:text-white"
       }`}
     >
